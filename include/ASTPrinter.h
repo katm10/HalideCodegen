@@ -44,4 +44,6 @@ struct Printer final : public Visitor {
     void visit(const Broadcast *) override;
 };
 
+void print(std::ostream &os, ExprPtr expr);
+
 }  // namsepace AST

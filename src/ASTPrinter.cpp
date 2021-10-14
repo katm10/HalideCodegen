@@ -132,4 +132,9 @@ void Printer::visit(const Broadcast *expr) {
     stream << ")";
 }
 
+void print(std::ostream &os, ExprPtr expr) {
+    Printer printer(os);
+    expr->accept(&printer);
+}
+
 }  // namespace AST

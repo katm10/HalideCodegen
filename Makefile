@@ -13,7 +13,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -c -o $@
 
-main: $(OBJ_FILES) main.cpp
+main.out: $(OBJ_FILES) main.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 
 .PHONY: clean

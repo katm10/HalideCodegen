@@ -7,40 +7,76 @@ void ConstantInt::accept(Visitor *v) const {
     v->visit(this);
 }
 
-template<typename T>
-void VariableBase<T>::accept(Visitor *v) const {
-    const T* t = this->as<T>();
-    if (!t) {
-        std::cerr << "VariableBase failed to cast to expected class\n";
-        assert(false);
-        exit(1);
-    } else {
-        v->visit(t);
-    }
+void ConstantVar::accept(Visitor *v) const {
+    v->visit(this);
 }
 
-template<typename T>
-void BinaryOp<T>::accept(Visitor *v) const {
-    const T* t = this->as<T>();
-    if (!t) {
-        std::cerr << "BinaryOp failed to cast to expected class\n";
-        assert(false);
-        exit(1);
-    } else {
-        v->visit(t);
-    }
+void Var::accept(Visitor *v) const {
+    v->visit(this);
 }
 
-template<typename T>
-void UnaryOp<T>::accept(Visitor *v) const {
-    const T* t = this->as<T>();
-    if (!t) {
-        std::cerr << "UnaryOp failed to cast to expected class\n";
-        assert(false);
-        exit(1);
-    } else {
-        v->visit(t);
-    }
+void Add::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Sub::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Mod::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Mul::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Div::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Min::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Max::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void EQ::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void NE::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void LT::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void LE::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void GT::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void GE::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void And::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Or::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Not::accept(Visitor *v) const {
+    v->visit(this);
 }
 
 void Select::accept(Visitor *v) const {
