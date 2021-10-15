@@ -1,5 +1,5 @@
 CXX ?= g++
-CXXFLAGS ?= -std=c++17 -Wno-attributes -O2
+CXXFLAGS ?= -std=c++17 -Wno-attributes -O2  -I ../Halide/include/ -L ../Halide/bin/ -lHalide
 INCLUDES := -Iinclude
 
 SRC_DIR := src
@@ -14,6 +14,9 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $< -c -o $@
 
 main.out: $(OBJ_FILES) main.cpp
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
+
+MergeTool.o: $(OBJ_FILES) MergeTool.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ -o $@
 
 .PHONY: clean
