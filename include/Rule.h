@@ -12,7 +12,8 @@ enum NumericType {
     NO_OVERFLOW,
     NO_OVERFLOW_INT,
     BOOL, 
-    NO_OVERFLOW_SCALAR_INT
+    NO_OVERFLOW_SCALAR_INT,
+    INVALID
     // TODO almost certainly missing a lot here
 };
 
