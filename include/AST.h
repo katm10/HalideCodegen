@@ -38,6 +38,10 @@ enum class NodeType {
     // TODO: add these.
     // Call,
     // VectorReduce,
+
+    // These are useful only for pattern matching
+    Fold,
+    CanProve,
 };
 
 struct Visitor;
@@ -287,5 +291,26 @@ struct Broadcast final : public Expr {
     static const NodeType _node_type = NodeType::Broadcast;
 };
 
+struct Fold final : public Expr {
+    const ExprPtr value;
+
+    Fold(ExprPtr _value)
+      : Expr(NodeType::Fold), value(std::move(_value)) {
+    }
+
+    void accept(Visitor *v) const override;
+    static const NodeType _node_type = NodeType::Fold;
+};
+
+struct CanProve final : public Expr {
+    const ExprPtr value;
+
+    CanProve(ExprPtr _value)
+      : Expr(NodeType::Fold), value(std::move(_value)) {
+    }
+
+    void accept(Visitor *v) const override;
+    static const NodeType _node_type = NodeType::CanProve;
+};
 
 }  // namespace AST

@@ -111,4 +111,12 @@ void Visitor::visit(const Broadcast *expr) {
     expr->lanes->accept(this);
 }
 
+void Visitor::visit(const Fold *expr) {
+    expr->value->accept(this);
+}
+
+void Visitor::visit(const CanProve *expr) {
+    expr->value->accept(this);
+}
+
 }  // namespace AST

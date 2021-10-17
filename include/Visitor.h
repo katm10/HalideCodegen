@@ -27,6 +27,9 @@ struct Visitor {
     virtual void visit(const Select *);
     virtual void visit(const Ramp *);
     virtual void visit(const Broadcast *);
+
+    virtual void visit(const Fold *);
+    virtual void visit(const CanProve *);
 };
 
 }  // namsepace AST

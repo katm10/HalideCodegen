@@ -42,6 +42,9 @@ struct Printer final : public Visitor {
     void visit(const Select *) override;
     void visit(const Ramp *) override;
     void visit(const Broadcast *) override;
+
+    void visit(const Fold *) override;
+    void visit(const CanProve *) override;
 };
 
 void print(std::ostream &os, ExprPtr expr);

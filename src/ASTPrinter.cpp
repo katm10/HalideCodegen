@@ -132,6 +132,18 @@ void Printer::visit(const Broadcast *expr) {
     stream << ")";
 }
 
+void Printer::visit(const Fold *expr) {
+    stream << "fold(";
+    expr->value->accept(this);
+    stream << ")";
+}
+
+void Printer::visit(const CanProve *expr) {
+    stream << "can_prove(";
+    expr->value->accept(this);
+    stream << ")";
+}
+
 void print(std::ostream &os, ExprPtr expr) {
     Printer printer(os);
     expr->accept(&printer);
