@@ -1,13 +1,15 @@
 #include "Parser.h"
+#include "AST.h"
 
 #include <fstream>
 #include <stdio.h>
+#include <memory>
 
 using std::map;
 using std::ostringstream;
 using std::string;
 using std::vector;
-using namespace Halide;
+// using namespace Halide;
 
 /**
  * TODO:
@@ -202,6 +204,7 @@ class Parser
     }
 
 public:
+    /*
     Expr reparse_as_bool(const Expr &e)
     {
         const Halide::Internal::Call *op = e.as<Halide::Internal::Call>();
@@ -694,6 +697,169 @@ public:
 
         // Try increasing precedence
         return parse_halide_expr(precedence + 1);
+    }
+    */
+
+    ExprPtr parse_var(){
+        
+    }
+
+    ExprPtr parse_unit()
+    {
+        if (consume("min("))
+            {
+                Expr a = parse_disjunction();
+                expect(",");
+                Expr b = parse_disjunction();
+                expect(")");
+                return std::shared_ptr<Min>(a, b);
+            }
+            if (consume("max("))
+            {
+                Expr a = parse_disjunction();
+                expect(",");
+                Expr b = parse_disjunction();
+                expect(")");
+                return std::shared_ptr<Min>(a, b);
+            }
+            if (consume("select("))
+            {
+                Expr a = parse_halide_expr(0);
+                expect(",");
+                Expr b = parse_halide_expr(0);
+                expect(",");
+                Expr c = parse_halide_expr(0);
+                expect(")");
+                // if (b.type().is_bool() && !c.type().is_bool())
+                // {
+                //     c = reparse_as_bool(c);
+                // }
+                // else if (!b.type().is_bool() && c.type().is_bool())
+                // {
+                //     b = reparse_as_bool(b);
+                // }
+
+                return std::shared_ptr<Select>(a, b, c);
+            }
+    }
+
+    ExprPtr parse_mulitplicative()
+    {
+        // Additive things
+
+        ExprPtr a = parse_unit();
+
+        if (consume("*"))
+        {
+            ExprPtr b = parse_mulitplicative();
+            return std::shared_ptr<Mul>(a, b);
+        }
+        else if (consume("/"))
+        {
+            ExprPtr b = parse_mulitplicative();
+            return std::shared_ptr<Div>(a, b);
+        }
+        else if (consume("%"))
+        {
+            ExprPtr b = parse_mulitplicative();
+            return std::shared_ptr<Mod>(a, b);
+        }
+        else
+        {
+            return a;
+        }
+    }
+
+    ExprPtr parse_arithmetic()
+    {
+        // Additive things
+
+        ExprPtr a = parse_mutiplicative();
+
+        if (consume("+"))
+        {
+            ExprPtr b = parse_arithmetic();
+            return std::shared_ptr<Add>(a, b);
+        }
+        else if (consume("-"))
+        {
+            ExprPtr b = parse_arithmetic();
+            return std::shared_ptr<Sub>(a, b);
+        }
+        else
+        {
+            return a;
+        }
+    }
+
+    ExprPtr parse_boolunit()
+    {
+        // Comparisons
+        ExprPtr a = parse_arithmetic();
+        if (consume("<="))
+        {
+            ExprPtr b = parse_boolunit();
+            return std::shared_ptr<LE>(a, b);
+        }
+        else if (consume(">="))
+        {
+            ExprPtr b = parse_boolunit();
+            return std::shared_ptr<GE>(a, b);
+        }
+        else if (consume("<"))
+        {
+            ExprPtr b = parse_boolunit();
+            return std::shared_ptr<LT>(a, b);
+        }
+        else if (consume(">"))
+        {
+            ExprPtr b = parse_boolunit();
+            return std::shared_ptr<GT>(a, b);
+        }
+        else if (consume("=="))
+        {
+            ExprPtr b = parse_boolunit();
+            return std::shared_ptr<EQ>(a, b);
+        }
+        else if (consume("!="))
+        {
+            ExprPtr b = parse_boolunit();
+            return std::shared_ptr<NE>(a, b);
+        }
+        else
+        {
+            return a;
+        }
+    }
+
+    ExprPtr parse_conjunction()
+    {
+        // Logical and
+        ExprPtr a = parse_disjunction();
+        if (consume("&&"))
+        {
+            ExprPtr b = parse_conjunction();
+            return std::shared_ptr<And>(a, b);
+        }
+        else
+        {
+            return a;
+        }
+    }
+
+    ExprPtr parse_disjunction()
+    {
+        // Logical or
+        ExprPtr a = parse_conjunction();
+        if (consume("||"))
+        {
+            ExprPtr b = parse_disjunction();
+            return std::shared_ptr<Or>(a, b);
+        }
+        else
+        {
+            return a;
+        }
     }
 
     // TODO: this needs to parse much more finely
