@@ -306,7 +306,7 @@ struct CanProve final : public Expr {
     const ExprPtr value;
 
     CanProve(ExprPtr _value)
-      : Expr(NodeType::Fold), value(std::move(_value)) {
+      : Expr(NodeType::CanProve), value(std::move(_value)) {
     }
 
     void accept(Visitor *v) const override;

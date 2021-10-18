@@ -3,7 +3,8 @@
 
 #include <string>
 
-#include "Halide.h"
+
+#include "AST.h"
 #include "Rule.h"
 
 // Helper routines for writing a parser and routines for parsing
@@ -24,15 +25,18 @@ void expect(const char **cursor, const char *end, const char *pattern);
 // Consume and return a legal Halide identifier.
 std::string consume_token(const char **cursor, const char *end);
 
+// Consume and return a legal Halide variable identifier.
+std::string consume_name(const char **cursor, const char *end);
+
 // Consume and return a constant integer.
 int64_t consume_int(const char **cursor, const char *end);
 
 // Consume and return a constant float as a constant Halide Expr of
 // the appropriate type.
-Halide::Expr consume_float(const char **cursor, const char *end);
+// Halide::Expr consume_float(const char **cursor, const char *end);
 
 // Parse a full Halide Expr, as produced by a Halide IRPrinter elsewhere.
-Halide::Expr parse_halide_expr(const char *cursor, const char *end, Halide::Type expected_type);
+// Halide::Expr parse_halide_expr(const char *cursor, const char *end, Halide::Type expected_type);
 
 std::vector<Rule *> parse_rules_from_file(const std::string &filename);
 #endif

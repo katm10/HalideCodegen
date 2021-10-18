@@ -1,15 +1,15 @@
 #include "Parser.h"
-#include "AST.h"
 
 #include <fstream>
 #include <stdio.h>
 #include <memory>
+#include <map>
 
 using std::map;
 using std::ostringstream;
 using std::string;
 using std::vector;
-// using namespace Halide;
+using namespace AST;
 
 /**
  * TODO:
@@ -114,6 +114,19 @@ string consume_token(const char **cursor, const char *end)
     return result;
 }
 
+string consume_name(const char **cursor, const char *end)
+{
+    size_t sz = 0;
+    while (*cursor + sz < end &&
+           std::isalnum((*cursor)[sz]))
+    {
+        sz++;
+    }
+    string result{*cursor, sz};
+    *cursor += sz;
+    return result;
+}
+
 int64_t consume_int(const char **cursor, const char *end)
 {
     bool negative = consume(cursor, end, "-");
@@ -127,6 +140,7 @@ int64_t consume_int(const char **cursor, const char *end)
     return negative ? -n : n;
 }
 
+/* 
 Expr consume_float(const char **cursor, const char *end)
 {
     bool negative = consume(cursor, end, "-");
@@ -161,12 +175,13 @@ Expr consume_float(const char **cursor, const char *end)
         return Halide::Internal::make_const(Float(64), d);
     }
 }
+*/
 
 class Parser
 {
     const char *cursor, *end;
-    std::vector<std::pair<Expr, int>> stack;
-    map<string, Type> var_types;
+    // std::vector<std::pair<Expr, int>> stack;
+    // map<string, Type> var_types;
 
     void consume_whitespace()
     {
@@ -188,14 +203,19 @@ class Parser
         return ::consume_int(&cursor, end);
     }
 
-    Expr consume_float()
-    {
-        return ::consume_float(&cursor, end);
-    }
+    // Expr consume_float()
+    // {
+    //     return ::consume_float(&cursor, end);
+    // }
 
     string consume_token()
     {
         return ::consume_token(&cursor, end);
+    }
+
+    string consume_name()
+    {
+        return ::consume_name(&cursor, end);
     }
 
     char peek() const
@@ -204,689 +224,306 @@ class Parser
     }
 
 public:
-    /*
-    Expr reparse_as_bool(const Expr &e)
+    // Unit ::= Var | ConstantVar | ConstantInt | Call | "(" Expr ")"
+    ExprPtr parse_unit()
     {
-        const Halide::Internal::Call *op = e.as<Halide::Internal::Call>();
-        if (e.type().is_bool())
+        // Assume we can only get a ConstantVar, Var, or ConstantInt here
+        if ((*cursor) == 'c')
         {
-            return e;
+            // This is a ConstantVar
+            std::string name = consume_name();
+            return std::make_shared<ConstantVar>(name);
         }
-        else if (const Halide::Internal::Variable *var = e.as<Halide::Internal::Variable>())
+        else if (std::isalpha(*cursor))
         {
-            return Halide::Internal::Variable::make(Bool(), var->name);
+            // This is a Var
+            std::string name = consume_name();
+            return std::make_shared<Var>(name);
         }
-        else if (op &&
-                 (op->is_intrinsic(Halide::Internal::Call::likely) ||
-                  op->is_intrinsic(Halide::Internal::Call::likely_if_innermost)))
+        else if (std::isdigit(*cursor))
         {
-            return Halide::Internal::Call::make(Bool(), op->name, {reparse_as_bool(op->args[0])}, op->call_type);
-            // } else if (is_zero(e)) {
-            //     return const_false();
-            // } else if (is_one(e)) {
-            //     return const_true();
+            // This is a ConstantInt
+            int64_t val = consume_int();
+            return std::make_shared<ConstantInt>(val);
+        }
+        else if (consume("("))
+        {
+            ExprPtr a = parse_expr();
+            expect(")");
+            return a;
         }
         else
         {
-            std::cerr << "Expected bool Expr: " << e << "\n";
-            abort();
-            return Expr();
+            return parse_call();
         }
     }
 
-    Expr parse_halide_expr(int precedence)
+    // Call ::= <function name>'(' Expr (',' Expr)* ')'
+    // TODO add nullptr checks
+    ExprPtr parse_call()
     {
-        if (!stack.empty() && stack.back().second <= precedence)
+        if (consume("min("))
         {
-            Expr a = stack.back().first;
-            stack.pop_back();
-            return a;
+            ExprPtr a = parse_expr();
+            expect(",");
+            ExprPtr b = parse_expr();
+            expect(")");
+            return std::make_shared<Min>(a, b);
+        }
+        if (consume("max("))
+        {
+            ExprPtr a = parse_expr();
+            expect(",");
+            ExprPtr b = parse_expr();
+            expect(")");
+            return std::make_shared<Min>(a, b);
+        }
+        if (consume("select("))
+        {
+            ExprPtr a = parse_expr();
+            expect(",");
+            ExprPtr b = parse_expr();
+            expect(",");
+            ExprPtr c = parse_expr();
+            expect(")");
+            return std::make_shared<Select>(a, b, c);
+        }
+        if (consume("ramp("))
+        {
+            ExprPtr base = parse_expr();
+            expect(",");
+            ExprPtr stride = parse_expr();
+            expect(",");
+            ExprPtr lanes = parse_expr();
+            expect(")");
+            return std::make_shared<Ramp>(base, stride, lanes);
+        }
+        if (consume("broadcast("))
+        {
+            ExprPtr val = parse_expr();
+            expect(",");
+            ExprPtr lanes = parse_expr();
+            expect(")");
+            return std::make_shared<Broadcast>(val, lanes);
+        }
+        if (consume("fold("))
+        {
+            ExprPtr val = parse_expr();
+            expect(")");
+            return std::make_shared<Fold>(val);
+        }
+        if (consume("can_prove("))
+        {
+            ExprPtr val = parse_expr();
+            expect(",this)"); // Do we ever expect another simplifier?
+            return std::make_shared<CanProve>(val);
+        }
+        return nullptr;
+    }
+
+    // Product ::= Unit ( ('*' | '/' | '%') Unit)*
+    ExprPtr parse_product()
+    {
+        ExprPtr a = parse_unit();
+        if (a == nullptr)
+        {
+            return nullptr;
         }
 
-        struct TypePattern
+        while ((*cursor) == '*' || (*cursor) == '/' || (*cursor) == '%')
         {
-            const char *cast_prefix = nullptr;
-            const char *constant_prefix = nullptr;
-            Type type;
-            string cast_prefix_storage, constant_prefix_storage;
-            TypePattern(Type t)
+            ExprPtr b = parse_unit();
+            if (b == nullptr)
             {
-                ostringstream cast_prefix_stream, constant_prefix_stream;
-                cast_prefix_stream << t << '(';
-                cast_prefix_storage = cast_prefix_stream.str();
-                cast_prefix = cast_prefix_storage.c_str();
-
-                constant_prefix_stream << '(' << t << ')';
-                constant_prefix_storage = constant_prefix_stream.str();
-                constant_prefix = constant_prefix_storage.c_str();
-                type = t;
-            }
-        };
-        static vector<std::unique_ptr<TypePattern>> typenames =
-            []()
-        {
-            Type scalar_types[] = {UInt(1),
-                                   Int(8),
-                                   UInt(8),
-                                   Int(16),
-                                   UInt(16),
-                                   Int(32),
-                                   UInt(32),
-                                   Int(64),
-                                   UInt(64),
-                                   Float(64),
-                                   Float(32)};
-            vector<std::unique_ptr<TypePattern>> vec;
-            for (int v : {1, 2, 4, 8, 16, 32, 64, 128})
-            {
-                for (Type t : scalar_types)
-                {
-                    vec.emplace_back(new TypePattern(t.with_lanes(v)));
-                }
-            }
-            return vec;
-        }();
-
-        consume_whitespace();
-
-        if (precedence == 10)
-        {
-            // type-cast
-            for (const auto &t : typenames)
-            {
-                if (consume(t->cast_prefix))
-                {
-                    Expr a = cast(t->type, parse_halide_expr(0));
-                    expect(")");
-                    return a;
-                }
+                return nullptr;
             }
 
-            // Let binding. Always has parens
-            if (consume("(let "))
+            if (consume("*"))
             {
-                string name = consume_token();
-                consume_whitespace();
-                expect("=");
-                consume_whitespace();
-
-                Expr value = parse_halide_expr(0);
-
-                consume_whitespace();
-                expect("in");
-                consume_whitespace();
-
-                var_types[name] = value.type();
-
-                Expr body = parse_halide_expr(0);
-
-                Expr a = Halide::Internal::Let::make(name, value, body);
-                expect(")");
-                return a;
+                a = std::make_shared<Mul>(a, b);
             }
-            if (consume("min("))
+            else if (consume("/"))
             {
-                Expr a = parse_halide_expr(0);
-                expect(",");
-                Expr b = parse_halide_expr(0);
-                consume_whitespace();
-                expect(")");
-                return min(a, b);
+                a = std::make_shared<Div>(a, b);
             }
-            if (consume("max("))
+            else if (consume("%"))
             {
-                Expr a = parse_halide_expr(0);
-                expect(",");
-                Expr b = parse_halide_expr(0);
-                consume_whitespace();
-                expect(")");
-                return max(a, b);
+                a = std::make_shared<Mod>(a, b);
             }
-            if (consume("select("))
+            else
             {
-                Expr a = parse_halide_expr(0);
-                a = reparse_as_bool(a);
-                expect(",");
-                Expr b = parse_halide_expr(0);
-                expect(",");
-                Expr c = parse_halide_expr(0);
-                consume_whitespace();
-                expect(")");
-                if (b.type().is_bool() && !c.type().is_bool())
-                {
-                    c = reparse_as_bool(c);
-                }
-                else if (!b.type().is_bool() && c.type().is_bool())
-                {
-                    b = reparse_as_bool(b);
-                }
-
-                return select(a, b, c);
-            }
-            Halide::Internal::Call::IntrinsicOp binary_intrinsics[] = {Halide::Internal::Call::bitwise_and,
-                                                                       Halide::Internal::Call::bitwise_or,
-                                                                       Halide::Internal::Call::shift_left,
-                                                                       Halide::Internal::Call::shift_right};
-            for (auto intrin : binary_intrinsics)
-            {
-                if (consume(Halide::Internal::Call::get_intrinsic_name(intrin)))
-                {
-                    expect("(");
-                    Expr a = parse_halide_expr(0);
-                    expect(",");
-                    Expr b = parse_halide_expr(0);
-                    consume_whitespace();
-                    expect(")");
-                    return Halide::Internal::Call::make(a.type(), intrin, {a, b}, Halide::Internal::Call::PureIntrinsic);
-                }
-            }
-
-            if (consume("fold("))
-            {
-                Expr e = parse_halide_expr(0);
-                e = Halide::Internal::Call::make(e.type(), "fold", {e}, Halide::Internal::Call::PureIntrinsic);
-                expect(")");
-                return e;
-            }
-
-            if (consume("!"))
-            {
-                Expr e = parse_halide_expr(precedence);
-                e = reparse_as_bool(e);
-                return !e;
-            }
-
-            if (consume("-"))
-            {
-                Expr e = parse_halide_expr(precedence);
-                return -e;
-            }
-
-            // Parse entire rewrite rules as exprs
-            if (consume("rewrite("))
-            {
-                Expr lhs = parse_halide_expr(0);
-                expect(",");
-                Expr rhs = parse_halide_expr(0);
-                if (lhs.type().is_bool())
-                {
-                    rhs = reparse_as_bool(rhs);
-                }
-                if (rhs.type().is_bool())
-                {
-                    lhs = reparse_as_bool(lhs);
-                }
-                Expr predicate = Halide::Internal::const_true();
-                consume_whitespace();
-                if (consume(","))
-                {
-                    predicate = parse_halide_expr(0);
-                    predicate = reparse_as_bool(predicate);
-                }
-                expect(")");
-                return Halide::Internal::Call::make(Bool(), "rewrite", {lhs, rhs, predicate}, Halide::Internal::Call::Extern);
-            }
-
-            if (consume("round_f32("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(")");
-                return round(a);
-            }
-            if (consume("ceil_f32("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(")");
-                return ceil(a);
-            }
-            if (consume("floor_f32("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(")");
-                return floor(a);
-            }
-            if (consume("likely("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(")");
-                return likely(a);
-            }
-            if (consume("likely_if_innermost("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(")");
-                return likely(a);
-            }
-
-            // TODO: overflows, should be reparsable as bool
-            if (consume("overflows("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(")");
-                return a;
-            }
-
-            Type expected_type = Int(32);
-            for (const auto &t : typenames)
-            {
-                // A type annotation for the token that follows
-                if (consume(t->constant_prefix))
-                {
-                    expected_type = t->type;
-                }
-            }
-
-            // An expression in parens
-            if (consume("("))
-            {
-                Expr e = parse_halide_expr(0);
-                expect(")");
-                return e;
-            }
-
-            // Constants
-            if ((peek() >= '0' && peek() <= '9') || peek() == '-')
-            {
-                const char *tmp = cursor;
-                Expr e = Halide::Internal::make_const(Int(32), consume_int());
-                if (peek() == '.')
-                {
-                    // Rewind and parse as float instead
-                    cursor = tmp;
-                    e = consume_float();
-                }
-                return e;
-            }
-            if (consume("true"))
-            {
-                return Halide::Internal::const_true();
-            }
-            if (consume("false"))
-            {
-                return Halide::Internal::const_false();
-            }
-
-            // Variables, loads, and calls
-            if ((peek() >= 'a' && peek() <= 'z') ||
-                (peek() >= 'A' && peek() <= 'Z') ||
-                peek() == '$' ||
-                peek() == '_' ||
-                peek() == '.')
-            {
-                string name = consume_token();
-                if (consume("["))
-                {
-                    Expr index = parse_halide_expr(0);
-                    // eat an alignment specifier
-                    consume_whitespace();
-                    if (consume("aligned("))
-                    {
-                        consume_int();
-                        expect(", ");
-                        consume_int();
-                        expect(")");
-                    }
-                    expect("]");
-                    if (expected_type == Type{})
-                    {
-                        expected_type = Int(32);
-                    }
-                    return Halide::Internal::Load::make(expected_type, name, index, Buffer<>(),
-                                                        Halide::Internal::Parameter(), Halide::Internal::const_true(), Halide::Internal::ModulusRemainder());
-                }
-                else if (consume("("))
-                {
-                    vector<Expr> args;
-                    while (1)
-                    {
-                        consume_whitespace();
-                        if (consume(")"))
-                            break;
-                        args.push_back(parse_halide_expr(0));
-                        consume_whitespace();
-                        consume(",");
-                    }
-                    return Halide::Internal::Call::make(expected_type, name, args, Halide::Internal::Call::PureExtern);
-                }
-                else
-                {
-                    auto it = var_types.find(name);
-                    if (it != var_types.end())
-                    {
-                        expected_type = it->second;
-                    }
-                    if (expected_type == Type{})
-                    {
-                        expected_type = Int(32);
-                    }
-                    return Halide::Internal::Variable::make(expected_type, name);
-                }
-            }
-
-            for (auto p : stack)
-            {
-                std::cerr << p.first << " " << p.second << "\n";
-            }
-
-            std::cerr << "Failed to parse starting at: " << *cursor << "\n";
-            abort();
-            return Expr();
-        }
-        else if (precedence == 9)
-        {
-            // Multiplicative things
-
-            Expr a = parse_halide_expr(precedence + 1);
-            Expr result;
-            while (1)
-            {
-                consume_whitespace();
-                if (consume("*"))
-                {
-                    a *= parse_halide_expr(precedence + 1);
-                }
-                else if (consume("/"))
-                {
-                    a /= parse_halide_expr(precedence + 1);
-                }
-                else if (consume("%"))
-                {
-                    a = a % parse_halide_expr(precedence + 1);
-                }
-                else
-                {
-                    stack.emplace_back(a, precedence + 1);
-                    break;
-                }
+                return nullptr;
             }
         }
-        else if (precedence == 8)
-        {
-            // Additive things
+        return a;
+    }
 
-            Expr a = parse_halide_expr(precedence + 1);
-            Expr result;
-            while (1)
+    // Arithmetic ::= Product ( ('+' | '-') Product)*
+    ExprPtr parse_arithmetic()
+    {
+        ExprPtr a = parse_product();
+        if (a == nullptr)
+        {
+            return nullptr;
+        }
+
+        while ((*cursor) == '+' || (*cursor) == '-')
+        {
+            ExprPtr b = parse_product();
+            if (b == nullptr)
             {
-                consume_whitespace();
-                if (consume("+"))
-                {
-                    a += parse_halide_expr(precedence + 1);
-                }
-                else if (consume("-"))
-                {
-                    a -= parse_halide_expr(precedence + 1);
-                }
-                else
-                {
-                    stack.emplace_back(a, precedence + 1);
-                    break;
-                }
+                return nullptr;
+            }
+
+            if (consume("+"))
+            {
+                a = std::make_shared<Add>(a, b);
+            }
+            else if (consume("-"))
+            {
+                a = std::make_shared<Sub>(a, b);
+            }
+            else
+            {
+                return nullptr;
             }
         }
-        else if (precedence == 7)
-        {
-            // Comparisons
+        return a;
+    }
 
-            Expr a = parse_halide_expr(precedence + 1);
-            Expr result;
-            consume_whitespace();
+    // BoolUnit ::= '!'? Predicate
+    ExprPtr parse_boolunit()
+    {
+        if (consume("!"))
+        {
+            ExprPtr a = parse_pred();
+            if (a == nullptr)
+            {
+                return nullptr;
+            }
+
+            return std::make_shared<Not>(a);
+        }
+
+        return parse_pred();
+    }
+
+    // Predicate ::= Arithmetic ( ('<' | '>' | '<=' | '>='| '==') Arithmetic)?
+    ExprPtr parse_pred()
+    {
+        ExprPtr a = parse_arithmetic();
+        if (a == nullptr)
+        {
+            return nullptr;
+        }
+
+        while ((*cursor) == '<' || (*cursor) == '>' || (*cursor) == '=')
+        {
+            ExprPtr b = parse_arithmetic();
+            if (b == nullptr)
+            {
+                return nullptr;
+            }
+
             if (consume("<="))
             {
-                return a <= parse_halide_expr(precedence);
+                a = std::make_shared<LE>(a, b);
             }
             else if (consume(">="))
             {
-                return a >= parse_halide_expr(precedence);
+                a = std::make_shared<GE>(a, b);
             }
             else if (consume("<"))
             {
-                return a < parse_halide_expr(precedence);
+                a = std::make_shared<LT>(a, b);
             }
             else if (consume(">"))
             {
-                return a > parse_halide_expr(precedence);
+                a = std::make_shared<GT>(a, b);
             }
             else if (consume("=="))
             {
-                return a == parse_halide_expr(precedence);
+                a = std::make_shared<EQ>(a, b);
             }
             else if (consume("!="))
             {
-                return a != parse_halide_expr(precedence);
+                a = std::make_shared<NE>(a, b);
             }
             else
             {
-                stack.emplace_back(a, precedence + 1);
+                return nullptr;
             }
         }
-        else if (precedence == 6)
-        {
-            // Logical and
-            Expr a = parse_halide_expr(precedence + 1);
-            Expr result;
-            if (consume("&&"))
-            {
-                Expr b = parse_halide_expr(precedence);
-                a = reparse_as_bool(a);
-                b = reparse_as_bool(b);
-                return a && b;
-            }
-            else
-            {
-                stack.emplace_back(a, precedence + 1);
-            }
-        }
-        else if (precedence == 5)
-        {
-            // Logical or
-            Expr a = parse_halide_expr(precedence + 1);
-            Expr result;
-            if (consume("||"))
-            {
-                Expr b = parse_halide_expr(precedence);
-                a = reparse_as_bool(a);
-                b = reparse_as_bool(b);
-                return a || b;
-            }
-            else
-            {
-                stack.emplace_back(a, 6);
-            }
-        }
-
-        // Try increasing precedence
-        return parse_halide_expr(precedence + 1);
-    }
-    */
-
-    ExprPtr parse_var(){
-        
+        return a;
     }
 
-    ExprPtr parse_unit()
-    {
-        if (consume("min("))
-            {
-                Expr a = parse_disjunction();
-                expect(",");
-                Expr b = parse_disjunction();
-                expect(")");
-                return std::shared_ptr<Min>(a, b);
-            }
-            if (consume("max("))
-            {
-                Expr a = parse_disjunction();
-                expect(",");
-                Expr b = parse_disjunction();
-                expect(")");
-                return std::shared_ptr<Min>(a, b);
-            }
-            if (consume("select("))
-            {
-                Expr a = parse_halide_expr(0);
-                expect(",");
-                Expr b = parse_halide_expr(0);
-                expect(",");
-                Expr c = parse_halide_expr(0);
-                expect(")");
-                // if (b.type().is_bool() && !c.type().is_bool())
-                // {
-                //     c = reparse_as_bool(c);
-                // }
-                // else if (!b.type().is_bool() && c.type().is_bool())
-                // {
-                //     b = reparse_as_bool(b);
-                // }
-
-                return std::shared_ptr<Select>(a, b, c);
-            }
-    }
-
-    ExprPtr parse_mulitplicative()
-    {
-        // Additive things
-
-        ExprPtr a = parse_unit();
-
-        if (consume("*"))
-        {
-            ExprPtr b = parse_mulitplicative();
-            return std::shared_ptr<Mul>(a, b);
-        }
-        else if (consume("/"))
-        {
-            ExprPtr b = parse_mulitplicative();
-            return std::shared_ptr<Div>(a, b);
-        }
-        else if (consume("%"))
-        {
-            ExprPtr b = parse_mulitplicative();
-            return std::shared_ptr<Mod>(a, b);
-        }
-        else
-        {
-            return a;
-        }
-    }
-
-    ExprPtr parse_arithmetic()
-    {
-        // Additive things
-
-        ExprPtr a = parse_mutiplicative();
-
-        if (consume("+"))
-        {
-            ExprPtr b = parse_arithmetic();
-            return std::shared_ptr<Add>(a, b);
-        }
-        else if (consume("-"))
-        {
-            ExprPtr b = parse_arithmetic();
-            return std::shared_ptr<Sub>(a, b);
-        }
-        else
-        {
-            return a;
-        }
-    }
-
-    ExprPtr parse_boolunit()
-    {
-        // Comparisons
-        ExprPtr a = parse_arithmetic();
-        if (consume("<="))
-        {
-            ExprPtr b = parse_boolunit();
-            return std::shared_ptr<LE>(a, b);
-        }
-        else if (consume(">="))
-        {
-            ExprPtr b = parse_boolunit();
-            return std::shared_ptr<GE>(a, b);
-        }
-        else if (consume("<"))
-        {
-            ExprPtr b = parse_boolunit();
-            return std::shared_ptr<LT>(a, b);
-        }
-        else if (consume(">"))
-        {
-            ExprPtr b = parse_boolunit();
-            return std::shared_ptr<GT>(a, b);
-        }
-        else if (consume("=="))
-        {
-            ExprPtr b = parse_boolunit();
-            return std::shared_ptr<EQ>(a, b);
-        }
-        else if (consume("!="))
-        {
-            ExprPtr b = parse_boolunit();
-            return std::shared_ptr<NE>(a, b);
-        }
-        else
-        {
-            return a;
-        }
-    }
-
+    // Conjunction ::= BoolUnit ('&&' BoolUnit)*
     ExprPtr parse_conjunction()
     {
-        // Logical and
-        ExprPtr a = parse_disjunction();
-        if (consume("&&"))
+        ExprPtr a = parse_boolunit();
+        if (a == nullptr)
         {
-            ExprPtr b = parse_conjunction();
-            return std::shared_ptr<And>(a, b);
+            return nullptr;
         }
-        else
+
+        while (consume("&&"))
         {
-            return a;
+            ExprPtr b = parse_boolunit();
+            if (b == nullptr)
+            {
+                return nullptr;
+            }
+            a = std::make_shared<And>(a, b);
         }
+        return a;
     }
 
-    ExprPtr parse_disjunction()
+    // Expr ::= Conjunction ( '||' Conjunction )*
+    ExprPtr parse_expr()
     {
-        // Logical or
         ExprPtr a = parse_conjunction();
-        if (consume("||"))
+        if (a == nullptr)
         {
-            ExprPtr b = parse_disjunction();
-            return std::shared_ptr<Or>(a, b);
+            return nullptr;
         }
-        else
+
+        while (consume("||"))
         {
-            return a;
+            ExprPtr b = parse_conjunction();
+            if (b == nullptr)
+            {
+                return nullptr;
+            }
+            a = std::make_shared<Or>(a, b);
         }
+        return a;
     }
 
     // TODO: this needs to parse much more finely
     Rule *parse_r()
     {
         // TODO Pointer or reference?
+
         expect("rewrite(");
-        Expr lhs = parse_halide_expr(0);
+        ExprPtr lhs = parse_expr();
         expect(",");
-        Expr rhs = parse_halide_expr(0);
-        if (lhs.type().is_bool())
-        {
-            rhs = reparse_as_bool(rhs);
-        }
-        if (rhs.type().is_bool())
-        {
-            lhs = reparse_as_bool(lhs);
-        }
-        Expr predicate = Halide::Internal::const_true();
-        consume_whitespace();
+        ExprPtr rhs = parse_expr();
+        // if (lhs.type().is_bool())
+        // {
+        //     rhs = reparse_as_bool(rhs);
+        // }
+        // if (rhs.type().is_bool())
+        // {
+        //     lhs = reparse_as_bool(lhs);
+        // }
+        // Expr predicate = Halide::Internal::const_true();
+        ExprPtr pred = nullptr;
         if (consume(","))
         {
-            predicate = parse_halide_expr(0);
-            predicate = reparse_as_bool(predicate);
+            pred = parse_expr();
         }
         expect(")");
-        return new Rule(lhs, rhs, predicate);
+        return new Rule(lhs, rhs, pred);
     }
 
     NumericType parse_type()
@@ -979,13 +616,15 @@ public:
                     // TODO this could be more modular
 
                     std::tuple<bool, std::vector<NumericType>> types_tuple = parse_types();
-                    if (std::get<0>(types_tuple))
+                    bool allowed = std::get<0>(types_tuple);
+                    std::vector<NumericType> types = std::get<1>(types_tuple);
+                    if (allowed)
                     { // these are allowed types
-                        r->set_allowed_types(std::get<1>(types_tuple));
+                        r->set_allowed_types(types);
                     }
                     else
                     {
-                        r->set_disallowed_types(std::get<1>(types_tuple));
+                        r->set_disallowed_types(types);
                     }
                 }
                 rules.push_back(r);

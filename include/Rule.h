@@ -1,9 +1,11 @@
 #ifndef TRS_CODEGEN_RULE
 #define TRS_CODEGEN_RULE
 
+#include "AST.h"
 #include <string>
 #include <vector>
-#include "Halide.h" // TODO remove
+
+using namespace AST;
 
 enum NumericType {
     UINT,
@@ -20,19 +22,19 @@ enum NumericType {
 class Rule {
 public:
     // TODO: this should not all be public
-    const Halide::Expr before;
-    const Halide::Expr after;
-    const Halide::Expr pred;
+    const ExprPtr before;
+    const ExprPtr after;
+    const ExprPtr pred;
     // TODO fix this
     std::vector<NumericType> allowed_types;
     std::vector<NumericType> disallowed_types;
 
     ~Rule() = default;
     Rule(){}
-    Rule(const Halide::Expr _before, const Halide::Expr _after)
+    Rule(const ExprPtr _before, const ExprPtr _after)
         : before(_before), after(_after) {}
 
-    Rule(const Halide::Expr _before, const Halide::Expr _after, const Halide::Expr _pred)
+    Rule(const ExprPtr _before, const ExprPtr _after, const ExprPtr _pred)
         : before(_before), after(_after), pred(_pred) {}
 
     void set_allowed_types(std::vector<NumericType> _allowed_types);
