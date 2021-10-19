@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace AST {
 
@@ -42,6 +43,7 @@ enum class NodeType {
     // These are useful only for pattern matching
     Fold,
     CanProve,
+    Call,
 };
 
 struct Visitor;
@@ -250,7 +252,7 @@ struct Not final : public UnaryOp<Not> {
     }
 
     void accept(Visitor *v) const override;
-    static const NodeType _node_type = NodeType::Ramp;
+    static const NodeType _node_type = NodeType::Select;
 };
 
 struct Ramp final : public Expr {
@@ -306,11 +308,24 @@ struct CanProve final : public Expr {
     const ExprPtr value;
 
     CanProve(ExprPtr _value)
-      : Expr(NodeType::Fold), value(std::move(_value)) {
+      : Expr(NodeType::CanProve), value(std::move(_value)) {
     }
 
     void accept(Visitor *v) const override;
     static const NodeType _node_type = NodeType::CanProve;
 };
+
+struct Call final : public Expr {
+    std::vector<const ExprPtr> args;
+    const std::string name;
+
+    Call(const std::vector<const ExprPtr> &_args, const std::string &_name)
+      : Expr(NodeType::Call), args(_args), name(_name) {
+    }
+
+    void accept(Visitor *v) const override;
+    static const NodeType _node_type = NodeType::Call;
+};
+
 
 }  // namespace AST
