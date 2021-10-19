@@ -1,5 +1,5 @@
 CXX ?= g++
-CXXFLAGS ?= -std=c++17 -Wno-attributes -O2 -I ../Halide/include/ -L ../Halide/bin/ -lHalide
+CXXFLAGS ?= -g -std=c++17 -Wno-attributes -O2 -I ../Halide/include/ -L ../Halide/bin/ -lHalide
 INCLUDES := -Iinclude
 
 SRC_DIR := src

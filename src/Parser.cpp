@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <stdio.h>
+#include <string.h>
 #include <memory>
 #include <map>
 
@@ -21,6 +22,11 @@ using namespace AST;
  * - remove Halide dependency
  *      - create Expr class
  */
+
+void debug(std::string s){
+    std::cout << s << std::endl;
+}
+
 // TODO: how portable is this?
 size_t get_filesize(const std::string &filename)
 {
@@ -109,6 +115,17 @@ string consume_token(const char **cursor, const char *end)
             (*cursor)[sz] == '$' ||
             (*cursor)[sz] == '_'))
         sz++;
+    string result{*cursor, sz};
+    *cursor += sz;
+    return result;
+}
+
+string consume_op(const char **cursor, const char *end)
+{
+    size_t sz = 0;
+    while ((*cursor)[sz] == '+' || (*cursor)[sz] == '-' || (*cursor)[sz] == '*' || (*cursor)[sz] == '%' || (*cursor)[sz] == '/' || (*cursor)[sz] == '>' || (*cursor)[sz] == '<' || (*cursor)[sz] == '=' ){
+        sz++;
+    }
     string result{*cursor, sz};
     *cursor += sz;
     return result;
@@ -218,6 +235,11 @@ class Parser
         return ::consume_name(&cursor, end);
     }
 
+    string consume_op()
+    {
+        return ::consume_op(&cursor, end);
+    }
+
     char peek() const
     {
         return *cursor;
@@ -228,19 +250,19 @@ public:
     ExprPtr parse_unit()
     {
         // Assume we can only get a ConstantVar, Var, or ConstantInt here
-        if ((*cursor) == 'c')
+        if (peek() == 'c')
         {
             // This is a ConstantVar
             std::string name = consume_name();
             return std::make_shared<ConstantVar>(name);
         }
-        else if (std::isalpha(*cursor))
+        else if (std::isalpha(peek()))
         {
             // This is a Var
             std::string name = consume_name();
             return std::make_shared<Var>(name);
         }
-        else if (std::isdigit(*cursor))
+        else if (std::isdigit(peek()))
         {
             // This is a ConstantInt
             int64_t val = consume_int();
@@ -330,29 +352,31 @@ public:
             return nullptr;
         }
 
-        while ((*cursor) == '*' || (*cursor) == '/' || (*cursor) == '%')
+        while (peek() == '*' || peek() == '/' || peek() == '%')
         {
+            // TODO this would probably be better as a const char*. Then I could use switch statements instead of if else too.
+            string op = consume_op();
             ExprPtr b = parse_unit();
             if (b == nullptr)
             {
                 return nullptr;
             }
 
-            if (consume("*"))
+            if (op == "*")
             {
                 a = std::make_shared<Mul>(a, b);
             }
-            else if (consume("/"))
+            else if (op == "/")
             {
                 a = std::make_shared<Div>(a, b);
             }
-            else if (consume("%"))
+            else if (op == "%")
             {
                 a = std::make_shared<Mod>(a, b);
             }
             else
             {
-                return nullptr;
+                assert(0);
             }
         }
         return a;
@@ -367,19 +391,20 @@ public:
             return nullptr;
         }
 
-        while ((*cursor) == '+' || (*cursor) == '-')
+        while (peek() == '+' || peek() == '-')
         {
+            string op = consume_op();
             ExprPtr b = parse_product();
             if (b == nullptr)
             {
                 return nullptr;
             }
 
-            if (consume("+"))
+            if (op == "+")
             {
                 a = std::make_shared<Add>(a, b);
             }
-            else if (consume("-"))
+            else if (op == "-")
             {
                 a = std::make_shared<Sub>(a, b);
             }
@@ -417,19 +442,20 @@ public:
             return nullptr;
         }
 
-        while ((*cursor) == '<' || (*cursor) == '>' || (*cursor) == '=')
+        while (peek() == '<' || peek() == '>' || peek() == '=')
         {
+            string op = consume_op();
             ExprPtr b = parse_arithmetic();
             if (b == nullptr)
             {
                 return nullptr;
             }
 
-            if (consume("<="))
+            if (op == "<=")
             {
                 a = std::make_shared<LE>(a, b);
             }
-            else if (consume(">="))
+            else if (op == ">=")
             {
                 a = std::make_shared<GE>(a, b);
             }
