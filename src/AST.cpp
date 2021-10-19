@@ -91,4 +91,12 @@ void Broadcast::accept(Visitor *v) const {
     v->visit(this);
 }
 
+void Fold::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void CanProve::accept(Visitor *v) const {
+    v->visit(this);
+}
+
 }  // namsepace AST

@@ -1,8 +1,8 @@
 #include "Parser.h"
+#include "ConstantCheck.h"
 
 #include <fstream>
 #include <stdio.h>
-#include <string.h>
 #include <memory>
 #include <map>
 
@@ -14,20 +14,14 @@ using namespace AST;
 
 /**
  * TODO:
- * - fix parser
  * - overflows
- * - IRMatcher::Overflow <= match for this case specifically, will deal with Call::<blah> later
- * - handle is_const, can_prove
- * - check whitespaces work properly
- * - remove Halide dependency
- *      - create Expr class
+ * - IRMatcher::Overflow <- will discuss in meeting
+ * - handle is_const, is_float <- will discuss in meeting later
+ * - is_max_value, is_min_value
+ * - intrin
+ * - add constant checking
  */
 
-void debug(std::string s){
-    std::cout << s << std::endl;
-}
-
-// TODO: how portable is this?
 size_t get_filesize(const std::string &filename)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
@@ -37,16 +31,28 @@ size_t get_filesize(const std::string &filename)
     return filesize;
 }
 
-// TODO: I don't like this solution very much, also probably missing a significant number of possible types
-// switch to flags, refer to CodeGen_ARM ~l200
-const std::map<std::string, NumericType> typeStrings{
+const std::map<std::string, NumericType, std::greater<std::string>> typeStrings{
     {"uint", NumericType::UINT},
     {"int", NumericType::INT},
     {"float", NumericType::FLOAT},
-    {"no_overflow", NumericType::NO_OVERFLOW},
+    {"no_overflow_scalar_int", NumericType::NO_OVERFLOW_SCALAR_INT},
     {"no_overflow_int", NumericType::NO_OVERFLOW_INT},
+    {"no_overflow", NumericType::NO_OVERFLOW},
     {"bool", NumericType::BOOL},
-    {"no_overflow_scalar_int", NumericType::NO_OVERFLOW_SCALAR_INT}};
+    {"operand_uint", NumericType::OPERAND_UINT},
+    {"operand_int", NumericType::OPERAND_INT},
+    {"operand_float", NumericType::OPERAND_FLOAT},
+    {"operand_no_overflow_scalar_int", NumericType::OPERAND_NO_OVERFLOW_SCALAR_INT},
+    {"operand_no_overflow_int", NumericType::OPERAND_NO_OVERFLOW_INT},
+    {"operand_no_overflow", NumericType::OPERAND_NO_OVERFLOW},
+    {"allowed_overflow", NumericType::ALLOWED_OVERFLOW}};
+
+void report_error(const char **cursor, const char *debug_info)
+{
+    printf(debug_info);
+    printf("Parsing failed at %s\n", *cursor);
+    abort();
+}
 
 bool is_whitespace(char c)
 {
@@ -96,15 +102,6 @@ bool check(const char **cursor, const char *end, const char *pattern)
     return consume(&tmp_cursor, end, pattern);
 }
 
-/**
- * For debugging purposes, it prints the remaining rules to parse. 
- */
-void debug_remainder(const char **cursor, const char *end)
-{
-    string line(*cursor);
-    std::cerr << line << std::endl;
-}
-
 string consume_token(const char **cursor, const char *end)
 {
     size_t sz = 0;
@@ -123,7 +120,8 @@ string consume_token(const char **cursor, const char *end)
 string consume_op(const char **cursor, const char *end)
 {
     size_t sz = 0;
-    while ((*cursor)[sz] == '+' || (*cursor)[sz] == '-' || (*cursor)[sz] == '*' || (*cursor)[sz] == '%' || (*cursor)[sz] == '/' || (*cursor)[sz] == '>' || (*cursor)[sz] == '<' || (*cursor)[sz] == '=' ){
+    while ((*cursor)[sz] == '+' || (*cursor)[sz] == '-' || (*cursor)[sz] == '*' || (*cursor)[sz] == '%' || (*cursor)[sz] == '/' || (*cursor)[sz] == '>' || (*cursor)[sz] == '<' || (*cursor)[sz] == '=' || (*cursor)[sz] == '!')
+    {
         sz++;
     }
     string result{*cursor, sz};
@@ -157,48 +155,14 @@ int64_t consume_int(const char **cursor, const char *end)
     return negative ? -n : n;
 }
 
-/* 
-Expr consume_float(const char **cursor, const char *end)
-{
-    bool negative = consume(cursor, end, "-");
-    int64_t integer_part = consume_int(cursor, end);
-    int64_t fractional_part = 0;
-    int64_t denom = 1;
-    if (consume(cursor, end, "."))
-    {
-        while (*cursor < end && **cursor >= '0' && **cursor <= '9')
-        {
-            denom *= 10;
-            fractional_part *= 10;
-            fractional_part += (**cursor - '0');
-            (*cursor)++;
-        }
-    }
-    double d = integer_part + double(fractional_part) / denom;
-    if (negative)
-    {
-        d = -d;
-    }
-    if (consume(cursor, end, "h"))
-    {
-        return Halide::Internal::make_const(Float(16), d);
-    }
-    else if (consume(cursor, end, "f"))
-    {
-        return Halide::Internal::make_const(Float(32), d);
-    }
-    else
-    {
-        return Halide::Internal::make_const(Float(64), d);
-    }
-}
-*/
-
 class Parser
 {
     const char *cursor, *end;
-    // std::vector<std::pair<Expr, int>> stack;
-    // map<string, Type> var_types;
+
+    void report_error(const char *debug_info)
+    {
+        ::report_error(&cursor, debug_info);
+    }
 
     void consume_whitespace()
     {
@@ -220,11 +184,6 @@ class Parser
         return ::consume_int(&cursor, end);
     }
 
-    // Expr consume_float()
-    // {
-    //     return ::consume_float(&cursor, end);
-    // }
-
     string consume_token()
     {
         return ::consume_token(&cursor, end);
@@ -245,12 +204,22 @@ class Parser
         return *cursor;
     }
 
-public:
+    bool check(const char *pattern)
+    {
+        return ::check(&cursor, end, pattern);
+    }
+
     // Unit ::= Var | ConstantVar | ConstantInt | Call | "(" Expr ")"
     ExprPtr parse_unit()
     {
-        // Assume we can only get a ConstantVar, Var, or ConstantInt here
-        if (peek() == 'c')
+        ExprPtr call = parse_call();
+        if (call != nullptr)
+        {
+            return call;
+        }
+
+        // TODO: should probably have a better solution for "lanes" here
+        if (peek() == 'c' || check("lanes"))
         {
             // This is a ConstantVar
             std::string name = consume_name();
@@ -276,12 +245,12 @@ public:
         }
         else
         {
-            return parse_call();
+            report_error("parse_unit() could not find a variable, int, call, or parenthesised expr.");
+            return nullptr;
         }
     }
 
     // Call ::= <function name>'(' Expr (',' Expr)* ')'
-    // TODO add nullptr checks
     ExprPtr parse_call()
     {
         if (consume("min("))
@@ -318,6 +287,17 @@ public:
             expect(",");
             ExprPtr lanes = parse_expr();
             expect(")");
+
+            // TODO this should not be here
+            ConstantCheck cc;
+            bool const_lanes = cc.is_const(lanes);
+            if (!const_lanes)
+            {
+                std::cerr << "Ramp expects lanes to be constant." << std::endl;
+                assert(false);
+                exit(1);
+            }
+
             return std::make_shared<Ramp>(base, stride, lanes);
         }
         if (consume("broadcast("))
@@ -326,6 +306,17 @@ public:
             expect(",");
             ExprPtr lanes = parse_expr();
             expect(")");
+
+            // TODO this should not be here
+            ConstantCheck cc;
+            bool const_lanes = cc.is_const(lanes);
+            if (!const_lanes)
+            {
+                std::cerr << "Broadcast expects lanes to be constant." << std::endl;
+                assert(false);
+                exit(1);
+            }
+
             return std::make_shared<Broadcast>(val, lanes);
         }
         if (consume("fold("))
@@ -347,20 +338,12 @@ public:
     ExprPtr parse_product()
     {
         ExprPtr a = parse_unit();
-        if (a == nullptr)
-        {
-            return nullptr;
-        }
 
         while (peek() == '*' || peek() == '/' || peek() == '%')
         {
             // TODO this would probably be better as a const char*. Then I could use switch statements instead of if else too.
             string op = consume_op();
             ExprPtr b = parse_unit();
-            if (b == nullptr)
-            {
-                return nullptr;
-            }
 
             if (op == "*")
             {
@@ -376,7 +359,7 @@ public:
             }
             else
             {
-                assert(0);
+                report_error("parse_product() could not find matching op.");
             }
         }
         return a;
@@ -386,19 +369,11 @@ public:
     ExprPtr parse_arithmetic()
     {
         ExprPtr a = parse_product();
-        if (a == nullptr)
-        {
-            return nullptr;
-        }
 
         while (peek() == '+' || peek() == '-')
         {
             string op = consume_op();
             ExprPtr b = parse_product();
-            if (b == nullptr)
-            {
-                return nullptr;
-            }
 
             if (op == "+")
             {
@@ -410,7 +385,7 @@ public:
             }
             else
             {
-                return nullptr;
+                report_error("parse_arithmetic() could not find matching op.");
             }
         }
         return a;
@@ -419,37 +394,31 @@ public:
     // BoolUnit ::= '!'? Predicate
     ExprPtr parse_boolunit()
     {
-        if (consume("!"))
+        if (!check("!=") && consume("!"))
         {
             ExprPtr a = parse_pred();
-            if (a == nullptr)
-            {
-                return nullptr;
-            }
 
             return std::make_shared<Not>(a);
+        }
+
+        if (consume("-"))
+        {
+            ExprPtr a = std::make_shared<ConstantInt>(0);
+            ExprPtr b = parse_pred();
+            return std::make_shared<Sub>(a, b);
         }
 
         return parse_pred();
     }
 
-    // Predicate ::= Arithmetic ( ('<' | '>' | '<=' | '>='| '==') Arithmetic)?
+    // Predicate ::= Arithmetic ( ('<' | '>' | '<=' | '>='| '==' | '!=') Arithmetic)?
     ExprPtr parse_pred()
     {
         ExprPtr a = parse_arithmetic();
-        if (a == nullptr)
-        {
-            return nullptr;
-        }
-
-        while (peek() == '<' || peek() == '>' || peek() == '=')
+        while (peek() == '<' || peek() == '>' || peek() == '=' || peek() == '!')
         {
             string op = consume_op();
             ExprPtr b = parse_arithmetic();
-            if (b == nullptr)
-            {
-                return nullptr;
-            }
 
             if (op == "<=")
             {
@@ -459,25 +428,25 @@ public:
             {
                 a = std::make_shared<GE>(a, b);
             }
-            else if (consume("<"))
+            else if (op == "<")
             {
                 a = std::make_shared<LT>(a, b);
             }
-            else if (consume(">"))
+            else if (op == ">")
             {
                 a = std::make_shared<GT>(a, b);
             }
-            else if (consume("=="))
+            else if (op == "==")
             {
                 a = std::make_shared<EQ>(a, b);
             }
-            else if (consume("!="))
+            else if (op == "!=")
             {
                 a = std::make_shared<NE>(a, b);
             }
             else
             {
-                return nullptr;
+                report_error("parse_pred() could not find matching op.");
             }
         }
         return a;
@@ -487,18 +456,10 @@ public:
     ExprPtr parse_conjunction()
     {
         ExprPtr a = parse_boolunit();
-        if (a == nullptr)
-        {
-            return nullptr;
-        }
 
         while (consume("&&"))
         {
             ExprPtr b = parse_boolunit();
-            if (b == nullptr)
-            {
-                return nullptr;
-            }
             a = std::make_shared<And>(a, b);
         }
         return a;
@@ -508,41 +469,22 @@ public:
     ExprPtr parse_expr()
     {
         ExprPtr a = parse_conjunction();
-        if (a == nullptr)
-        {
-            return nullptr;
-        }
 
         while (consume("||"))
         {
             ExprPtr b = parse_conjunction();
-            if (b == nullptr)
-            {
-                return nullptr;
-            }
             a = std::make_shared<Or>(a, b);
         }
         return a;
     }
 
-    // TODO: this needs to parse much more finely
     Rule *parse_r()
     {
         // TODO Pointer or reference?
-
         expect("rewrite(");
         ExprPtr lhs = parse_expr();
         expect(",");
         ExprPtr rhs = parse_expr();
-        // if (lhs.type().is_bool())
-        // {
-        //     rhs = reparse_as_bool(rhs);
-        // }
-        // if (rhs.type().is_bool())
-        // {
-        //     lhs = reparse_as_bool(lhs);
-        // }
-        // Expr predicate = Halide::Internal::const_true();
         ExprPtr pred = nullptr;
         if (consume(","))
         {
@@ -561,13 +503,12 @@ public:
                 return typePair.second;
             }
         }
-        return NumericType::INVALID;
+        report_error("parse_type() found no type matches.");
     }
 
-    std::tuple<bool, std::vector<NumericType>> parse_types()
+    uint16_t parse_types()
     {
         bool allowed = true;
-        std::vector<NumericType> types;
 
         if (consume("!"))
         {
@@ -575,31 +516,24 @@ public:
             expect("(");
         }
 
-        // is there a more efficient way to do this?
-        types.push_back(parse_type());
-        while (consume(","))
+        uint16_t types = (uint16_t)parse_type();
+        // TODO this isnt great
+        while (!check(",rewrite") && !check(",(") && consume(","))
         {
             NumericType t = parse_type();
-            if (t != NumericType::INVALID)
-            {
-                types.push_back(t);
-            }
+            types |= (uint16_t)t;
         }
 
         if (!allowed)
         {
+            types = ~types;
             expect(")");
         }
-        else
-        {
-            // TODO I don't like this
-            // Oops we consumed an extra comma, add it back
-            *(cursor)--;
-        }
 
-        return std::tuple<bool, std::vector<NumericType>>(allowed, types);
+        return types;
     }
 
+public:
     std::vector<Rule *> parse_rules()
     {
         std::vector<Rule *> rules;
@@ -619,39 +553,26 @@ public:
                 }
                 expect(")");
                 expect("|-");
-                std::tuple<bool, std::vector<NumericType>> types_tuple = parse_types();
+
+                uint16_t types = parse_types();
 
                 for (const auto rule : inner_rules)
                 {
-                    if (std::get<0>(types_tuple))
-                    { // these are allowed types
-                        rule->set_allowed_types(std::get<1>(types_tuple));
-                    }
-                    else
-                    {
-                        rule->set_disallowed_types(std::get<1>(types_tuple));
-                    }
+                    rule->set_types(types);
                     rules.push_back(rule);
                 }
             }
             else
             {
-                Rule *r(parse_r()); // TODO I need a lot of error checking oops
+                Rule *r(parse_r());
                 if (consume("|-"))
                 {
-                    // TODO this could be more modular
-
-                    std::tuple<bool, std::vector<NumericType>> types_tuple = parse_types();
-                    bool allowed = std::get<0>(types_tuple);
-                    std::vector<NumericType> types = std::get<1>(types_tuple);
-                    if (allowed)
-                    { // these are allowed types
-                        r->set_allowed_types(types);
-                    }
-                    else
-                    {
-                        r->set_disallowed_types(types);
-                    }
+                    uint16_t types = parse_types();
+                    r->set_types(types);
+                }
+                else
+                {
+                    r->set_types(UINT16_MAX); // set all bits to 1
                 }
                 rules.push_back(r);
             }
@@ -703,13 +624,3 @@ std::vector<Rule *> parse_rules_from_file(const std::string &filename)
     std::vector<Rule *> rules = parser.parse_rules();
     return rules;
 }
-
-// int main(int argc, char *argv[]) {
-//     if (argc != 2) {
-//         std::cout << "Usage: ./bin/Parser <input filename>\n";
-//         return 1;
-//     }
-//     std::string filename = argv[1];
-//     std::vector<Rule *> rules = parse_rules_from_file(filename);
-//     return 0;
-// }

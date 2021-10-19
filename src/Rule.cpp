@@ -1,15 +1,23 @@
 #include "Rule.h"
 
-void Rule::set_allowed_types(std::vector<NumericType> _allowed_types){
-    allowed_types = _allowed_types;
-}
-std::vector<NumericType> Rule::get_allowed_types(){
-    return allowed_types;
+void Rule::add_type(bool allowed, uint16_t type)
+{
+    if (!allowed)
+    {
+        types &= ~type;
+    }
+    else
+    {
+        types |= type;
+    }
 }
 
-void Rule::set_disallowed_types(std::vector<NumericType> _disallowed_types){
-    disallowed_types = _disallowed_types;
+void Rule::set_types(uint16_t _types)
+{
+    types = _types;
 }
-std::vector<NumericType> Rule::get_disallowed_types(){
-    return disallowed_types;
+
+uint16_t Rule::get_types()
+{
+    return types;
 }
