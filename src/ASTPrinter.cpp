@@ -1,4 +1,5 @@
 #include "ASTPrinter.h"
+#include "AST.h"
 
 namespace AST {
 
@@ -152,7 +153,7 @@ void Printer::visit(const Call *expr) {
         arg->accept(this);
         index++;
         if (index != size) {
-            stream << ",";
+            stream << ", ";
         }
     }
     stream << ")";

@@ -343,10 +343,10 @@ struct CanProve final : public Expr {
 };
 
 struct Call final : public Expr {
-    std::vector<const ExprPtr> args;
+    const std::vector<ExprPtr> args;
     const std::string name;
 
-    Call(const std::vector<const ExprPtr> &_args, const std::string &_name)
+    Call(const std::vector<ExprPtr> &_args, const std::string &_name)
       : Expr(NodeType::Call), args(_args), name(_name) {
     }
 

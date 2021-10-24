@@ -1,7 +1,7 @@
 #include "Visitor.h"
+#include "AST.h"
 
 namespace AST {
-
 
 void Visitor::visit(const ConstantInt *expr) {
 

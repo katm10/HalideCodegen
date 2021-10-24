@@ -15,4 +15,9 @@ int main(void) {
     std::cout << "AST printed as: ";
     print(std::cout, times_c0);
     std::cout << "\n";
+
+    const std::vector<AST::ExprPtr> args = {one, a};
+    auto call = std::make_shared<AST::Call>(args, "foo");
+    print(std::cout, call);
+    std::cout << "\n";
 }

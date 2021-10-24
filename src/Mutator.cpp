@@ -1,4 +1,5 @@
 #include "Mutator.h"
+#include "AST.h"
 
 namespace AST {
 
@@ -118,7 +119,7 @@ ExprPtr Mutator::visit(const CanProve *expr) {
 
 ExprPtr Mutator::visit(const Call *expr) {
     const size_t size = expr->args.size();
-    std::vector<const ExprPtr> args;
+    std::vector<ExprPtr> args;
     for (size_t i = 0; i < size; i++) {
         const auto &arg = expr->args[i];
         args.emplace_back(arg->mutate(this));
