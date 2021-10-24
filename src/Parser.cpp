@@ -14,9 +14,12 @@ using namespace AST;
 
 /**
  * TODO:
- * - IRMatcher::Overflow <- ignore
- * - overflows(thing), is_const, is_float, is_max_value, is_min_value <- use generic Call AST node
- * - intrin <- ignore for now
+ * - overflows
+ * - IRMatcher::Overflow <- will discuss in meeting
+ * - handle is_const, is_float <- will discuss in meeting later
+ * - is_max_value, is_min_value
+ * - intrin
+ * - add constant checking
  */
 
 size_t get_filesize(const std::string &filename)
