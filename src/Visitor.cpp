@@ -119,4 +119,10 @@ void Visitor::visit(const CanProve *expr) {
     expr->value->accept(this);
 }
 
+void Visitor::visit(const Call *expr) {
+    for (const auto &arg : expr->args) {
+        arg->accept(this);
+    }
+}
+
 }  // namespace AST
