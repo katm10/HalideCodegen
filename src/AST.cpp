@@ -1,5 +1,7 @@
 #include "AST.h"
+#include "Mutator.h"
 #include "Visitor.h"
+
 
 namespace AST {
 
@@ -97,6 +99,110 @@ void Fold::accept(Visitor *v) const {
 
 void CanProve::accept(Visitor *v) const {
     v->visit(this);
+}
+
+void Call::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+ExprPtr ConstantInt::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr ConstantVar::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Var::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Add::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Sub::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Mod::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Mul::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Div::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Min::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Max::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr EQ::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr NE::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr LT::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr LE::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr GT::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr GE::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr And::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Or::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Not::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Select::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Ramp::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Broadcast::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Fold::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr CanProve::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr Call::mutate(Mutator *m) const {
+    return m->visit(this);
 }
 
 }  // namsepace AST

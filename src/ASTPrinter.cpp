@@ -1,4 +1,5 @@
 #include "ASTPrinter.h"
+#include "AST.h"
 
 namespace AST {
 
@@ -141,6 +142,20 @@ void Printer::visit(const Fold *expr) {
 void Printer::visit(const CanProve *expr) {
     stream << "can_prove(";
     expr->value->accept(this);
+    stream << ")";
+}
+
+void Printer::visit(const Call *expr) {
+    stream << expr->name << "(";
+    const size_t size = expr->args.size();
+    size_t index = 0;
+    for (const auto &arg : expr->args) {
+        arg->accept(this);
+        index++;
+        if (index != size) {
+            stream << ", ";
+        }
+    }
     stream << ")";
 }
 

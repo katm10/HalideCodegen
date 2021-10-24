@@ -30,6 +30,7 @@ struct Visitor {
 
     virtual void visit(const Fold *);
     virtual void visit(const CanProve *);
+    virtual void visit(const Call *);
 };
 
 }  // namsepace AST

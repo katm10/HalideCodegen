@@ -15,20 +15,12 @@ int main(int argc, char *argv[])
     std::string filename = argv[1];
     std::vector<Rule *> rules = parse_rules_from_file(filename);
 
-    for (auto rule : rules)
-    {
-        std::cout << "Rule:";
-        print(std::cout, rule->before);
-        std::cout << ", ";
-        print(std::cout, rule->after);
+    std::cout << "AST printed as: ";
+    print(std::cout, times_c0);
+    std::cout << "\n";
 
-        if (rule->pred != nullptr)
-        {
-            std::cout << ", ";
-            print(std::cout, rule->pred);
-        }
-        std::cout << std::endl;
-
-        std::cout << "Allowed types: " << rule->types << std::endl;
-    }
+    const std::vector<AST::ExprPtr> args = {one, a};
+    auto call = std::make_shared<AST::Call>(args, "foo");
+    print(std::cout, call);
+    std::cout << "\n";
 }
