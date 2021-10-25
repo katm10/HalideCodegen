@@ -8,7 +8,7 @@ rewrite((u + y*x) - z*y, u + y*(x - z)),
 rewrite((u + y*x) - y*z, u + y*(x - z)),
 // here is another comment
 
-rewrite((u - x*y) - z*y, u - (x + z)*y),
+rewrite((u - x*y) - z*y, function_call(u, x+y) - (x + z)*y),
 rewrite((u - x*y) - y*z, u - (x + z)*y),
 rewrite((u - y*x) - z*y, u - y*(x + z)),
 rewrite((u - y*x) - y*z, u - y*(x + z)),

@@ -15,7 +15,6 @@ using namespace AST;
 /**
  * TODO:
  * - IRMatcher::Overflow <- ignore
- * - overflows(thing), is_const, is_float, is_max_value, is_min_value <- use generic Call AST node
  * - intrin <- ignore for now
  */
 
@@ -328,6 +327,19 @@ class Parser
             expect(",this)"); // Do we ever expect another simplifier?
             return std::make_shared<CanProve>(val);
         }
+        const char* tmp = cursor;
+        string func_name = consume_token();
+        if (func_name.size() > 1 && consume("(")){
+            // TODO verify this will always be a function call
+            std::vector<ExprPtr> args;
+            args.push_back(parse_expr());
+            while (consume(",")){
+                args.push_back(parse_expr());
+            }
+            expect(")");
+            return std::make_shared<Call>(args, func_name);
+        }
+        cursor = tmp;
         return nullptr;
     }
 
