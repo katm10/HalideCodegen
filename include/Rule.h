@@ -7,27 +7,31 @@
 
 using namespace AST;
 
-enum NumericType {
-    UINT,
-    INT,
-    FLOAT,
-    NO_OVERFLOW,
-    NO_OVERFLOW_INT,
-    BOOL, 
-    NO_OVERFLOW_SCALAR_INT,
-    INVALID
-    // TODO almost certainly missing a lot here
+enum class NumericType : uint16_t {
+    // INVALID = 1 << 0,
+    // ANY = 1 << 1,
+    UINT = 1 << 2,
+    INT = 1 << 3,
+    FLOAT = 1 << 4,
+    NO_OVERFLOW_SCALAR_INT = 1 << 5,
+    NO_OVERFLOW_INT = 1 << 6,
+    NO_OVERFLOW = 1 << 7,
+    BOOL = 1 << 8,
+    OPERAND_UINT = 1 << 9,
+    OPERAND_INT = 1 << 10,
+    OPERAND_FLOAT = 1 << 11,
+    OPERAND_NO_OVERFLOW_SCALAR_INT = 1 << 12,
+    OPERAND_NO_OVERFLOW_INT = 1 << 13,
+    OPERAND_NO_OVERFLOW = 1 << 14,
+    ALLOWED_OVERFLOW = 1 << 15
 };
 
 class Rule {
 public:
-    // TODO: this should not all be public
     const ExprPtr before;
     const ExprPtr after;
     const ExprPtr pred;
-    // TODO fix this
-    std::vector<NumericType> allowed_types;
-    std::vector<NumericType> disallowed_types;
+    uint16_t types = 0;
 
     ~Rule() = default;
     Rule(){}
@@ -37,11 +41,9 @@ public:
     Rule(const ExprPtr _before, const ExprPtr _after, const ExprPtr _pred)
         : before(_before), after(_after), pred(_pred) {}
 
-    void set_allowed_types(std::vector<NumericType> _allowed_types);
-    std::vector<NumericType> get_allowed_types();
-
-    void set_disallowed_types(std::vector<NumericType> _disallowed_types);
-    std::vector<NumericType> get_disallowed_types();
+    void add_type(bool allowed, uint16_t type);
+    void set_types(uint16_t _types);
+    uint16_t get_types();
 };
 
 #endif

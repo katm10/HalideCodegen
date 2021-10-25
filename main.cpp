@@ -27,7 +27,8 @@ int main(int argc, char *argv[])
             std::cout << ", ";
             print(std::cout, rule->pred);
         }
-
         std::cout << std::endl;
+
+        std::cout << "Allowed types: " << rule->types << std::endl;
     }
 }
