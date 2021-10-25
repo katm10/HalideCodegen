@@ -67,6 +67,8 @@ struct Expr {
     }
 };
 
+typedef std::shared_ptr<Expr> ExprPtr;
+
 struct ConstantInt final : public Expr {
     const int64_t value;
     ConstantInt(int64_t _value)
@@ -105,183 +107,163 @@ struct UnaryOp : public Expr {
 /*
  * Variable types
  */
-    struct ConstantVar final : public VariableBase<ConstantVar>
-    {
-        ConstantVar(const std::string &_name)
-            : VariableBase(_name)
-        {
-        }
+struct ConstantVar final : public VariableBase<ConstantVar> {
+    ConstantVar(const std::string &_name)
+      : VariableBase(_name) {
+    }
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::ConstantVar;
 };
 
-    struct Var final : public VariableBase<Var>
-    {
-        Var(const std::string &_name)
-            : VariableBase(_name)
-        {
-        }
+struct Var final : public VariableBase<Var> {
+    Var(const std::string &_name)
+      : VariableBase(_name) {
+    }
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Var;
 };
 
-    /*
+/*
  * Binary Operation types
  */
-    struct Add final : public BinaryOp<Add>
-    {
-        Add(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Add final : public BinaryOp<Add> {
+    Add(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Add;
 };
 
-    struct Sub final : public BinaryOp<Sub>
-    {
-        Sub(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Sub final : public BinaryOp<Sub> {
+    Sub(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Sub;
 };
 
-    struct Mul final : public BinaryOp<Mul>
-    {
-        Mul(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Mul final : public BinaryOp<Mul> {
+    Mul(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Mul;
 };
 
-    struct Div final : public BinaryOp<Div>
-    {
-        Div(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Div final : public BinaryOp<Div> {
+    Div(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Div;
 };
 
-    struct Mod final : public BinaryOp<Mod>
-    {
-        Mod(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Mod final : public BinaryOp<Mod> {
+    Mod(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Mod;
 };
 
-    struct Min final : public BinaryOp<Min>
-    {
-        Min(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Min final : public BinaryOp<Min> {
+    Min(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Min;
 };
 
-    struct Max final : public BinaryOp<Max>
-    {
-        Max(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Max final : public BinaryOp<Max> {
+    Max(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Max;
 };
 
-    struct EQ final : public BinaryOp<EQ>
-    {
-        EQ(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct EQ final : public BinaryOp<EQ> {
+    EQ(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::EQ;
 };
 
-    struct NE final : public BinaryOp<NE>
-    {
-        NE(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct NE final : public BinaryOp<NE> {
+    NE(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::NE;
 };
 
-    struct LT final : public BinaryOp<LT>
-    {
-        LT(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct LT final : public BinaryOp<LT> {
+    LT(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::LT;
 };
 
-    struct LE final : public BinaryOp<LE>
-    {
-        LE(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct LE final : public BinaryOp<LE> {
+    LE(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::LE;
 };
 
-    struct GT final : public BinaryOp<GT>
-    {
-        GT(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct GT final : public BinaryOp<GT> {
+    GT(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::GT;
 };
 
-    struct GE final : public BinaryOp<GE>
-    {
-        GE(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct GE final : public BinaryOp<GE> {
+    GE(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::GE;
 };
 
-    struct And final : public BinaryOp<And>
-    {
-        And(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct And final : public BinaryOp<And> {
+    And(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::And;
 };
 
-    struct Or final : public BinaryOp<Or>
-    {
-        Or(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
+struct Or final : public BinaryOp<Or> {
+    Or(ExprPtr a, ExprPtr b) : BinaryOp(a, b) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Or;
 };
 
-    /*
+/*
  * Unary Operation types
  */
-    struct Not final : public UnaryOp<Not>
-    {
-        Not(ExprPtr a) : UnaryOp(a) {}
+struct Not final : public UnaryOp<Not> {
+    Not(ExprPtr a) : UnaryOp(a) {}
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Not;
 };
 
-    // TODO: should we have a Negate? Halide makes Negate(op) -> 0 - op
+// TODO: should we have a Negate? Halide makes Negate(op) -> 0 - op
 
-    /*
+/*
  * Special types
  */
  struct Select final : public Expr {
@@ -331,30 +313,27 @@ struct Broadcast final : public Expr {
             assert(false);
             exit(1);
         }
+    }
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Broadcast;
 };
 
-    struct Ramp final : public Expr
-    {
-        const ExprPtr base, stride;
-        const ExprPtr lanes; // restrict this to ConstantInt or ConstantVar
+struct Fold final : public Expr {
+    const ExprPtr value;
 
-        Ramp(ExprPtr _base, ExprPtr _stride, ExprPtr _lanes)
-            : Expr(NodeType::Ramp), base(std::move(_base)), stride(std::move(_stride)), lanes(std::move(_lanes))
-        {}
+    Fold(ExprPtr _value)
+      : Expr(NodeType::Fold), value(std::move(_value)) {
+    }
 
     void accept(Visitor *v) const override;
     ExprPtr mutate(Mutator *m) const override;
     static const NodeType _node_type = NodeType::Fold;
 };
 
-    struct Broadcast final : public Expr
-    {
-        const ExprPtr value;
-        const ExprPtr lanes; // restrict this to ConstantInt or ConstantVar
+struct CanProve final : public Expr {
+    const ExprPtr value;
 
     CanProve(ExprPtr _value)
       : Expr(NodeType::CanProve), value(std::move(_value)) {
