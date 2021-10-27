@@ -50,4 +50,6 @@ struct Printer final : public Visitor {
 
 void print(std::ostream &os, ExprPtr expr);
 
+std::string pretty_print(const ExprPtr &expr);
+
 }  // namsepace AST

@@ -1,5 +1,6 @@
 #include "ASTPrinter.h"
 #include "AST.h"
+#include <sstream>
 
 namespace AST {
 
@@ -162,6 +163,13 @@ void Printer::visit(const Call *expr) {
 void print(std::ostream &os, ExprPtr expr) {
     Printer printer(os);
     expr->accept(&printer);
+}
+
+std::string pretty_print(const ExprPtr &expr) {
+    std::ostringstream os;
+    Printer printer(os);
+    expr->accept(&printer);
+    return os.str();
 }
 
 }  // namespace AST
