@@ -1,9 +1,10 @@
-#ifndef TRS_CODEGEN_LANGUAGE_H
-#define TRS_CODEGEN_LANGUAGE_H
+#pragma once
 
-
+#include "CFIRPrinter.h"
+#include <algorithm>
 #include <memory>
 #include <vector>
+#include <string>
 
 using std::make_shared;
 using std::shared_ptr;
@@ -103,7 +104,7 @@ struct TypeCheck : public Node {
 
     void print(std::ostream &stream, std::string indent) const override {
         const std::string type_name = get_type_name();
-        std::string str_cond = Printer::make_type_checker_condition(current_name, type_name, output_name);
+        std::string str_cond = make_type_checker_condition(current_name, type_name, output_name);
         stream << indent << "if (" << str_cond << ") {\n";
         for (const auto &child : children) {
             child->print(stream, indent + "  ");
@@ -291,4 +292,3 @@ struct Sequence final : public Node {
 
 }  // namespace CFIR
 
-#endif

@@ -1,6 +1,7 @@
 #include "AST.h"
 #include "ASTPrinter.h"
 #include "CFIR.h"
+#include "CFIRPrinter.h"
 #include "Rule.h"
 #include "Parser.h"
 #include <iostream>
@@ -36,7 +37,7 @@ inline shared_ptr<Node> handle_bin_op(shared_ptr<Node> &root, const ExprPtr &exp
     const BinOp *op = expr->as<BinOp>();
     assert(op != nullptr);
 
-    std::string typed_name = Printer::make_new_unique_name();
+    std::string typed_name = make_new_unique_name();
     // Make type check node in tree.
     shared_ptr<LBinOp> node = make_shared<LBinOp>(name, typed_name);
     node = root->get_child(node);   // Possible replace if it already exists.
@@ -54,13 +55,13 @@ shared_ptr<Node> handle_variable(shared_ptr<Node> root, const Var *var, const st
     auto iter = scope.find(var->name);
     if (iter == scope.end())
     {
-        scope.insert(std::make_pair(var->name, VarInfo(var->node_type, name)));
+        scope.insert(std::make_pair(var->name, name));
         // Insert into scope and don't worry about it.
         return root;
     }
     else
     {
-        std::string existing_name = iter->second.name;
+        std::string existing_name = iter->second;
         shared_ptr<CFIR::Equality> equal = make_shared<CFIR::Equality>(existing_name, name);
         shared_ptr<CFIR::Equality> pequal = root->get_child(equal); // Don't duplicate if possible.
         return pequal;
@@ -73,7 +74,7 @@ shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar 
     auto iter = scope.find(var->name);
     if (iter == scope.end())
     {
-        scope.insert(std::make_pair(var->name, VarInfo(var->node_type, name)));
+        scope.insert(std::make_pair(var->name, name));
 
         // TODO: change this to is_const, I am using is_const_v for testing purposes
         const std::string condition = "is_const_v(" + name + ")";
@@ -82,7 +83,7 @@ shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar 
     }
     else
     {
-        std::string existing_name = iter->second.name;
+        std::string existing_name = iter->second;
         shared_ptr<CFIR::Equality> equal = make_shared<CFIR::Equality>(existing_name, name);
         shared_ptr<CFIR::Equality> pequal = root->get_child(equal); // Don't duplicate if possible.
         return pequal;
@@ -105,7 +106,7 @@ inline shared_ptr<Node> handle_select(shared_ptr<Node> &root, const ExprPtr &exp
     const Select *op = expr->as<Select>();
     assert(op != nullptr); // We failed to identify the Expr properly.
 
-    std::string typed_name = Printer::make_new_unique_name();
+    std::string typed_name = make_new_unique_name();
 
     shared_ptr<CFIR::Select> node = make_shared<CFIR::Select>(name, typed_name);
     node = root->get_child(node);   // Possible replace if it already exists.
@@ -132,7 +133,7 @@ inline shared_ptr<Node> handle_broadcast(shared_ptr<Node> &root, const ExprPtr &
 {
     const Broadcast *op = expr->as<Broadcast>();
     assert(op);
-    std::string typed_name = Printer::make_new_unique_name();
+    std::string typed_name = make_new_unique_name();
 
     shared_ptr<CFIR::Broadcast> node = make_shared<CFIR::Broadcast>(name, typed_name);
     node = root->get_child(node);
@@ -159,7 +160,7 @@ inline shared_ptr<Node> handle_ramp(shared_ptr<Node> &root, const ExprPtr &expr,
 {
     const Ramp *op = expr->as<Ramp>();
     assert(op);
-    std::string typed_name = Printer::make_new_unique_name();
+    std::string typed_name = make_new_unique_name();
 
     shared_ptr<CFIR::Ramp> node = make_shared<CFIR::Ramp>(name, typed_name);
     node = root->get_child(node);
@@ -179,7 +180,7 @@ inline shared_ptr<Node> handle_not(shared_ptr<Node> &root, const ExprPtr &expr, 
 {
     const Not *op = expr->as<Not>();
     assert(op);
-    std::string typed_name = Printer::make_new_unique_name();
+    std::string typed_name = make_new_unique_name();
     shared_ptr<CFIR::Not> node = make_shared<CFIR::Not>(name, typed_name);
     node = root->get_child(node);
     assert(node);
@@ -190,7 +191,7 @@ inline shared_ptr<Node> handle_not(shared_ptr<Node> &root, const ExprPtr &expr, 
 
 inline shared_ptr<Node> handle_constant_int(shared_ptr<Node> &root, const ConstantInt *imm, const std::string &name, VarScope &scope)
 {
-    std::string typed_name = Printer::make_new_unique_name();
+    std::string typed_name = make_new_unique_name();
 
     // Inserts the typecheck and fixes name if necessary
     shared_ptr<CFIR::IntImm> imm_node = make_shared<CFIR::IntImm>(name, typed_name);
@@ -407,12 +408,12 @@ void add_rule_typed(shared_ptr<Node> root, const Rule &rule, const std::string &
     if (rule.pred)
     {
         // TODO: probably want to assert that child node doesn't exist...?
-        const std::string condition = "evaluate_predicate(fold(" + Printer::build_expr(rule.pred, scope) + ", simplifier))";
+        const std::string condition = "evaluate_predicate(fold(" + build_expr(rule.pred, scope) + ", simplifier))";
         shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
         deepest = deepest->get_child(cond_node);
     }
 
-    const std::string retval = Printer::build_expr(rule.after, scope);
+    const std::string retval = build_expr(rule.after, scope);
     shared_ptr<CFIR::Return> ret_node = make_shared<CFIR::Return>(retval);
     deepest = deepest->get_child(ret_node);
 }

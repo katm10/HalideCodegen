@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Mutator.h"
 #include <map>
 #include <string>

@@ -4,31 +4,6 @@
 #include <sstream>
 
 namespace AST {
-
-std::string Printer::make_type_checker_condition(const std::string &var_name, const std::string &type_name, const std::string &output_name) {
-    return "const " + type_name + " *" + output_name + " = " + var_name + "->as<" + type_name + ">()";
-}
-
-std::string Printer::make_new_unique_name() {
-    static int counter = 0;
-    return "a" + std::to_string(counter++);
-}
-
-
-std::string Printer::build_expr(const ExprPtr &expr, const VarScope &scope) {
-    std::map<std::string, std::string> replacements;
-    for (const auto &p : scope) {
-        // should only ever be ConstantVar or Var
-        assert(p.second.type == NodeType::ConstantVar || p.second.type == NodeType::Var);
-        replacements[p.first] = p.second.name;
-    }
-    // TODO: the old method asserted that all variables that exist in `expr` have a match in `scope`,
-    //       we should do that here too.
-    Substitute substitute(replacements);
-    ExprPtr new_expr = expr->mutate(&substitute);
-    return pretty_print(new_expr);
-}
-
 void Printer::visit(const ConstantInt *expr) {
     stream << expr->value;
 }

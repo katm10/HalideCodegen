@@ -8,16 +8,10 @@
 
 namespace AST
 {
-
     struct Printer final : public Visitor
     {
         Printer(std::ostream &_stream) : stream(_stream) {}
         std::ostream &stream;
-
-        static std::string make_type_checker_condition(const std::string &var_name, const std::string &type_name, const std::string &output_name);
-        static std::string make_new_unique_name();
-
-        static std::string build_expr(const ExprPtr &expr, const VarScope &scope);
 
         void visit(const ConstantInt *) override;
         void visit(const ConstantVar *) override;
@@ -60,4 +54,4 @@ namespace AST
 
     std::string pretty_print(const ExprPtr &expr);
 
-}  // namsepace AST
+} // namsepace AST
