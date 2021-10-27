@@ -7,6 +7,24 @@
 #include <string>
 #include <vector>
 
+struct VarInfo
+{
+    // TODO I think this is the wrong type
+    AST::NodeType type;
+    std::string name;
+    VarInfo(AST::NodeType _type, const std::string &_name)
+        : type(_type), name(_name)
+    {
+    }
+    VarInfo()
+    {
+        assert(false); // This should never happen.
+        // TODO: how to properly do this.
+    }
+};
+
+typedef std::map<std::string, VarInfo> VarScope;
+
 namespace AST
 {
 

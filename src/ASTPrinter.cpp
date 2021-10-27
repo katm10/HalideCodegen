@@ -1,8 +1,32 @@
 #include "ASTPrinter.h"
 #include "AST.h"
+#include "Substitute.h"
 
 namespace AST {
 
+std::string Printer::make_type_checker_condition(const std::string &var_name, const std::string &type_name, const std::string &output_name) {
+    return "const " + type_name + " *" + output_name + " = " + var_name + "->as<" + type_name + ">()";
+}
+
+std::string Printer::make_new_unique_name() {
+    static int counter = 0;
+    return "a" + std::to_string(counter++);
+}
+
+
+std::string Printer::build_expr(const ExprPtr &expr, const VarScope &scope) {
+    std::map<std::string, std::string> replacements;
+    for (const auto &p : scope) {
+        // should only ever be ConstantVar or Var
+        assert(p.second.type == NodeType::ConstantVar || p.second.type == NodeType::Var);
+        replacements[p.first] = p.second.name;
+    }
+    // TODO: the old method asserted that all variables that exist in `expr` have a match in `scope`,
+    //       we should do that here too.
+    Substitute substitute(replacements);
+    ExprPtr new_expr = expr->mutate(&substitute);
+    return pretty_print(new_expr);
+}
 
 void Printer::visit(const ConstantInt *expr) {
     stream << expr->value;
@@ -26,7 +50,7 @@ void Printer::print_binary_op_inner(const T *bop, const std::string &bop_symbol)
 }
 
 template<typename T>
-void Printer::print_binary_op_outter(const T *bop, const std::string &bop_symbol) {
+void Printer::print_binary_op_outer(const T *bop, const std::string &bop_symbol) {
     stream << bop_symbol << "(";
     bop->a->accept(this);
     stream << ", ";
@@ -62,11 +86,11 @@ void Printer::visit(const Div *expr) {
 }
 
 void Printer::visit(const Min *expr) {
-    print_binary_op_outter(expr, "min");
+    print_binary_op_outer(expr, "min");
 }
 
 void Printer::visit(const Max *expr) {
-    print_binary_op_outter(expr, "max");
+    print_binary_op_outer(expr, "max");
 }
 
 void Printer::visit(const EQ *expr) {

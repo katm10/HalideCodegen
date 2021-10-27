@@ -1,17 +1,15 @@
 #ifndef TRS_CODEGEN_LANGUAGE_H
 #define TRS_CODEGEN_LANGUAGE_H
 
-#include "Halide.h"
-#include "Printer.h"
+
 #include <memory>
 #include <vector>
 
-using namespace Halide;
 using std::make_shared;
 using std::shared_ptr;
 using std::vector;
 
-namespace Language {
+namespace CFIR {
 
 enum class IRType {
     // Type checks
@@ -291,6 +289,6 @@ struct Sequence final : public Node {
     void print(std::ostream &stream, std::string indent) const override;
 };
 
-}  // namespace Language
+}  // namespace CFIR
 
 #endif

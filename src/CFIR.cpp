@@ -1,12 +1,13 @@
-#include "Language.h"
+#include "CFIR.h"
+#include <string>
+#include <iostream>
+#include <cassert>
 
-using namespace Halide;
 using std::make_shared;
 using std::shared_ptr;
 using std::vector;
 
-namespace Language {
-
+namespace CFIR {
 
 bool Equality::equal(const shared_ptr<Node> &other) const {
     if (const Equality *other_equal = other->as<Equality>(IRType::Equality)) {
@@ -62,4 +63,4 @@ void Sequence::print(std::ostream &stream, std::string indent) const {
         child->print(stream, indent + "  ");
     }
 }
-}  // namespace Language
+}  // namespace CFIR
