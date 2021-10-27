@@ -58,4 +58,6 @@ namespace AST
 
     void print(std::ostream &os, ExprPtr expr);
 
-} // namsepace AST
+    std::string pretty_print(const ExprPtr &expr);
+
+}  // namsepace AST
