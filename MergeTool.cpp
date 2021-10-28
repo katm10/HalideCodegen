@@ -18,7 +18,7 @@ using std::vector;
 // Too many conflicts with Halide IR for other names
 using CFIR::Node;
 
-shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const Expr &expr, const std::string &name, VarScope &scope);
+shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const ExprPtr &expr, const std::string &name, VarScope &scope);
 
 template <typename BinOp>
 inline shared_ptr<Node> handle_bin_op_helper(shared_ptr<Node> &typed_root, const BinOp *expr, const std::string &typed_name, VarScope &scope)
@@ -399,27 +399,27 @@ shared_ptr<Node> start_tree_constructor(shared_ptr<Node> root, const T *expr, co
 }
 
 template <typename T>
-void add_rule_typed(shared_ptr<Node> root, const Rule &rule, const std::string &name)
+void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &name)
 {
     VarScope scope;
-    const T *expr = rule.before->as<T>();
+    const T *expr = rule->before->as<T>();
     assert(expr);
     shared_ptr<Node> deepest = start_tree_constructor(root, expr, name, scope);
-    if (rule.pred)
+    if (rule->pred)
     {
         // TODO: probably want to assert that child node doesn't exist...?
-        const std::string condition = "evaluate_predicate(fold(" + build_expr(rule.pred, scope) + ", simplifier))";
+        const std::string condition = "evaluate_predicate(fold(" + build_expr(rule->pred, scope) + ", simplifier))";
         shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
         deepest = deepest->get_child(cond_node);
     }
 
-    const std::string retval = build_expr(rule.after, scope);
+    const std::string retval = build_expr(rule->after, scope);
     shared_ptr<CFIR::Return> ret_node = make_shared<CFIR::Return>(retval);
     deepest = deepest->get_child(ret_node);
 }
 
 template <typename T>
-shared_ptr<Node> create_graph_typed(const vector<Rule> &rules, const std::string &expr_name)
+shared_ptr<Node> create_graph_typed(const vector<Rule*> &rules, const std::string &expr_name)
 {
     assert(rules.size() > 0);
 
