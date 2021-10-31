@@ -1,0 +1,1277 @@
+Expr simplify_sub(const Sub *expr, Simplify *simplifier) {
+  if (const IntImm *a0 = expr->b->as<IntImm>()) {
+    if (a0->value == 0) {
+      return expr->a;
+    }
+  }
+  if (is_const_v(expr->a)) {
+    if (is_const_v(expr->b)) {
+      return fold((expr->a - expr->b));
+    }
+    if (const Select *a91 = expr->b->as<Select>()) {
+      if (is_const_v(a91->a)) {
+        if (is_const_v(a91->b)) {
+          return select(a91->cond, fold((expr->a - a91->a)), fold((expr->a - a91->b)));
+        }
+      }
+    }
+    if (const Div *a612 = expr->b->as<Div>()) {
+      if (const Sub *a613 = a612->a->as<Sub>()) {
+        if (is_const_v(a613->a)) {
+          if (is_const_v(a612->b)) {
+            if (evaluate_predicate(fold((a612->b > 0), simplifier))) {
+              return ((fold(((((expr->a * a612->b) - a613->a) + a612->b) - 1)) + a613->b) / a612->b);
+            }
+          }
+        }
+      }
+      if (const Add *a615 = a612->a->as<Add>()) {
+        if (is_const_v(a615->b)) {
+          if (is_const_v(a612->b)) {
+            if (evaluate_predicate(fold((a612->b > 0), simplifier))) {
+              return ((fold(((((expr->a * a612->b) - a615->b) + a612->b) - 1)) - a615->a) / a612->b);
+            }
+          }
+        }
+      }
+    }
+  }
+  if (equal(expr->a, expr->b)) {
+    return 0;
+  }
+  if (const Ramp *a1 = expr->a->as<Ramp>()) {
+    if (is_const_v(a1->lanes)) {
+      if (const Ramp *a2 = expr->b->as<Ramp>()) {
+        if (equal(a1->lanes, a2->lanes)) {
+          return ramp((a1->base - a2->base), (a1->stride - a2->stride), a1->lanes);
+        }
+      }
+      if (const Broadcast *a4 = expr->b->as<Broadcast>()) {
+        if (equal(a1->lanes, a4->lanes)) {
+          return ramp((a1->base - a4->value), a1->stride, a1->lanes);
+        }
+      }
+    }
+    if (const Broadcast *a20 = a1->base->as<Broadcast>()) {
+      if (is_const_v(a20->lanes)) {
+        if (is_const_v(a1->lanes)) {
+          if (const Broadcast *a21 = expr->b->as<Broadcast>()) {
+            if (is_const_v(a21->lanes)) {
+              if (evaluate_predicate(fold((a21->lanes == (a20->lanes * a1->lanes)), simplifier))) {
+                return ramp(broadcast((a20->value - a21->value), a20->lanes), a1->stride, a1->lanes);
+              }
+            }
+          }
+        }
+      }
+    }
+    if (const Ramp *a23 = a1->base->as<Ramp>()) {
+      if (is_const_v(a23->lanes)) {
+        if (is_const_v(a1->lanes)) {
+          if (const Broadcast *a24 = expr->b->as<Broadcast>()) {
+            if (is_const_v(a24->lanes)) {
+              if (evaluate_predicate(fold((a24->lanes == (a23->lanes * a1->lanes)), simplifier))) {
+                return ramp(ramp((a23->base - a24->value), a23->stride, a23->lanes), a1->stride, a1->lanes);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  if (const Broadcast *a5 = expr->a->as<Broadcast>()) {
+    if (is_const_v(a5->lanes)) {
+      if (const Ramp *a6 = expr->b->as<Ramp>()) {
+        if (equal(a5->lanes, a6->lanes)) {
+          return ramp((a5->value - a6->base), (0 - a6->stride), a5->lanes);
+        }
+      }
+      if (const Broadcast *a8 = expr->b->as<Broadcast>()) {
+        if (equal(a5->lanes, a8->lanes)) {
+          return broadcast((a5->value - a8->value), a5->lanes);
+        }
+        if (is_const_v(a8->lanes)) {
+          if (evaluate_predicate(fold(((a8->lanes % a5->lanes) == 0), simplifier))) {
+            return broadcast((a5->value - broadcast(a8->value, fold((a8->lanes / a5->lanes)))), a5->lanes);
+          }
+          if (evaluate_predicate(fold(((a5->lanes % a8->lanes) == 0), simplifier))) {
+            return broadcast((broadcast(a5->value, fold((a5->lanes / a8->lanes))) - a8->value), a8->lanes);
+          }
+        }
+      }
+    }
+  }
+  if (const Sub *a13 = expr->a->as<Sub>()) {
+    if (const Broadcast *a14 = a13->b->as<Broadcast>()) {
+      if (is_const_v(a14->lanes)) {
+        if (const Broadcast *a15 = expr->b->as<Broadcast>()) {
+          if (equal(a14->lanes, a15->lanes)) {
+            return (a13->a - broadcast((a14->value + a15->value), a14->lanes));
+          }
+        }
+      }
+    }
+    if (equal(a13->a, expr->b)) {
+      return (0 - a13->b);
+    }
+    if (const Select *a89 = a13->a->as<Select>()) {
+      if (const Select *a90 = expr->b->as<Select>()) {
+        if (equal(a89->cond, a90->cond)) {
+          return (select(a89->cond, (a89->a - a90->a), (a89->b - a90->b)) - a13->b);
+        }
+      }
+    }
+    if (is_const_v(a13->a)) {
+      if (const Sub *a99 = expr->b->as<Sub>()) {
+        if (is_const_v(a99->a)) {
+          return ((a99->b - a13->b) + fold((a13->a - a99->a)));
+        }
+      }
+      if (const Add *a101 = expr->b->as<Add>()) {
+        if (is_const_v(a101->b)) {
+          return (fold((a13->a - a101->b)) - (a13->b + a101->a));
+        }
+      }
+      if (is_const_v(expr->b)) {
+        return (fold((a13->a - expr->b)) - a13->b);
+      }
+    }
+    if (const Mul *a127 = a13->b->as<Mul>()) {
+      if (const Mul *a128 = expr->b->as<Mul>()) {
+        if (equal(a127->b, a128->b)) {
+          return (a13->a - ((a127->a + a128->a) * a127->b));
+        }
+        if (equal(a127->b, a128->a)) {
+          return (a13->a - ((a127->a + a128->b) * a127->b));
+        }
+        if (equal(a127->a, a128->b)) {
+          return (a13->a - (a127->a * (a127->b + a128->a)));
+        }
+        if (equal(a127->a, a128->a)) {
+          return (a13->a - (a127->a * (a127->b + a128->b)));
+        }
+      }
+    }
+    if (const Mul *a151 = a13->a->as<Mul>()) {
+      if (const Mul *a152 = expr->b->as<Mul>()) {
+        if (equal(a151->b, a152->b)) {
+          return (((a151->a - a152->a) * a151->b) - a13->b);
+        }
+        if (equal(a151->b, a152->a)) {
+          return (((a151->a - a152->b) * a151->b) - a13->b);
+        }
+        if (equal(a151->a, a152->b)) {
+          return ((a151->a * (a151->b - a152->a)) - a13->b);
+        }
+        if (equal(a151->a, a152->a)) {
+          return ((a151->a * (a151->b - a152->b)) - a13->b);
+        }
+      }
+    }
+    if (const Add *a267 = expr->b->as<Add>()) {
+      if (equal(a13->a, a267->a)) {
+        return ((0 - a13->b) - a267->b);
+      }
+      if (equal(a13->a, a267->b)) {
+        return ((0 - a13->b) - a267->a);
+      }
+    }
+    if (const Add *a271 = a13->a->as<Add>()) {
+      if (equal(a271->a, expr->b)) {
+        return (a271->b - a13->b);
+      }
+      if (equal(a271->b, expr->b)) {
+        return (a271->a - a13->b);
+      }
+    }
+    if (const Sub *a295 = a13->a->as<Sub>()) {
+      if (equal(a295->a, expr->b)) {
+        return (0 - (a295->b + a13->b));
+      }
+    }
+  }
+  if (const Add *a16 = expr->a->as<Add>()) {
+    if (const Broadcast *a17 = a16->b->as<Broadcast>()) {
+      if (is_const_v(a17->lanes)) {
+        if (const Broadcast *a18 = expr->b->as<Broadcast>()) {
+          if (equal(a17->lanes, a18->lanes)) {
+            return (a16->a + broadcast((a17->value - a18->value), a17->lanes));
+          }
+        }
+      }
+    }
+    if (equal(a16->a, expr->b)) {
+      return a16->b;
+    }
+    if (equal(a16->b, expr->b)) {
+      return a16->a;
+    }
+    if (const Select *a77 = a16->a->as<Select>()) {
+      if (const Select *a78 = expr->b->as<Select>()) {
+        if (equal(a77->cond, a78->cond)) {
+          return (select(a77->cond, (a77->a - a78->a), (a77->b - a78->b)) + a16->b);
+        }
+      }
+    }
+    if (const Select *a80 = a16->b->as<Select>()) {
+      if (const Select *a81 = expr->b->as<Select>()) {
+        if (equal(a80->cond, a81->cond)) {
+          return (select(a80->cond, (a80->a - a81->a), (a80->b - a81->b)) + a16->a);
+        }
+      }
+    }
+    if (is_const_v(a16->b)) {
+      if (is_const_v(expr->b)) {
+        return (a16->a + fold((a16->b - expr->b)));
+      }
+      if (const Sub *a94 = expr->b->as<Sub>()) {
+        if (is_const_v(a94->a)) {
+          return ((a16->a + a94->b) + fold((a16->b - a94->a)));
+        }
+      }
+      if (const Add *a96 = expr->b->as<Add>()) {
+        if (is_const_v(a96->b)) {
+          return ((a16->a - a96->a) + fold((a16->b - a96->b)));
+        }
+      }
+      return ((a16->a - expr->b) + a16->b);
+    }
+    if (const Mul *a115 = a16->b->as<Mul>()) {
+      if (const Mul *a116 = expr->b->as<Mul>()) {
+        if (equal(a115->b, a116->b)) {
+          return (a16->a + ((a115->a - a116->a) * a115->b));
+        }
+        if (equal(a115->b, a116->a)) {
+          return (a16->a + ((a115->a - a116->b) * a115->b));
+        }
+        if (equal(a115->a, a116->b)) {
+          return (a16->a + (a115->a * (a115->b - a116->a)));
+        }
+        if (equal(a115->a, a116->a)) {
+          return (a16->a + (a115->a * (a115->b - a116->b)));
+        }
+      }
+    }
+    if (const Mul *a139 = a16->a->as<Mul>()) {
+      if (const Mul *a140 = expr->b->as<Mul>()) {
+        if (equal(a139->b, a140->b)) {
+          return (a16->b + ((a139->a - a140->a) * a139->b));
+        }
+        if (equal(a139->b, a140->a)) {
+          return (a16->b + ((a139->a - a140->b) * a139->b));
+        }
+        if (equal(a139->a, a140->b)) {
+          return (a16->b + (a139->a * (a139->b - a140->a)));
+        }
+        if (equal(a139->a, a140->a)) {
+          return (a16->b + (a139->a * (a139->b - a140->b)));
+        }
+      }
+    }
+    if (const Add *a211 = expr->b->as<Add>()) {
+      if (equal(a16->a, a211->a)) {
+        return (a16->b - a211->b);
+      }
+      if (equal(a16->a, a211->b)) {
+        return (a16->b - a211->a);
+      }
+      if (equal(a16->b, a211->a)) {
+        return (a16->a - a211->b);
+      }
+      if (equal(a16->b, a211->b)) {
+        return (a16->a - a211->a);
+      }
+      if (const Add *a244 = a211->b->as<Add>()) {
+        if (equal(a16->a, a244->b)) {
+          return (a16->b - (a211->a + a244->a));
+        }
+        if (equal(a16->b, a244->b)) {
+          return (a16->a - (a211->a + a244->a));
+        }
+        if (equal(a16->a, a244->a)) {
+          return (a16->b - (a211->a + a244->b));
+        }
+        if (equal(a16->b, a244->a)) {
+          return (a16->a - (a211->a + a244->b));
+        }
+      }
+      if (const Add *a256 = a211->a->as<Add>()) {
+        if (equal(a16->a, a256->a)) {
+          return (a16->b - (a256->b + a211->b));
+        }
+        if (equal(a16->b, a256->a)) {
+          return (a16->a - (a256->b + a211->b));
+        }
+        if (equal(a16->a, a256->b)) {
+          return (a16->b - (a256->a + a211->b));
+        }
+        if (equal(a16->b, a256->b)) {
+          return (a16->a - (a256->a + a211->b));
+        }
+      }
+    }
+    if (const Add *a219 = a16->a->as<Add>()) {
+      if (equal(a219->a, expr->b)) {
+        return (a219->b + a16->b);
+      }
+      if (equal(a219->b, expr->b)) {
+        return (a219->a + a16->b);
+      }
+    }
+    if (const Add *a223 = a16->b->as<Add>()) {
+      if (equal(a223->a, expr->b)) {
+        return (a16->a + a223->b);
+      }
+      if (equal(a223->b, expr->b)) {
+        return (a16->a + a223->a);
+      }
+    }
+    if (const Sub *a231 = a16->b->as<Sub>()) {
+      if (equal(a231->a, expr->b)) {
+        return (a16->a - a231->b);
+      }
+    }
+    if (const Sub *a233 = a16->a->as<Sub>()) {
+      if (equal(a233->a, expr->b)) {
+        return (a16->b - a233->b);
+      }
+    }
+    if (const Min *a281 = expr->b->as<Min>()) {
+      if (equal(a16->a, a281->a)) {
+        if (equal(a16->b, a281->b)) {
+          return min(a16->b, a16->a);
+        }
+      }
+      if (equal(a16->b, a281->a)) {
+        if (equal(a16->a, a281->b)) {
+          return min(a16->b, a16->a);
+          return min(a16->a, a16->b);
+        }
+      }
+    }
+    if (const Min *a685 = a16->a->as<Min>()) {
+      if (const Add *a686 = a685->a->as<Add>()) {
+        if (equal(a686->a, expr->b)) {
+          return (min((a685->b - a686->a), a686->b) + a16->b);
+        }
+      }
+    }
+  }
+  if (const Select *a25 = expr->a->as<Select>()) {
+    if (const Select *a26 = expr->b->as<Select>()) {
+      if (equal(a25->cond, a26->cond)) {
+        return select(a25->cond, (a25->a - a26->a), (a25->b - a26->b));
+      }
+    }
+    if (equal(a25->a, expr->b)) {
+      return select(a25->cond, 0, (a25->b - a25->a));
+    }
+    if (equal(a25->b, expr->b)) {
+      return select(a25->cond, (a25->a - a25->b), 0);
+    }
+    if (const Add *a32 = a25->a->as<Add>()) {
+      if (equal(a32->a, expr->b)) {
+        return select(a25->cond, a32->b, (a25->b - a32->a));
+      }
+      if (equal(a32->b, expr->b)) {
+        return select(a25->cond, a32->a, (a25->b - a32->b));
+      }
+      if (const Add *a41 = a32->b->as<Add>()) {
+        if (equal(a41->b, expr->b)) {
+          return select(a25->cond, (a32->a + a41->a), (a25->b - a41->b));
+        }
+        if (equal(a41->a, expr->b)) {
+          return select(a25->cond, (a32->a + a41->b), (a25->b - a41->a));
+        }
+      }
+      if (const Add *a47 = a32->a->as<Add>()) {
+        if (equal(a47->a, expr->b)) {
+          return select(a25->cond, (a32->b + a47->b), (a25->b - a47->a));
+        }
+        if (equal(a47->b, expr->b)) {
+          return select(a25->cond, (a32->b + a47->a), (a25->b - a47->b));
+        }
+      }
+      if (const Add *a53 = expr->b->as<Add>()) {
+        if (equal(a32->a, a53->b)) {
+          return (select(a25->cond, a32->b, (a25->b - a32->a)) - a53->a);
+        }
+        if (equal(a32->b, a53->b)) {
+          return (select(a25->cond, a32->a, (a25->b - a32->b)) - a53->a);
+        }
+        if (equal(a32->a, a53->a)) {
+          return (select(a25->cond, a32->b, (a25->b - a32->a)) - a53->b);
+        }
+        if (equal(a32->b, a53->a)) {
+          return (select(a25->cond, a32->a, (a25->b - a32->b)) - a53->b);
+        }
+      }
+    }
+    if (const Add *a36 = a25->b->as<Add>()) {
+      if (equal(a36->a, expr->b)) {
+        return select(a25->cond, (a25->a - a36->a), a36->b);
+      }
+      if (equal(a36->b, expr->b)) {
+        return select(a25->cond, (a25->a - a36->b), a36->a);
+      }
+    }
+    if (const Add *a83 = expr->b->as<Add>()) {
+      if (const Select *a84 = a83->a->as<Select>()) {
+        if (equal(a25->cond, a84->cond)) {
+          return (select(a25->cond, (a25->a - a84->a), (a25->b - a84->b)) - a83->b);
+        }
+      }
+      if (const Select *a87 = a83->b->as<Select>()) {
+        if (equal(a25->cond, a87->cond)) {
+          return (select(a25->cond, (a25->a - a87->a), (a25->b - a87->b)) - a83->a);
+        }
+      }
+    }
+  }
+  if (const Select *a29 = expr->b->as<Select>()) {
+    if (equal(expr->a, a29->a)) {
+      return select(a29->cond, 0, (expr->a - a29->b));
+    }
+    if (equal(expr->a, a29->b)) {
+      return select(a29->cond, (expr->a - a29->a), 0);
+    }
+    if (const Add *a64 = a29->a->as<Add>()) {
+      if (equal(expr->a, a64->a)) {
+        return (0 - select(a29->cond, a64->b, (a29->b - expr->a)));
+      }
+      if (equal(expr->a, a64->b)) {
+        return (0 - select(a29->cond, a64->a, (a29->b - expr->a)));
+      }
+    }
+    if (const Add *a68 = a29->b->as<Add>()) {
+      if (equal(expr->a, a68->a)) {
+        return (0 - select(a29->cond, (a29->a - expr->a), a68->b));
+      }
+      if (equal(expr->a, a68->b)) {
+        return (0 - select(a29->cond, (a29->a - expr->a), a68->a));
+      }
+    }
+  }
+  if (const Add *a73 = expr->b->as<Add>()) {
+    if (equal(expr->a, a73->a)) {
+      return (0 - a73->b);
+    }
+    if (equal(expr->a, a73->b)) {
+      return (0 - a73->a);
+    }
+    if (is_const_v(a73->b)) {
+      return ((expr->a - a73->a) - a73->b);
+    }
+    if (const Sub *a227 = a73->b->as<Sub>()) {
+      if (equal(expr->a, a227->a)) {
+        return (a227->b - a73->a);
+      }
+    }
+    if (const Sub *a229 = a73->a->as<Sub>()) {
+      if (equal(expr->a, a229->a)) {
+        return (a229->b - a73->b);
+      }
+    }
+    if (const Add *a235 = a73->b->as<Add>()) {
+      if (equal(expr->a, a235->a)) {
+        return (0 - (a73->a + a235->b));
+      }
+      if (equal(expr->a, a235->b)) {
+        return (0 - (a73->a + a235->a));
+      }
+    }
+    if (const Add *a239 = a73->a->as<Add>()) {
+      if (equal(expr->a, a239->a)) {
+        return (0 - (a239->b + a73->b));
+      }
+      if (equal(expr->a, a239->b)) {
+        return (0 - (a239->a + a73->b));
+      }
+    }
+  }
+  if (const Sub *a102 = expr->b->as<Sub>()) {
+    return (expr->a + (a102->b - a102->a));
+  }
+  if (const Mul *a103 = expr->b->as<Mul>()) {
+    if (is_const_v(a103->b)) {
+      if (evaluate_predicate(fold(((a103->b < 0) && (0 - (a103->b > 0))), simplifier))) {
+        return (expr->a + (a103->a * fold((0 - a103->b))));
+      }
+    }
+    if (const Div *a298 = a103->a->as<Div>()) {
+      if (const Add *a299 = a298->a->as<Add>()) {
+        if (equal(expr->a, a299->a)) {
+          if (is_const_v(a299->b)) {
+            if (is_const_v(a298->b)) {
+              if (equal(a298->b, a103->b)) {
+                if (evaluate_predicate(fold((a298->b > 0), simplifier))) {
+                  return (((expr->a + a299->b) % a298->b) - a299->b);
+                }
+                if (evaluate_predicate(fold(((a298->b > 0) && ((a299->b + 1) == a298->b)), simplifier))) {
+                  return (((expr->a + a299->b) % a298->b) + fold((0 - a299->b)));
+                }
+              }
+            }
+          }
+        }
+      }
+      if (equal(expr->a, a298->a)) {
+        if (is_const_v(a298->b)) {
+          if (equal(a298->b, a103->b)) {
+            if (evaluate_predicate(fold((a298->b > 0), simplifier))) {
+              return (expr->a % a298->b);
+            }
+          }
+        }
+      }
+    }
+    if (equal(expr->a, a103->a)) {
+      return (expr->a * (1 - a103->b));
+    }
+    if (equal(expr->a, a103->b)) {
+      return ((1 - a103->a) * expr->a);
+    }
+  }
+  if (const Mul *a106 = expr->a->as<Mul>()) {
+    if (const Mul *a107 = expr->b->as<Mul>()) {
+      if (equal(a106->b, a107->b)) {
+        return ((a106->a - a107->a) * a106->b);
+      }
+      if (equal(a106->b, a107->a)) {
+        return ((a106->a - a107->b) * a106->b);
+      }
+      if (equal(a106->a, a107->b)) {
+        return (a106->a * (a106->b - a107->a));
+      }
+      if (equal(a106->a, a107->a)) {
+        return (a106->a * (a106->b - a107->b));
+      }
+    }
+    if (const Add *a163 = expr->b->as<Add>()) {
+      if (const Mul *a164 = a163->b->as<Mul>()) {
+        if (equal(a106->b, a164->b)) {
+          return (((a106->a - a164->a) * a106->b) - a163->a);
+        }
+        if (equal(a106->b, a164->a)) {
+          return (((a106->a - a164->b) * a106->b) - a163->a);
+        }
+        if (equal(a106->a, a164->b)) {
+          return ((a106->a * (a106->b - a164->a)) - a163->a);
+        }
+        if (equal(a106->a, a164->a)) {
+          return ((a106->a * (a106->b - a164->b)) - a163->a);
+        }
+      }
+      if (const Mul *a188 = a163->a->as<Mul>()) {
+        if (equal(a106->b, a188->b)) {
+          return (((a106->a - a188->a) * a106->b) - a163->b);
+        }
+        if (equal(a106->b, a188->a)) {
+          return (((a106->a - a188->b) * a106->b) - a163->b);
+        }
+        if (equal(a106->a, a188->b)) {
+          return ((a106->a * (a106->b - a188->a)) - a163->b);
+        }
+        if (equal(a106->a, a188->a)) {
+          return ((a106->a * (a106->b - a188->b)) - a163->b);
+        }
+      }
+    }
+    if (const Sub *a175 = expr->b->as<Sub>()) {
+      if (const Mul *a176 = a175->b->as<Mul>()) {
+        if (equal(a106->b, a176->b)) {
+          return (((a106->a + a176->a) * a106->b) - a175->a);
+        }
+        if (equal(a106->b, a176->a)) {
+          return (((a106->a + a176->b) * a106->b) - a175->a);
+        }
+        if (equal(a106->a, a176->b)) {
+          return ((a106->a * (a106->b + a176->a)) - a175->a);
+        }
+        if (equal(a106->a, a176->a)) {
+          return ((a106->a * (a106->b + a176->b)) - a175->a);
+        }
+      }
+      if (const Mul *a200 = a175->a->as<Mul>()) {
+        if (equal(a106->b, a200->b)) {
+          return (((a106->a - a200->a) * a106->b) + a175->b);
+        }
+        if (equal(a106->b, a200->a)) {
+          return (((a106->a - a200->b) * a106->b) + a175->b);
+        }
+        if (equal(a106->a, a200->b)) {
+          return ((a106->a * (a106->b - a200->a)) + a175->b);
+        }
+        if (equal(a106->a, a200->a)) {
+          return ((a106->a * (a106->b - a200->b)) + a175->b);
+        }
+      }
+    }
+    if (equal(a106->a, expr->b)) {
+      return (a106->a * (a106->b - 1));
+    }
+    if (equal(a106->b, expr->b)) {
+      return ((a106->a - 1) * a106->b);
+    }
+    if (const Div *a633 = a106->a->as<Div>()) {
+      if (is_const_v(a633->b)) {
+        if (equal(a633->b, a106->b)) {
+          if (equal(a633->a, expr->b)) {
+            if (evaluate_predicate(fold((a633->b > 0), simplifier))) {
+              return (0 - (a633->a % a633->b));
+            }
+          }
+        }
+      }
+      if (const Add *a638 = a633->a->as<Add>()) {
+        if (is_const_v(a638->b)) {
+          if (is_const_v(a633->b)) {
+            if (equal(a633->b, a106->b)) {
+              if (equal(a638->a, expr->b)) {
+                if (evaluate_predicate(fold(((a633->b > 0) && ((a638->b + 1) == a633->b)), simplifier))) {
+                  return ((0 - a638->a) % a633->b);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (is_const_v(a106->b)) {
+      if (const Mul *a643 = expr->b->as<Mul>()) {
+        if (is_const_v(a643->b)) {
+          if (evaluate_predicate(fold(((a106->b % a643->b) == 0), simplifier))) {
+            return (((a106->a * fold((a106->b / a643->b))) - a643->a) * a643->b);
+          }
+          if (evaluate_predicate(fold(((a643->b % a106->b) == 0), simplifier))) {
+            return ((a106->a - (a643->a * fold((a643->b / a106->b)))) * a106->b);
+          }
+        }
+      }
+    }
+  }
+  if (const Min *a274 = expr->b->as<Min>()) {
+    if (const Sub *a275 = a274->a->as<Sub>()) {
+      if (equal(expr->a, a275->a)) {
+        if (const IntImm *a276 = a274->b->as<IntImm>()) {
+          if (a276->value == 0) {
+            return min(expr->a, a275->b);
+          }
+        }
+        return min(a275->b, (expr->a - a274->b));
+      }
+      if (is_const_v(a274->b)) {
+        return (expr->a + min((a275->b - a275->a), fold((0 - a274->b))));
+      }
+    }
+    if (const Sub *a305 = a274->b->as<Sub>()) {
+      if (equal(expr->a, a305->a)) {
+        return min((expr->a - a274->a), a305->b);
+      }
+    }
+    if (const Min *a331 = a274->a->as<Min>()) {
+      if (const Sub *a332 = a331->a->as<Sub>()) {
+        if (is_const_v(a331->b)) {
+          if (is_const_v(a274->b)) {
+            return (expr->a + min(min((a332->b - a332->a), fold((0 - a331->b))), fold((0 - a274->b))));
+          }
+        }
+      }
+    }
+  }
+  if (const IntImm *a288 = expr->a->as<IntImm>()) {
+    if (a288->value == 0) {
+      if (const Add *a289 = expr->b->as<Add>()) {
+        if (const Sub *a290 = a289->b->as<Sub>()) {
+          return (a290->b - (a289->a + a290->a));
+        }
+        if (const Sub *a293 = a289->a->as<Sub>()) {
+          return (a293->b - (a293->a + a289->b));
+        }
+      }
+    }
+  }
+  if (const Mod *a296 = expr->b->as<Mod>()) {
+    if (equal(expr->a, a296->a)) {
+      if (is_const_v(a296->b)) {
+        return ((expr->a / a296->b) * a296->b);
+      }
+    }
+  }
+  if (const Min *a300 = expr->a->as<Min>()) {
+    if (equal(a300->a, expr->b)) {
+      return min((a300->b - a300->a), 0);
+    }
+    if (equal(a300->b, expr->b)) {
+      return min((a300->a - a300->b), 0);
+    }
+    if (const Sub *a313 = a300->a->as<Sub>()) {
+      if (const IntImm *a314 = a300->b->as<IntImm>()) {
+        if (a314->value == 0) {
+          if (equal(a313->a, expr->b)) {
+            return (0 - min(a313->a, a313->b));
+          }
+        }
+      }
+    }
+    if (const Add *a319 = expr->b->as<Add>()) {
+      if (equal(a300->a, a319->a)) {
+        if (equal(a300->b, a319->b)) {
+          return (0 - min(a300->b, a300->a));
+          return (0 - min(a300->a, a300->b));
+        }
+      }
+      if (equal(a300->b, a319->a)) {
+        if (equal(a300->a, a319->b)) {
+          return (0 - min(a300->a, a300->b));
+          return (0 - min(a300->b, a300->a));
+        }
+      }
+    }
+    if (const Add *a341 = a300->a->as<Add>()) {
+      if (equal(a341->a, expr->b)) {
+        return min((a300->b - a341->a), a341->b);
+      }
+      if (equal(a341->b, expr->b)) {
+        return min((a300->b - a341->b), a341->a);
+      }
+      if (const Add *a362 = a341->b->as<Add>()) {
+        if (equal(a362->b, expr->b)) {
+          return min((a300->b - a362->b), (a341->a + a362->a));
+        }
+        if (equal(a362->a, expr->b)) {
+          return min((a300->b - a362->a), (a341->a + a362->b));
+        }
+      }
+      if (const Add *a368 = a341->a->as<Add>()) {
+        if (equal(a368->b, expr->b)) {
+          return min((a300->b - a368->b), (a368->a + a341->b));
+        }
+        if (equal(a368->a, expr->b)) {
+          return min((a300->b - a368->a), (a368->b + a341->b));
+        }
+      }
+      if (is_const_v(a341->b)) {
+        if (const Min *a426 = expr->b->as<Min>()) {
+          if (equal(a341->a, a426->a)) {
+            if (evaluate_predicate(fold(can_prove((a300->b <= (a426->b + a341->b))), simplifier))) {
+              return min((a300->b - min(a341->a, a426->b)), a341->b);
+              return min((min((a341->a + a341->b), a300->b) - a426->b), a341->b);
+            }
+            if (evaluate_predicate(fold(can_prove((a300->b >= (a426->b + a341->b))), simplifier))) {
+              return min((min((a341->a + a341->b), a300->b) - a426->b), a341->b);
+              return min((a300->b - min(a341->a, a426->b)), a341->b);
+            }
+          }
+          if (const Add *a439 = a426->a->as<Add>()) {
+            if (equal(a341->a, a439->a)) {
+              if (is_const_v(a439->b)) {
+                if (evaluate_predicate(fold(can_prove(((a300->b + a439->b) <= (a426->b + a341->b))), simplifier))) {
+                  return min((a300->b - min((a341->a + a439->b), a426->b)), fold((a341->b - a439->b)));
+                  return min((min((a341->a + a341->b), a300->b) - a426->b), fold((a341->b - a439->b)));
+                }
+                if (evaluate_predicate(fold(can_prove(((a300->b + a439->b) >= (a426->b + a341->b))), simplifier))) {
+                  return min((min((a341->a + a341->b), a300->b) - a426->b), fold((a341->b - a439->b)));
+                  return min((a300->b - min((a341->a + a439->b), a426->b)), fold((a341->b - a439->b)));
+                }
+              }
+            }
+          }
+          if (equal(a341->a, a426->b)) {
+            if (evaluate_predicate(fold(can_prove((a300->b <= (a426->a + a341->b))), simplifier))) {
+              return min((a300->b - min(a341->a, a426->a)), a341->b);
+              return min((min((a341->a + a341->b), a300->b) - a426->a), a341->b);
+            }
+            if (evaluate_predicate(fold(can_prove((a300->b >= (a426->a + a341->b))), simplifier))) {
+              return min((min((a341->a + a341->b), a300->b) - a426->a), a341->b);
+              return min((a300->b - min(a341->a, a426->a)), a341->b);
+            }
+          }
+          if (const Add *a487 = a426->b->as<Add>()) {
+            if (equal(a341->a, a487->a)) {
+              if (is_const_v(a487->b)) {
+                if (evaluate_predicate(fold(can_prove(((a300->b + a487->b) <= (a426->a + a341->b))), simplifier))) {
+                  return min((a300->b - min((a341->a + a487->b), a426->a)), fold((a341->b - a487->b)));
+                  return min((min((a341->a + a341->b), a300->b) - a426->a), fold((a341->b - a487->b)));
+                }
+                if (evaluate_predicate(fold(can_prove(((a300->b + a487->b) >= (a426->a + a341->b))), simplifier))) {
+                  return min((min((a341->a + a341->b), a300->b) - a426->a), fold((a341->b - a487->b)));
+                  return min((a300->b - min((a341->a + a487->b), a426->a)), fold((a341->b - a487->b)));
+                }
+              }
+            }
+          }
+        }
+      }
+      if (const Mul *a698 = a341->a->as<Mul>()) {
+        if (const Add *a699 = a698->a->as<Add>()) {
+          if (const Mul *a700 = expr->b->as<Mul>()) {
+            if (equal(a699->a, a700->a)) {
+              if (equal(a698->b, a700->b)) {
+                return min((a300->b - (a699->a * a698->b)), ((a699->b * a698->b) + a341->b));
+              }
+            }
+            if (equal(a699->b, a700->a)) {
+              if (equal(a698->b, a700->b)) {
+                return min((a300->b - (a699->b * a698->b)), ((a699->a * a698->b) + a341->b));
+              }
+            }
+          }
+        }
+      }
+    }
+    if (const Add *a345 = a300->b->as<Add>()) {
+      if (equal(a345->a, expr->b)) {
+        return min((a300->a - a345->a), a345->b);
+      }
+      if (equal(a345->b, expr->b)) {
+        return min((a300->a - a345->b), a345->a);
+      }
+      if (const Add *a350 = a345->b->as<Add>()) {
+        if (equal(a350->b, expr->b)) {
+          return min((a300->a - a350->b), (a345->a + a350->a));
+        }
+        if (equal(a350->a, expr->b)) {
+          return min((a300->a - a350->a), (a345->a + a350->b));
+        }
+      }
+      if (const Add *a356 = a345->a->as<Add>()) {
+        if (equal(a356->b, expr->b)) {
+          return min((a300->a - a356->b), (a356->a + a345->b));
+        }
+        if (equal(a356->a, expr->b)) {
+          return min((a300->a - a356->a), (a356->b + a345->b));
+        }
+      }
+      if (is_const_v(a345->b)) {
+        if (const Min *a450 = expr->b->as<Min>()) {
+          if (equal(a345->a, a450->b)) {
+            if (evaluate_predicate(fold(can_prove((a300->a <= (a450->a + a345->b))), simplifier))) {
+              return min((a300->a - min(a345->a, a450->a)), a345->b);
+              return min((min((a345->a + a345->b), a300->a) - a450->a), a345->b);
+            }
+            if (evaluate_predicate(fold(can_prove((a300->a >= (a450->a + a345->b))), simplifier))) {
+              return min((min((a345->a + a345->b), a300->a) - a450->a), a345->b);
+              return min((a300->a - min(a345->a, a450->a)), a345->b);
+            }
+          }
+          if (const Add *a463 = a450->b->as<Add>()) {
+            if (equal(a345->a, a463->a)) {
+              if (is_const_v(a463->b)) {
+                if (evaluate_predicate(fold(can_prove(((a300->a + a463->b) <= (a450->a + a345->b))), simplifier))) {
+                  return min((a300->a - min((a345->a + a463->b), a450->a)), fold((a345->b - a463->b)));
+                  return min((min((a345->a + a345->b), a300->a) - a450->a), fold((a345->b - a463->b)));
+                }
+                if (evaluate_predicate(fold(can_prove(((a300->a + a463->b) >= (a450->a + a345->b))), simplifier))) {
+                  return min((min((a345->a + a345->b), a300->a) - a450->a), fold((a345->b - a463->b)));
+                  return min((a300->a - min((a345->a + a463->b), a450->a)), fold((a345->b - a463->b)));
+                }
+              }
+            }
+          }
+          if (equal(a345->a, a450->a)) {
+            if (evaluate_predicate(fold(can_prove((a300->a <= (a450->b + a345->b))), simplifier))) {
+              return min((a300->a - min(a345->a, a450->b)), a345->b);
+              return min((min((a345->a + a345->b), a300->a) - a450->b), a345->b);
+            }
+            if (evaluate_predicate(fold(can_prove((a300->a >= (a450->b + a345->b))), simplifier))) {
+              return min((min((a345->a + a345->b), a300->a) - a450->b), a345->b);
+              return min((a300->a - min(a345->a, a450->b)), a345->b);
+            }
+          }
+          if (const Add *a511 = a450->a->as<Add>()) {
+            if (equal(a345->a, a511->a)) {
+              if (is_const_v(a511->b)) {
+                if (evaluate_predicate(fold(can_prove(((a300->a + a511->b) <= (a450->b + a345->b))), simplifier))) {
+                  return min((a300->a - min((a345->a + a511->b), a450->b)), fold((a345->b - a511->b)));
+                  return min((min((a345->a + a345->b), a300->a) - a450->b), fold((a345->b - a511->b)));
+                }
+                if (evaluate_predicate(fold(can_prove(((a300->a + a511->b) >= (a450->b + a345->b))), simplifier))) {
+                  return min((min((a345->a + a345->b), a300->a) - a450->b), fold((a345->b - a511->b)));
+                  return min((a300->a - min((a345->a + a511->b), a450->b)), fold((a345->b - a511->b)));
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (const Min *a373 = expr->b->as<Min>()) {
+      if (equal(a300->b, a373->a)) {
+        if (equal(a300->a, a373->b)) {
+          return 0;
+        }
+        if (evaluate_predicate(fold(can_prove((a300->a <= a373->b)), simplifier))) {
+          return min((a300->a - min(a300->b, a373->b)), 0);
+          return min((min(a300->b, a300->a) - a373->b), 0);
+        }
+        if (evaluate_predicate(fold(can_prove((a300->a >= a373->b)), simplifier))) {
+          return min((min(a300->b, a300->a) - a373->b), 0);
+          return min((a300->a - min(a300->b, a373->b)), 0);
+        }
+      }
+      if (evaluate_predicate(fold(can_prove(((a300->a - a300->b) == (a373->a - a373->b))), simplifier))) {
+        return (a300->b - a373->b);
+      }
+      if (evaluate_predicate(fold(can_prove(((a300->a - a300->b) == (a373->b - a373->a))), simplifier))) {
+        return (a300->b - a373->a);
+      }
+      if (equal(a300->a, a373->a)) {
+        if (evaluate_predicate(fold(can_prove((a300->b <= a373->b)), simplifier))) {
+          return min((a300->b - min(a300->a, a373->b)), 0);
+          return min((min(a300->a, a300->b) - a373->b), 0);
+        }
+        if (evaluate_predicate(fold(can_prove((a300->b >= a373->b)), simplifier))) {
+          return min((min(a300->a, a300->b) - a373->b), 0);
+          return min((a300->b - min(a300->a, a373->b)), 0);
+        }
+      }
+      if (const Add *a432 = a373->a->as<Add>()) {
+        if (equal(a300->a, a432->a)) {
+          if (is_const_v(a432->b)) {
+            if (evaluate_predicate(fold(can_prove(((a300->b + a432->b) <= a373->b)), simplifier))) {
+              return min((a300->b - min((a300->a + a432->b), a373->b)), fold((0 - a432->b)));
+              return min((min(a300->a, a300->b) - a373->b), fold((0 - a432->b)));
+            }
+            if (evaluate_predicate(fold(can_prove(((a300->b + a432->b) >= a373->b)), simplifier))) {
+              return min((min(a300->a, a300->b) - a373->b), fold((0 - a432->b)));
+              return min((a300->b - min((a300->a + a432->b), a373->b)), fold((0 - a432->b)));
+            }
+          }
+        }
+        if (equal(a300->b, a432->a)) {
+          if (is_const_v(a432->b)) {
+            if (evaluate_predicate(fold(can_prove(((a300->a + a432->b) <= a373->b)), simplifier))) {
+              return min((a300->a - min((a300->b + a432->b), a373->b)), fold((0 - a432->b)));
+              return min((min(a300->b, a300->a) - a373->b), fold((0 - a432->b)));
+            }
+            if (evaluate_predicate(fold(can_prove(((a300->a + a432->b) >= a373->b)), simplifier))) {
+              return min((min(a300->b, a300->a) - a373->b), fold((0 - a432->b)));
+              return min((a300->a - min((a300->b + a432->b), a373->b)), fold((0 - a432->b)));
+            }
+          }
+        }
+      }
+      if (equal(a300->b, a373->b)) {
+        if (evaluate_predicate(fold(can_prove((a300->a <= a373->a)), simplifier))) {
+          return min((a300->a - min(a300->b, a373->a)), 0);
+          return min((min(a300->b, a300->a) - a373->a), 0);
+        }
+        if (evaluate_predicate(fold(can_prove((a300->a >= a373->a)), simplifier))) {
+          return min((min(a300->b, a300->a) - a373->a), 0);
+          return min((a300->a - min(a300->b, a373->a)), 0);
+        }
+      }
+      if (const Add *a456 = a373->b->as<Add>()) {
+        if (equal(a300->b, a456->a)) {
+          if (is_const_v(a456->b)) {
+            if (evaluate_predicate(fold(can_prove(((a300->a + a456->b) <= a373->a)), simplifier))) {
+              return min((a300->a - min((a300->b + a456->b), a373->a)), fold((0 - a456->b)));
+              return min((min(a300->b, a300->a) - a373->a), fold((0 - a456->b)));
+            }
+            if (evaluate_predicate(fold(can_prove(((a300->a + a456->b) >= a373->a)), simplifier))) {
+              return min((min(a300->b, a300->a) - a373->a), fold((0 - a456->b)));
+              return min((a300->a - min((a300->b + a456->b), a373->a)), fold((0 - a456->b)));
+            }
+          }
+        }
+        if (equal(a300->a, a456->a)) {
+          if (is_const_v(a456->b)) {
+            if (evaluate_predicate(fold(can_prove(((a300->b + a456->b) <= a373->a)), simplifier))) {
+              return min((a300->b - min((a300->a + a456->b), a373->a)), fold((0 - a456->b)));
+              return min((min(a300->a, a300->b) - a373->a), fold((0 - a456->b)));
+            }
+            if (evaluate_predicate(fold(can_prove(((a300->b + a456->b) >= a373->a)), simplifier))) {
+              return min((min(a300->a, a300->b) - a373->a), fold((0 - a456->b)));
+              return min((a300->b - min((a300->a + a456->b), a373->a)), fold((0 - a456->b)));
+            }
+          }
+        }
+      }
+      if (equal(a300->a, a373->b)) {
+        if (evaluate_predicate(fold(can_prove((a300->b <= a373->a)), simplifier))) {
+          return min((a300->b - min(a300->a, a373->a)), 0);
+          return min((min(a300->a, a300->b) - a373->a), 0);
+        }
+        if (evaluate_predicate(fold(can_prove((a300->b >= a373->a)), simplifier))) {
+          return min((min(a300->a, a300->b) - a373->a), 0);
+          return min((a300->b - min(a300->a, a373->a)), 0);
+        }
+      }
+    }
+    if (const Mul *a379 = a300->a->as<Mul>()) {
+      if (is_const_v(a379->b)) {
+        if (is_const_v(a300->b)) {
+          if (const Mul *a380 = expr->b->as<Mul>()) {
+            if (const Min *a381 = a380->a->as<Min>()) {
+              if (equal(a379->a, a381->a)) {
+                if (is_const_v(a381->b)) {
+                  if (equal(a379->b, a380->b)) {
+                    if (evaluate_predicate(fold(((a379->b > 0) && (a300->b <= (a381->b * a379->b))), simplifier))) {
+                      return min((a300->b - (min(a379->a, a381->b) * a379->b)), 0);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (const Min *a691 = a300->a->as<Min>()) {
+      if (const Add *a692 = a691->a->as<Add>()) {
+        if (equal(a692->a, expr->b)) {
+          return min((min(a691->b, a300->b) - a692->a), a692->b);
+        }
+      }
+      if (const Add *a695 = a691->b->as<Add>()) {
+        if (equal(a695->a, expr->b)) {
+          return min((min(a691->a, a300->b) - a695->a), a695->b);
+        }
+      }
+    }
+  }
+  if (const Div *a616 = expr->b->as<Div>()) {
+    if (const Add *a617 = a616->a->as<Add>()) {
+      if (equal(expr->a, a617->a)) {
+        if (is_const_v(a616->b)) {
+          if (evaluate_predicate(fold((a616->b > 0), simplifier))) {
+            return ((((expr->a * fold((a616->b - 1))) - a617->b) + fold((a616->b - 1))) / a616->b);
+          }
+        }
+      }
+      if (equal(expr->a, a617->b)) {
+        if (is_const_v(a616->b)) {
+          if (evaluate_predicate(fold((a616->b > 0), simplifier))) {
+            return ((((expr->a * fold((a616->b - 1))) - a617->a) + fold((a616->b - 1))) / a616->b);
+          }
+        }
+      }
+    }
+    if (const Sub *a619 = a616->a->as<Sub>()) {
+      if (equal(expr->a, a619->a)) {
+        if (is_const_v(a616->b)) {
+          if (evaluate_predicate(fold((a616->b > 0), simplifier))) {
+            return ((((expr->a * fold((a616->b - 1))) + a619->b) + fold((a616->b - 1))) / a616->b);
+          }
+        }
+      }
+      if (equal(expr->a, a619->b)) {
+        if (is_const_v(a616->b)) {
+          if (evaluate_predicate(fold((a616->b > 0), simplifier))) {
+            return ((((expr->a * fold((a616->b + 1))) - a619->a) + fold((a616->b - 1))) / a616->b);
+          }
+        }
+      }
+    }
+  }
+  if (const Div *a624 = expr->a->as<Div>()) {
+    if (const Add *a625 = a624->a->as<Add>()) {
+      if (is_const_v(a624->b)) {
+        if (equal(a625->a, expr->b)) {
+          return (((a625->a * fold((1 - a624->b))) + a625->b) / a624->b);
+        }
+        if (equal(a625->b, expr->b)) {
+          return ((a625->a + (a625->b * fold((1 - a624->b)))) / a624->b);
+        }
+        if (const Div *a654 = expr->b->as<Div>()) {
+          if (const Add *a655 = a654->a->as<Add>()) {
+            if (equal(a625->b, a655->a)) {
+              if (equal(a625->a, a655->b)) {
+                if (equal(a624->b, a654->b)) {
+                  if (evaluate_predicate(fold((a624->b != 0), simplifier))) {
+                    return 0;
+                  }
+                }
+              }
+            }
+            if (equal(a625->a, a655->a)) {
+              if (is_const_v(a655->b)) {
+                if (equal(a624->b, a654->b)) {
+                  if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                    return ((((a625->a + fold((a655->b % a624->b))) % a624->b) + (a625->b - a655->b)) / a624->b);
+                  }
+                }
+              }
+            }
+          }
+          if (equal(a625->a, a654->a)) {
+            if (equal(a624->b, a654->b)) {
+              if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                return (((a625->a % a624->b) + a625->b) / a624->b);
+              }
+            }
+          }
+        }
+      }
+      if (const Add *a648 = a625->a->as<Add>()) {
+        if (is_const_v(a624->b)) {
+          if (const Div *a649 = expr->b->as<Div>()) {
+            if (const Add *a650 = a649->a->as<Add>()) {
+              if (const Add *a651 = a650->a->as<Add>()) {
+                if (equal(a648->b, a651->a)) {
+                  if (equal(a648->a, a651->b)) {
+                    if (equal(a624->b, a649->b)) {
+                      if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                        return ((((a648->a + a648->b) + a625->b) / a624->b) - (((a648->a + a648->b) + a650->b) / a624->b));
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (is_const_v(a625->b)) {
+        if (is_const_v(a624->b)) {
+          if (const Div *a662 = expr->b->as<Div>()) {
+            if (const Add *a663 = a662->a->as<Add>()) {
+              if (equal(a625->a, a663->a)) {
+                if (equal(a624->b, a662->b)) {
+                  if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                    return (((fold(((a624->b + a625->b) - 1)) - a663->b) - ((a625->a + fold((a625->b % a624->b))) % a624->b)) / a624->b);
+                  }
+                }
+              }
+            }
+            if (const Sub *a671 = a662->a->as<Sub>()) {
+              if (equal(a625->a, a671->a)) {
+                if (equal(a624->b, a662->b)) {
+                  if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                    return (((a671->b + fold(((a624->b + a625->b) - 1))) - ((a625->a + fold((a625->b % a624->b))) % a624->b)) / a624->b);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (const Min *a718 = a625->a->as<Min>()) {
+        if (const Add *a719 = a718->a->as<Add>()) {
+          if (const Mul *a720 = a719->a->as<Mul>()) {
+            if (is_const_v(a720->b)) {
+              if (is_const_v(a624->b)) {
+                if (const Mul *a721 = expr->b->as<Mul>()) {
+                  if (equal(a720->a, a721->a)) {
+                    if (is_const_v(a721->b)) {
+                      if (evaluate_predicate(fold((a720->b == (a624->b * a721->b)), simplifier))) {
+                        return ((min(a719->b, (a718->b - (a720->a * a720->b))) + a625->b) / a624->b);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (const Add *a725 = a718->b->as<Add>()) {
+          if (const Mul *a726 = a725->a->as<Mul>()) {
+            if (is_const_v(a726->b)) {
+              if (is_const_v(a624->b)) {
+                if (const Mul *a727 = expr->b->as<Mul>()) {
+                  if (equal(a726->a, a727->a)) {
+                    if (is_const_v(a727->b)) {
+                      if (evaluate_predicate(fold((a726->b == (a624->b * a727->b)), simplifier))) {
+                        return ((min((a718->a - (a726->a * a726->b)), a725->b) + a625->b) / a624->b);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    if (const Sub *a629 = a624->a->as<Sub>()) {
+      if (is_const_v(a624->b)) {
+        if (equal(a629->a, expr->b)) {
+          return (((a629->a * fold((1 - a624->b))) - a629->b) / a624->b);
+        }
+        if (equal(a629->b, expr->b)) {
+          return ((a629->a - (a629->b * fold((1 + a624->b)))) / a624->b);
+        }
+        if (const Div *a666 = expr->b->as<Div>()) {
+          if (const Add *a667 = a666->a->as<Add>()) {
+            if (equal(a629->a, a667->a)) {
+              if (is_const_v(a667->b)) {
+                if (equal(a624->b, a666->b)) {
+                  if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                    return (((((a629->a + fold((a667->b % a624->b))) % a624->b) - a629->b) - a667->b) / a624->b);
+                  }
+                }
+              }
+            }
+          }
+          if (equal(a629->a, a666->a)) {
+            if (equal(a624->b, a666->b)) {
+              if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                return (((a629->a % a624->b) - a629->b) / a624->b);
+              }
+            }
+          }
+        }
+      }
+    }
+    if (is_const_v(a624->b)) {
+      if (const Div *a673 = expr->b->as<Div>()) {
+        if (const Add *a674 = a673->a->as<Add>()) {
+          if (equal(a624->a, a674->a)) {
+            if (equal(a624->b, a673->b)) {
+              if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                return (((fold((a624->b - 1)) - a674->b) - (a624->a % a624->b)) / a624->b);
+              }
+            }
+          }
+        }
+        if (const Sub *a680 = a673->a->as<Sub>()) {
+          if (equal(a624->a, a680->a)) {
+            if (equal(a624->b, a673->b)) {
+              if (evaluate_predicate(fold((a624->b > 0), simplifier))) {
+                return (((a680->b + fold((a624->b - 1))) - (a624->a % a624->b)) / a624->b);
+              }
+            }
+          }
+        }
+      }
+    }
+    if (const Min *a707 = a624->a->as<Min>()) {
+      if (const Add *a708 = a707->a->as<Add>()) {
+        if (const Mul *a709 = a708->a->as<Mul>()) {
+          if (is_const_v(a709->b)) {
+            if (is_const_v(a624->b)) {
+              if (const Mul *a710 = expr->b->as<Mul>()) {
+                if (equal(a709->a, a710->a)) {
+                  if (is_const_v(a710->b)) {
+                    if (evaluate_predicate(fold((a709->b == (a624->b * a710->b)), simplifier))) {
+                      return (min(a708->b, (a707->b - (a709->a * a709->b))) / a624->b);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (const Add *a713 = a707->b->as<Add>()) {
+        if (const Mul *a714 = a713->a->as<Mul>()) {
+          if (is_const_v(a714->b)) {
+            if (is_const_v(a624->b)) {
+              if (const Mul *a715 = expr->b->as<Mul>()) {
+                if (equal(a714->a, a715->a)) {
+                  if (is_const_v(a715->b)) {
+                    if (evaluate_predicate(fold((a714->b == (a624->b * a715->b)), simplifier))) {
+                      return (min(a713->b, (a707->a - (a714->a * a714->b))) / a624->b);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return expr;
+}

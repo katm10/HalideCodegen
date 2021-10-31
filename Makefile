@@ -21,4 +21,4 @@ MergeTool.o: $(OBJ_FILES) MergeTool.cpp
 
 .PHONY: clean
 clean:
-	rm -rf main.out $(BUILD_DIR)
+	rm -rf main.out MergeTool.o $(BUILD_DIR)

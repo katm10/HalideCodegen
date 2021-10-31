@@ -442,82 +442,18 @@ void print_function_typed(const vector<Rule*> &rules, const std::string &func_na
     std::cout << "  return expr;\n}\n";
 }
 
-// TODO: handle fold somehow...
-ExprPtr fold(const ExprPtr expr)
+int main(int argc, char *argv[])
 {
-    return make_shared<Fold>(expr);
-}
+    // if (argc != 2)
+    // {
+    //     std::cout << "Usage: ./MergeTool.o <input filename>\n";
+    //     return 1;
+    // }
+    // std::string filename = argv[1];
 
-// This is for generated code
-// TODO this isn't really necessary anymore?
-// bool is_const_v(const ExprPtr &expr)
-// {
-//     if (const Var var = expr->as<Var>())
-//     {
-//         return var->name.at(0) == 'c';
-//     }
-//     else
-//     {
-//         return is_const(expr);
-//     }
-// }
-
-ExprPtr ramp(ExprPtr base, ExprPtr stride, ExprPtr lanes)
-{
-    return make_shared<Ramp>(base, stride, lanes);
-}
-
-ExprPtr broadcast(ExprPtr value, ExprPtr lanes)
-{
-    return make_shared<Broadcast>(value, lanes);
-}
-
-// TODO uhhh should I replace these?
-// Expr ramp(Expr base, Expr stride, int lanes)
-// {
-//     return Ramp::make(base, stride, lanes);
-// }
-
-// Expr broadcast(Expr base, int lanes)
-// {
-//     return Broadcast::make(base, lanes);
-// }
-
-// Expr _can_prove(const Expr &simplifier, const Expr &expr)
-// {
-//     return Call::make(UInt(1), "_can_prove", {simplifier, expr}, Call::PureIntrinsic);
-// }
-
-// Expr _is_const(const Expr &expr)
-// {
-//     return Call::make(UInt(1), "is_const", {expr}, Call::PureIntrinsic);
-// }
-
-int main(void)
-{
-    std::string filename = "rules/good1.txt";
+    std::string filename = "rules/Simplify_Sub.rewrites";
     std::vector<Rule *> rules = parse_rules_from_file(filename);
     print_function_typed<Sub>(rules, "simplify_sub", "Sub");
-
-    // this is for checking correctness, uncomment out when checking.
-
-    // for (const auto &rule : rules) {
-    //     Expr simpl = simplify_sub(rule.before);
-    //     std::cerr << "Original: " << rule.before << "\n";
-    //     std::cerr << simpl << " vs. " << rule.after << "\n";
-    //     if (!equal(simpl, rule.after)) {
-    //         std::cerr << "ERROR\n";
-    //     }
-    // }
-
-    // For testing a single rule (debugging codegen)
-    /*
-    Expr expr = ((c0 - x) - (y + c1));
-    Expr expected = (fold(c0 - c1) - (x + y));
-    Expr simpl = simplify_sub(expr);
-    std::cerr << expr << " -> " << simpl << "\n";
-    std::cerr << "Expected: " << expected << "\n";
-    */
 
     return 0;
 }
