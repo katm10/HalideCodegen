@@ -27,22 +27,6 @@ size_t get_filesize(const std::string &filename)
     return filesize;
 }
 
-const std::map<std::string, NumericType, std::greater<std::string>> typeStrings{
-    {"uint", NumericType::UINT},
-    {"int", NumericType::INT},
-    {"float", NumericType::FLOAT},
-    {"no_overflow_scalar_int", NumericType::NO_OVERFLOW_SCALAR_INT},
-    {"no_overflow_int", NumericType::NO_OVERFLOW_INT},
-    {"no_overflow", NumericType::NO_OVERFLOW},
-    {"bool", NumericType::BOOL},
-    {"operand_uint", NumericType::OPERAND_UINT},
-    {"operand_int", NumericType::OPERAND_INT},
-    {"operand_float", NumericType::OPERAND_FLOAT},
-    {"operand_no_overflow_scalar_int", NumericType::OPERAND_NO_OVERFLOW_SCALAR_INT},
-    {"operand_no_overflow_int", NumericType::OPERAND_NO_OVERFLOW_INT},
-    {"operand_no_overflow", NumericType::OPERAND_NO_OVERFLOW},
-    {"allowed_overflow", NumericType::ALLOWED_OVERFLOW}};
-
 void report_error(const char **cursor, const char *debug_info)
 {
     printf(debug_info);

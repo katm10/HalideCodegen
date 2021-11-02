@@ -142,7 +142,7 @@ void Printer::visit(const Fold *expr) {
 void Printer::visit(const CanProve *expr) {
     stream << "can_prove(";
     expr->value->accept(this);
-    stream << ")";
+    stream << ", simplifier)";
 }
 
 void Printer::visit(const Call *expr) {

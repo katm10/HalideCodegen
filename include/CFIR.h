@@ -31,9 +31,12 @@ enum class IRType {
     Or,
     Not,
     Select,
-    IntImm,
+    ConstantInt,
     Broadcast,
     Ramp,
+    Call,
+    Fold,
+    CanProve,
 
     // Stmt
     Equality,
@@ -234,23 +237,44 @@ struct Select final : public TypeCheck<Select> {
 
 struct Broadcast final : public TypeCheck<Broadcast> {
     Broadcast(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::Select, _curr, _out) {
+        : TypeCheck(IRType::Broadcast, _curr, _out) {
     }
     inline static const std::string type_name = "Broadcast";
 };
 
 struct Ramp final : public TypeCheck<Ramp> {
     Ramp(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::Select, _curr, _out) {
+        : TypeCheck(IRType::Ramp, _curr, _out) {
     }
     inline static const std::string type_name = "Ramp";
 };
 
-struct IntImm final : public TypeCheck<IntImm> {
-    IntImm(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::IntImm, _curr, _out) {
+struct Call final : public TypeCheck<Call> {
+    Call(const std::string &_curr, const std::string &_out)
+        : TypeCheck(IRType::Call, _curr, _out) {
     }
-    inline static const std::string type_name = "IntImm";
+    inline static const std::string type_name = "Call";
+};
+
+struct Fold final : public TypeCheck<Fold> {
+    Fold(const std::string &_curr, const std::string &_out)
+        : TypeCheck(IRType::Fold, _curr, _out) {
+    }
+    inline static const std::string type_name = "Fold";
+};
+
+struct CanProve final : public TypeCheck<CanProve> {
+    CanProve(const std::string &_curr, const std::string &_out)
+        : TypeCheck(IRType::CanProve, _curr, _out) {
+    }
+    inline static const std::string type_name = "CanProve";
+};
+
+struct ConstantInt final : public TypeCheck<ConstantInt> {
+    ConstantInt(const std::string &_curr, const std::string &_out)
+        : TypeCheck(IRType::ConstantInt, _curr, _out) {
+    }
+    inline static const std::string type_name = "ConstantInt";
 };
 
 struct Equality final : public Node {

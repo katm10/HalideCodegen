@@ -173,7 +173,7 @@ inline shared_ptr<Node> handle_ramp(shared_ptr<Node> &root, const ExprPtr &expr,
 inline shared_ptr<Node> handle_not_helper(shared_ptr<Node> &typed_root, const Not *expr, const std::string &typed_name, const std::string &name, VarScope &scope)
 {
     const std::string a_name = typed_name + "->a";
-    return tree_constructor(typed_root, expr->a, name, scope);
+    return tree_constructor(typed_root, expr->a, a_name, scope);
 }
 
 inline shared_ptr<Node> handle_not(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
@@ -194,7 +194,7 @@ inline shared_ptr<Node> handle_constant_int(shared_ptr<Node> &root, const Consta
     std::string typed_name = make_new_unique_name();
 
     // Inserts the typecheck and fixes name if necessary
-    shared_ptr<CFIR::IntImm> imm_node = make_shared<CFIR::IntImm>(name, typed_name);
+    shared_ptr<CFIR::ConstantInt> imm_node = make_shared<CFIR::ConstantInt>(name, typed_name);
     imm_node = root->get_child(imm_node);
     assert(imm_node);
     typed_name = imm_node->output_name;
@@ -206,9 +206,90 @@ inline shared_ptr<Node> handle_constant_int(shared_ptr<Node> &root, const Consta
     return imm_node->get_child(cond_node);
 }
 
+inline shared_ptr<Node> handle_can_prove_helper(shared_ptr<Node> &typed_root, const CanProve *expr, const std::string &typed_name, VarScope &scope)
+{
+    const std::string value = typed_name + "->value";
+    return tree_constructor(typed_root, expr->value, typed_name, scope);
+}
+
+inline shared_ptr<Node> handle_can_prove(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
+{
+    const CanProve *op = expr->as<CanProve>();
+    assert(op); // We failed to identify the Expr properly.
+
+    std::string typed_name = make_new_unique_name();
+
+    shared_ptr<CFIR::CanProve> node = make_shared<CFIR::CanProve>(name, typed_name);
+    node = root->get_child(node);   
+    assert(node);                   
+    typed_name = node->output_name;
+    shared_ptr<Node> typed_root = std::move(node);
+
+    return handle_can_prove_helper(typed_root, op, typed_name, scope);
+}
+
+inline shared_ptr<Node> handle_fold_helper(shared_ptr<Node> &typed_root, const Fold *expr, const std::string &typed_name, VarScope &scope)
+{
+    const std::string value = typed_name + "->value";
+    return tree_constructor(typed_root, expr->value, typed_name, scope);
+}
+
+inline shared_ptr<Node> handle_fold(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
+{
+    const Fold *op = expr->as<Fold>();
+    assert(op); // We failed to identify the Expr properly.
+
+    std::string typed_name = make_new_unique_name();
+
+    shared_ptr<CFIR::Fold> node = make_shared<CFIR::Fold>(name, typed_name);
+    node = root->get_child(node);   
+    assert(node);                   
+    typed_name = node->output_name;
+    shared_ptr<Node> typed_root = std::move(node);
+
+    return handle_fold_helper(typed_root, op, typed_name, scope);
+}
+
+inline shared_ptr<Node> handle_call_helper(shared_ptr<Node> &typed_root, const Call *expr, const std::string &typed_name, VarScope &scope)
+{
+    const std::string call_name = typed_name + "->name";
+    const std::string args_name = typed_name + "->args";
+    const std::string name = expr->name;
+    const std::vector<ExprPtr> args = expr->args;
+
+    const std::string condition = call_name + " == " + name;
+    shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
+
+    shared_ptr<CFIR::Node> node = cond_node;
+    for (size_t i = 0; i < args.size(); ++i){
+        const ExprPtr arg = args[i];
+        const std::string arg_name = args_name + "[" + std::to_string(i) + "]";
+        shared_ptr<Node> node = tree_constructor(node, arg, arg_name, scope);
+    }
+    
+    return node;
+}
+
+inline shared_ptr<Node> handle_call(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
+{
+    const Call *op = expr->as<Call>();
+    assert(op); // We failed to identify the Expr properly.
+
+    std::string typed_name = make_new_unique_name();
+
+    shared_ptr<CFIR::Call> node = make_shared<CFIR::Call>(name, typed_name);
+    node = root->get_child(node);   
+    assert(node);                   
+    typed_name = node->output_name;
+    shared_ptr<Node> typed_root = std::move(node);
+
+    return handle_call_helper(typed_root, op, typed_name, scope);
+}
+
+
 /*
 TODOs:
-    // IntImm,
+    // ConstantInt,
     UIntImm, // I don't think we will need this, but it's possible
     FloatImm, // or this
     StringImm, // or this
@@ -296,11 +377,14 @@ shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const ExprPtr &expr, co
         return handle_ramp(root, expr, name, scope);
     case NodeType::Broadcast:
         return handle_broadcast(root, expr, name, scope);
-    /** TODO:
-     *  - Call
-     *  - CanProve
-     *  - Fold
-     */
+
+    // TODO: one of these is causing a seg fault
+    // case NodeType::CanProve:
+    //     return handle_can_prove(root, expr, name, scope);
+    // case NodeType::Fold:
+    //     return handle_fold(root, expr, name, scope);
+    // case NodeType::Call:
+    //     return handle_call(root, expr, name, scope);
     default:
         assert(false);
     }
@@ -405,10 +489,17 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
     const T *expr = rule->before->as<T>();
     assert(expr);
     shared_ptr<Node> deepest = start_tree_constructor(root, expr, name, scope);
+
+    if (rule->types != UINT16_MAX){
+        const std::string type_condition = rule->generate_condition(name);
+        shared_ptr<CFIR::Condition> type_node = make_shared<CFIR::Condition>(type_condition);
+        deepest = deepest->get_child(type_node);
+    }
+
     if (rule->pred)
     {
         // TODO: probably want to assert that child node doesn't exist...?
-        const std::string condition = "evaluate_predicate(fold(" + build_expr(rule->pred, scope) + ", simplifier))";
+        const std::string condition = "evaluate_predicate(fold(" + build_expr(rule->pred, scope) + "))";
         shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
         deepest = deepest->get_child(cond_node);
     }
@@ -437,7 +528,8 @@ void print_function_typed(const vector<Rule*> &rules, const std::string &func_na
 {
     shared_ptr<Node> root = create_graph_typed<T>(rules, "expr");
 
-    std::cout << "Expr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
+    // TODO: include files? ie. #include "AST.h"
+    std::cout << "ExprPtr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
     root->print(std::cout, "");
     std::cout << "  return expr;\n}\n";
 }
@@ -451,7 +543,7 @@ int main(int argc, char *argv[])
     // }
     // std::string filename = argv[1];
 
-    std::string filename = "rules/Simplify_Sub.rewrites";
+    std::string filename = "rules/Small_Sub.rewrites";
     std::vector<Rule *> rules = parse_rules_from_file(filename);
     print_function_typed<Sub>(rules, "simplify_sub", "Sub");
 

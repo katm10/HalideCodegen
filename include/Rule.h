@@ -7,7 +7,8 @@
 
 using namespace AST;
 
-enum class NumericType : uint16_t {
+enum class NumericType : uint16_t
+{
     // INVALID = 1 << 0,
     // ANY = 1 << 1,
     UINT = 1 << 2,
@@ -26,7 +27,24 @@ enum class NumericType : uint16_t {
     ALLOWED_OVERFLOW = 1 << 15
 };
 
-class Rule {
+const std::map<std::string, NumericType, std::greater<std::string>> typeStrings{
+    {"uint", NumericType::UINT},
+    {"int", NumericType::INT},
+    {"float", NumericType::FLOAT},
+    {"no_overflow_scalar_int", NumericType::NO_OVERFLOW_SCALAR_INT},
+    {"no_overflow_int", NumericType::NO_OVERFLOW_INT},
+    {"no_overflow", NumericType::NO_OVERFLOW},
+    {"bool", NumericType::BOOL},
+    {"operand_uint", NumericType::OPERAND_UINT},
+    {"operand_int", NumericType::OPERAND_INT},
+    {"operand_float", NumericType::OPERAND_FLOAT},
+    {"operand_no_overflow_scalar_int", NumericType::OPERAND_NO_OVERFLOW_SCALAR_INT},
+    {"operand_no_overflow_int", NumericType::OPERAND_NO_OVERFLOW_INT},
+    {"operand_no_overflow", NumericType::OPERAND_NO_OVERFLOW},
+    {"allowed_overflow", NumericType::ALLOWED_OVERFLOW}};
+
+class Rule
+{
 public:
     const ExprPtr before;
     const ExprPtr after;
@@ -34,7 +52,7 @@ public:
     uint16_t types = 0;
 
     ~Rule() = default;
-    Rule(){}
+    Rule() {}
     Rule(const ExprPtr _before, const ExprPtr _after)
         : before(_before), after(_after) {}
 
@@ -44,6 +62,7 @@ public:
     void add_type(bool allowed, uint16_t type);
     void set_types(uint16_t _types);
     uint16_t get_types();
+    std::string generate_condition(std::string expr_name) const;
 };
 
 #endif
