@@ -212,28 +212,6 @@ inline shared_ptr<Node> handle_can_prove_helper(shared_ptr<Node> &typed_root, co
     return tree_constructor(typed_root, expr->value, typed_name, scope);
 }
 
-inline shared_ptr<Node> handle_can_prove(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
-{
-    const CanProve *op = expr->as<CanProve>();
-    assert(op); // We failed to identify the Expr properly.
-
-    std::string typed_name = make_new_unique_name();
-
-    shared_ptr<CFIR::CanProve> node = make_shared<CFIR::CanProve>(name, typed_name);
-    node = root->get_child(node);
-    assert(node);
-    typed_name = node->output_name;
-    shared_ptr<Node> typed_root = std::move(node);
-
-    return handle_can_prove_helper(typed_root, op, typed_name, scope);
-}
-
-inline shared_ptr<Node> handle_fold_helper(shared_ptr<Node> &typed_root, const Fold *expr, const std::string &typed_name, VarScope &scope)
-{
-    const std::string value = typed_name + "->value";
-    return tree_constructor(typed_root, expr->value, typed_name, scope);
-}
-
 inline shared_ptr<Node> handle_fold(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
 {
     const Fold *op = expr->as<Fold>();
@@ -268,22 +246,6 @@ inline shared_ptr<Node> handle_call_helper(shared_ptr<Node> &typed_root, const C
     }
 
     return cond_node;
-}
-
-inline shared_ptr<Node> handle_call(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
-{
-    const Call *op = expr->as<Call>();
-    assert(op); // We failed to identify the Expr properly.
-
-    std::string typed_name = make_new_unique_name();
-
-    shared_ptr<CFIR::Call> node = make_shared<CFIR::Call>(name, typed_name);
-    node = root->get_child(node);
-    assert(node);
-    typed_name = node->output_name;
-    shared_ptr<Node> typed_root = std::move(node);
-
-    return handle_call_helper(typed_root, op, typed_name, scope);
 }
 
 /*
@@ -376,12 +338,6 @@ shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const ExprPtr &expr, co
         return handle_ramp(root, expr, name, scope);
     case NodeType::Broadcast:
         return handle_broadcast(root, expr, name, scope);
-    // case NodeType::CanProve:
-    //     return handle_can_prove(root, expr, name, scope);
-    // case NodeType::Fold:
-    //     return handle_fold(root, expr, name, scope);
-    // case NodeType::Call:
-    //     return handle_call(root, expr, name, scope);
     default:
         assert(false);
     }

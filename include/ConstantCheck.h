@@ -33,25 +33,25 @@ struct ConstantCheck final : public Visitor {
         expr->a->accept(this);
     }
 
-    void visit(const Select *expr) {
+    void visit(const Select *expr) override {
         expr->a->accept(this);
         expr->b->accept(this);
         expr->cond->accept(this);
     }
     
-    void visit(const Ramp *expr) {
+    void visit(const Ramp *expr) override {
         expr->base->accept(this);
         expr->lanes->accept(this);
         expr->stride->accept(this);
     }
-    void visit(const Broadcast *expr) {
+    void visit(const Broadcast *expr) override {
         expr->lanes->accept(this);
         expr->value->accept(this);
     }
-    void visit(const Fold *expr) {
+    void visit(const Fold *expr) override {
         expr->value->accept(this);
     }
-    void visit(const CanProve *expr) {
+    void visit(const CanProve *expr) override {
         expr->value->accept(this);
     }
 };
