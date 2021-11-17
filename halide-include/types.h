@@ -81,4 +81,15 @@ inline bool is_operand_no_overflow(const BinOp *bop) {
     return no_overflow(bop->a.type());
 }
 
+inline bool is_const_int(const Expr &expr, int64_t value) {
+    if (const UIntImm *as_uint = expr.as<UIntImm>()) {
+        return as_uint->value == (uint64_t)value;
+    } else if (const IntImm *as_int = expr.as<IntImm>()) {
+        return as_int->value == (int64_t)value;
+    } else if (const FloatImm *as_float = expr.as<FloatImm>()) {
+        return as_float->value == (double)value;
+    }
+    return false;
+}
+
 }  // namespace TypeCheck

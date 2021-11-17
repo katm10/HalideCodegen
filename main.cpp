@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        std::cout << "Usage: ./bin/Parser <input filename>\n";
+        std::cout << "Usage: ./main.out <input filename>\n";
         return 1;
     }
     std::string filename = argv[1];
