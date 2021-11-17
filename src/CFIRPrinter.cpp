@@ -12,7 +12,6 @@ std::string make_new_unique_name() {
     return "a" + std::to_string(counter++);
 }
 
-
 std::string build_expr(const AST::ExprPtr &expr, const VarScope &scope) {
     AST::Substitute substitute(scope);
     AST::ExprPtr new_expr = expr->mutate(&substitute);

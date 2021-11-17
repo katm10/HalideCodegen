@@ -220,8 +220,8 @@ inline shared_ptr<Node> handle_can_prove(shared_ptr<Node> &root, const ExprPtr &
     std::string typed_name = make_new_unique_name();
 
     shared_ptr<CFIR::CanProve> node = make_shared<CFIR::CanProve>(name, typed_name);
-    node = root->get_child(node);   
-    assert(node);                   
+    node = root->get_child(node);
+    assert(node);
     typed_name = node->output_name;
     shared_ptr<Node> typed_root = std::move(node);
 
@@ -242,8 +242,8 @@ inline shared_ptr<Node> handle_fold(shared_ptr<Node> &root, const ExprPtr &expr,
     std::string typed_name = make_new_unique_name();
 
     shared_ptr<CFIR::Fold> node = make_shared<CFIR::Fold>(name, typed_name);
-    node = root->get_child(node);   
-    assert(node);                   
+    node = root->get_child(node);
+    assert(node);
     typed_name = node->output_name;
     shared_ptr<Node> typed_root = std::move(node);
 
@@ -258,16 +258,16 @@ inline shared_ptr<Node> handle_call_helper(shared_ptr<Node> &typed_root, const C
     const std::vector<ExprPtr> args = expr->args;
 
     const std::string condition = call_name + " == " + name;
-    shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
+    shared_ptr<CFIR::Node> cond_node = make_shared<CFIR::Condition>(condition);
 
-    shared_ptr<CFIR::Node> node = cond_node;
-    for (size_t i = 0; i < args.size(); ++i){
+    for (size_t i = 0; i < args.size(); ++i)
+    {
         const ExprPtr arg = args[i];
         const std::string arg_name = args_name + "[" + std::to_string(i) + "]";
-        shared_ptr<Node> node = tree_constructor(node, arg, arg_name, scope);
+        cond_node = tree_constructor(cond_node, arg, arg_name, scope);
     }
-    
-    return node;
+
+    return cond_node;
 }
 
 inline shared_ptr<Node> handle_call(shared_ptr<Node> &root, const ExprPtr &expr, const std::string &name, VarScope &scope)
@@ -278,14 +278,13 @@ inline shared_ptr<Node> handle_call(shared_ptr<Node> &root, const ExprPtr &expr,
     std::string typed_name = make_new_unique_name();
 
     shared_ptr<CFIR::Call> node = make_shared<CFIR::Call>(name, typed_name);
-    node = root->get_child(node);   
-    assert(node);                   
+    node = root->get_child(node);
+    assert(node);
     typed_name = node->output_name;
     shared_ptr<Node> typed_root = std::move(node);
 
     return handle_call_helper(typed_root, op, typed_name, scope);
 }
-
 
 /*
 TODOs:
@@ -360,25 +359,23 @@ shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const ExprPtr &expr, co
         return handle_select(root, expr, name, scope);
     case NodeType::Var:
     {
-        const Var* var = expr->as<Var>();
+        const Var *var = expr->as<Var>();
         return handle_variable(root, var, name, scope);
     }
     case NodeType::ConstantVar:
     {
-        const ConstantVar* var = expr->as<ConstantVar>();
+        const ConstantVar *var = expr->as<ConstantVar>();
         return handle_const_variable(root, var, name, scope);
     }
     case NodeType::ConstantInt:
     {
-        const ConstantInt* imm = expr->as<ConstantInt>();
+        const ConstantInt *imm = expr->as<ConstantInt>();
         return handle_constant_int(root, imm, name, scope);
     }
     case NodeType::Ramp:
         return handle_ramp(root, expr, name, scope);
     case NodeType::Broadcast:
         return handle_broadcast(root, expr, name, scope);
-
-    // TODO: one of these is causing a seg fault
     // case NodeType::CanProve:
     //     return handle_can_prove(root, expr, name, scope);
     // case NodeType::Fold:
@@ -488,12 +485,16 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
     VarScope scope;
     const T *expr = rule->before->as<T>();
     assert(expr);
-    shared_ptr<Node> deepest = start_tree_constructor(root, expr, name, scope);
+    shared_ptr<Node> deepest; 
 
-    if (rule->types != UINT16_MAX){
+    if (rule->types != UINT16_MAX)
+    {
         const std::string type_condition = rule->generate_condition(name);
         shared_ptr<CFIR::Condition> type_node = make_shared<CFIR::Condition>(type_condition);
-        deepest = deepest->get_child(type_node);
+        deepest = root->get_child(type_node);
+        deepest = tree_constructor(deepest, rule->before, name, scope);
+    } else {
+        deepest = start_tree_constructor(root, expr, name, scope);
     }
 
     if (rule->pred)
@@ -510,7 +511,7 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
 }
 
 template <typename T>
-shared_ptr<Node> create_graph_typed(const vector<Rule*> &rules, const std::string &expr_name)
+shared_ptr<Node> create_graph_typed(const vector<Rule *> &rules, const std::string &expr_name)
 {
     assert(rules.size() > 0);
 
@@ -524,7 +525,7 @@ shared_ptr<Node> create_graph_typed(const vector<Rule*> &rules, const std::strin
 }
 
 template <typename T>
-void print_function_typed(const vector<Rule*> &rules, const std::string &func_name, const std::string &type_name)
+void print_function_typed(const vector<Rule *> &rules, const std::string &func_name, const std::string &type_name)
 {
     shared_ptr<Node> root = create_graph_typed<T>(rules, "expr");
 
@@ -536,16 +537,56 @@ void print_function_typed(const vector<Rule*> &rules, const std::string &func_na
 
 int main(int argc, char *argv[])
 {
-    // if (argc != 2)
-    // {
-    //     std::cout << "Usage: ./MergeTool.o <input filename>\n";
-    //     return 1;
-    // }
-    // std::string filename = argv[1];
-
-    std::string filename = "rules/Small_Sub.rewrites";
+    if (argc != 2)
+    {
+        std::cout << "Usage: ./MergeTool.o <input filename>\n";
+        return 1;
+    }
+    std::string filename = argv[1];
     std::vector<Rule *> rules = parse_rules_from_file(filename);
-    print_function_typed<Sub>(rules, "simplify_sub", "Sub");
 
+    // Remove directory if present.
+    // Do this before extension removal incase directory has a period character.
+    const size_t last_slash_idx = filename.find_last_of("\\/");
+    if (std::string::npos != last_slash_idx)
+    {
+        filename.erase(0, last_slash_idx + 1);
+    }
+
+    // Remove extension if present.
+    const size_t period_idx = filename.rfind('.');
+    if (std::string::npos != period_idx)
+    {
+        filename.erase(period_idx);
+    }
+
+    switch (rules.front()->before->node_type)
+    {
+    case NodeType::Add:
+        print_function_typed<Add>(rules, filename, "Add");
+        break;
+    case NodeType::Sub:
+        print_function_typed<Sub>(rules, filename, "Sub");
+        break;
+    case NodeType::Mod:
+        print_function_typed<Mod>(rules, filename, "Mod");
+        break;
+    case NodeType::Mul:
+        print_function_typed<Mul>(rules, filename, "Mul");
+        break;
+    case NodeType::Div:
+        print_function_typed<Div>(rules, filename, "Div");
+        break;
+    case NodeType::And:
+        print_function_typed<And>(rules, filename, "And");
+        break;
+    case NodeType::Or:
+        print_function_typed<Or>(rules, filename, "Or");
+        break;
+    // TODO add more of these
+    default:
+        std::cout << "Not implemented\n";
+        return 1;
+    }
     return 0;
 }

@@ -40,8 +40,7 @@ const std::map<std::string, NumericType, std::greater<std::string>> typeStrings{
     {"operand_float", NumericType::OPERAND_FLOAT},
     {"operand_no_overflow_scalar_int", NumericType::OPERAND_NO_OVERFLOW_SCALAR_INT},
     {"operand_no_overflow_int", NumericType::OPERAND_NO_OVERFLOW_INT},
-    {"operand_no_overflow", NumericType::OPERAND_NO_OVERFLOW},
-    {"allowed_overflow", NumericType::ALLOWED_OVERFLOW}};
+    {"operand_no_overflow", NumericType::OPERAND_NO_OVERFLOW}};
 
 class Rule
 {
