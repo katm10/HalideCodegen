@@ -200,9 +200,6 @@ inline shared_ptr<Node> handle_constant_int(shared_ptr<Node> &root, const Consta
     return imm_node;
 }
 
-
-
-
 /*
 TODOs:
     // ConstantInt,
@@ -396,7 +393,7 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
     VarScope scope;
     const T *expr = rule->before->as<T>();
     assert(expr);
-    shared_ptr<Node> deepest; 
+    shared_ptr<Node> deepest;
 
     if (rule->types != UINT16_MAX)
     {
@@ -404,7 +401,9 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
         shared_ptr<CFIR::Condition> type_node = make_shared<CFIR::Condition>(type_condition);
         deepest = root->get_child(type_node);
         deepest = tree_constructor(deepest, rule->before, name, scope);
-    } else {
+    }
+    else
+    {
         deepest = start_tree_constructor(root, expr, name, scope);
     }
 
@@ -493,6 +492,30 @@ int main(int argc, char *argv[])
         break;
     case NodeType::Or:
         print_function_typed<Or>(rules, filename, "Or");
+        break;
+    case NodeType::EQ:
+        print_function_typed<EQ>(rules, filename, "EQ");
+        break;
+    case NodeType::NE:
+        print_function_typed<EQ>(rules, filename, "NE");
+        break;
+    case NodeType::LT:
+        print_function_typed<EQ>(rules, filename, "LT");
+        break;
+    case NodeType::GT:
+        print_function_typed<GT>(rules, filename, "GT");
+        break;
+    case NodeType::GE:
+        print_function_typed<GE>(rules, filename, "GE");
+        break;
+    case NodeType::LE:
+        print_function_typed<LE>(rules, filename, "LE");
+        break;
+    case NodeType::Max:
+        print_function_typed<Max>(rules, filename, "Max");
+        break;
+    case NodeType::Min:
+        print_function_typed<Min>(rules, filename, "Min");
         break;
     // TODO add more of these
     default:
