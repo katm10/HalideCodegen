@@ -249,32 +249,14 @@ struct Ramp final : public TypeCheck<Ramp> {
     inline static const std::string type_name = "Ramp";
 };
 
-struct Call final : public TypeCheck<Call> {
-    Call(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::Call, _curr, _out) {
+struct ConstantInt final : public Node {
+    ConstantInt(const std::string &_name, int64_t _value)
+        : Node(IRType::ConstantInt), name(_name), value(_value) {
     }
-    inline static const std::string type_name = "Call";
-};
-
-struct Fold final : public TypeCheck<Fold> {
-    Fold(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::Fold, _curr, _out) {
-    }
-    inline static const std::string type_name = "Fold";
-};
-
-struct CanProve final : public TypeCheck<CanProve> {
-    CanProve(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::CanProve, _curr, _out) {
-    }
-    inline static const std::string type_name = "CanProve";
-};
-
-struct ConstantInt final : public TypeCheck<ConstantInt> {
-    ConstantInt(const std::string &_curr, const std::string &_out)
-        : TypeCheck(IRType::ConstantInt, _curr, _out) {
-    }
-    inline static const std::string type_name = "ConstantInt";
+    const std::string name;
+    const int64_t value;
+    bool equal(const shared_ptr<Node> &other) const override;
+    void print(std::ostream &stream, std::string indent) const override;
 };
 
 struct Equality final : public Node {

@@ -1,6 +1,7 @@
 #include "Parser.h"
 #include "ConstantCheck.h"
 
+#include <cstdint>
 #include <fstream>
 #include <stdio.h>
 #include <memory>
@@ -29,7 +30,7 @@ size_t get_filesize(const std::string &filename)
 
 void report_error(const char **cursor, const char *debug_info)
 {
-    printf(debug_info);
+    printf("%s", debug_info);
     printf("Parsing failed at %s\n", *cursor);
     abort();
 }
@@ -497,6 +498,7 @@ class Parser
             }
         }
         report_error("parse_type() found no type matches.");
+        return (NumericType)UINT16_MAX;
     }
 
     uint16_t parse_types()

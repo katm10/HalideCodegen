@@ -9,6 +9,22 @@ using std::vector;
 
 namespace CFIR {
 
+bool ConstantInt::equal(const shared_ptr<Node> &other) const {
+    if (const ConstantInt *other_ci = other->as<ConstantInt>(IRType::ConstantInt)) {
+        return (name == other_ci->name) && (value == other_ci->value);
+    } else {
+        return false;
+    }
+}
+
+void ConstantInt::print(std::ostream &stream, std::string indent) const {
+    stream << indent << "if (is_const_int(" << name << ", " << value << ")) {\n";
+    for (const auto &child : children) {
+        child->print(stream, indent + "  ");
+    }
+    stream << indent << "}\n";
+}
+
 bool Equality::equal(const shared_ptr<Node> &other) const {
     if (const Equality *other_equal = other->as<Equality>(IRType::Equality)) {
         return (name1 == other_equal->name1) && (name2 == other_equal->name2);
