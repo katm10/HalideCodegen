@@ -77,7 +77,7 @@ shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar 
         scope.insert(std::make_pair(var->name, name));
 
         // TODO: change this to is_const, I am using is_const_v for testing purposes
-        const std::string condition = "is_const_v(" + name + ")";
+        const std::string condition = "is_const(" + name + ")";
         shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
         return root->get_child(cond_node);
     }
@@ -93,8 +93,8 @@ shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar 
 inline shared_ptr<Node> handle_select_helper(shared_ptr<Node> &typed_root, const Select *expr, const std::string &typed_name, VarScope &scope)
 {
     const std::string cond_name = typed_name + "->cond";
-    const std::string true_name = typed_name + "->a";
-    const std::string false_name = typed_name + "->b";
+    const std::string true_name = typed_name + "->true_value";
+    const std::string false_name = typed_name + "->false_value";
 
     shared_ptr<Node> cond_node = tree_constructor(typed_root, expr->cond, cond_name, scope);
     shared_ptr<Node> true_node = tree_constructor(cond_node, expr->a, true_name, scope);
