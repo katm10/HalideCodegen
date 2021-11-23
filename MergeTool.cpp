@@ -500,7 +500,7 @@ int main(int argc, char *argv[])
         print_function_typed<EQ>(rules, filename, "NE");
         break;
     case NodeType::LT:
-        print_function_typed<EQ>(rules, filename, "LT");
+        print_function_typed<LT>(rules, filename, "LT");
         break;
     case NodeType::GT:
         print_function_typed<GT>(rules, filename, "GT");
