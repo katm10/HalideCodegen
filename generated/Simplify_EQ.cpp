@@ -1,4 +1,8 @@
-ExprPtr Simplify_EQ(const EQ *expr, Simplify *simplifier) {
+#include "Simplify_Internal.h"
+#include "Expr.h"
+#include "Type.h"
+
+Expr Simplify_EQ(const EQ *expr, Simplify *simplifier) {
   if (const Broadcast *a0 = expr->a->as<Broadcast>()) {
     if (is_const_v(a0->lanes)) {
       if (is_const_int(expr->b, 0)) {

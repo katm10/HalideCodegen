@@ -1,4 +1,8 @@
-ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
+#include "Simplify_Internal.h"
+#include "Expr.h"
+#include "Type.h"
+
+Expr Simplify_And(const And *expr, Simplify *simplifier) {
   return expr->a;
   return expr->b;
   if (equal(expr->a, expr->b)) {
@@ -83,20 +87,20 @@ ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
         }
       }
     }
-    if (const Or *a95 = a0->b->as<Or>()) {
-      if (equal(a95->a, expr->b)) {
-        return (a0->a && a95->a);
+    if (const Or *a99 = a0->b->as<Or>()) {
+      if (equal(a99->a, expr->b)) {
+        return (a0->a && a99->a);
       }
-      if (equal(a95->b, expr->b)) {
-        return (a0->a && a95->b);
+      if (equal(a99->b, expr->b)) {
+        return (a0->a && a99->b);
       }
     }
-    if (const Or *a103 = a0->a->as<Or>()) {
-      if (equal(a103->a, expr->b)) {
-        return (a0->b && a103->a);
+    if (const Or *a107 = a0->a->as<Or>()) {
+      if (equal(a107->a, expr->b)) {
+        return (a0->b && a107->a);
       }
-      if (equal(a103->b, expr->b)) {
-        return (a0->b && a103->b);
+      if (equal(a107->b, expr->b)) {
+        return (a0->b && a107->b);
       }
     }
   }
@@ -123,19 +127,19 @@ ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
         return (a1->a && (a11->a && expr->a));
       }
     }
-    if (const Or *a99 = a1->b->as<Or>()) {
-      if (equal(expr->a, a99->a)) {
+    if (const Or *a103 = a1->b->as<Or>()) {
+      if (equal(expr->a, a103->a)) {
         return (expr->a && a1->a);
       }
-      if (equal(expr->a, a99->b)) {
+      if (equal(expr->a, a103->b)) {
         return (expr->a && a1->a);
       }
     }
-    if (const Or *a107 = a1->a->as<Or>()) {
-      if (equal(expr->a, a107->a)) {
+    if (const Or *a111 = a1->a->as<Or>()) {
+      if (equal(expr->a, a111->a)) {
         return (expr->a && a1->b);
       }
-      if (equal(expr->a, a107->b)) {
+      if (equal(expr->a, a111->b)) {
         return (expr->a && a1->b);
       }
     }
@@ -147,34 +151,34 @@ ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
     if (equal(a20->b, expr->b)) {
       return a20->b;
     }
-    if (const And *a79 = a20->b->as<And>()) {
-      if (equal(a79->a, expr->b)) {
-        return ((a20->a || a79->b) && a79->a);
+    if (const And *a83 = a20->b->as<And>()) {
+      if (equal(a83->a, expr->b)) {
+        return ((a20->a || a83->b) && a83->a);
       }
-      if (equal(a79->b, expr->b)) {
-        return ((a20->a || a79->a) && a79->b);
-      }
-    }
-    if (const And *a87 = a20->a->as<And>()) {
-      if (equal(a87->a, expr->b)) {
-        return ((a87->b || a20->b) && a87->a);
-      }
-      if (equal(a87->b, expr->b)) {
-        return ((a87->a || a20->b) && a87->b);
+      if (equal(a83->b, expr->b)) {
+        return ((a20->a || a83->a) && a83->b);
       }
     }
-    if (const Or *a111 = expr->b->as<Or>()) {
-      if (equal(a20->a, a111->a)) {
-        return (a20->a || (a20->b && a111->b));
+    if (const And *a91 = a20->a->as<And>()) {
+      if (equal(a91->a, expr->b)) {
+        return ((a91->b || a20->b) && a91->a);
       }
-      if (equal(a20->a, a111->b)) {
-        return (a20->a || (a20->b && a111->a));
+      if (equal(a91->b, expr->b)) {
+        return ((a91->a || a20->b) && a91->b);
       }
-      if (equal(a20->b, a111->a)) {
-        return (a20->b || (a20->a && a111->b));
+    }
+    if (const Or *a115 = expr->b->as<Or>()) {
+      if (equal(a20->a, a115->a)) {
+        return (a20->a || (a20->b && a115->b));
       }
-      if (equal(a20->b, a111->b)) {
-        return (a20->b || (a20->a && a111->a));
+      if (equal(a20->a, a115->b)) {
+        return (a20->a || (a20->b && a115->a));
+      }
+      if (equal(a20->b, a115->a)) {
+        return (a20->b || (a20->a && a115->b));
+      }
+      if (equal(a20->b, a115->b)) {
+        return (a20->b || (a20->a && a115->a));
       }
     }
   }
@@ -185,20 +189,20 @@ ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
     if (equal(expr->a, a21->b)) {
       return expr->a;
     }
-    if (const And *a83 = a21->b->as<And>()) {
-      if (equal(expr->a, a83->a)) {
-        return (expr->a && (a21->a || a83->b));
+    if (const And *a87 = a21->b->as<And>()) {
+      if (equal(expr->a, a87->a)) {
+        return (expr->a && (a21->a || a87->b));
       }
-      if (equal(expr->a, a83->b)) {
-        return (expr->a && (a21->a || a83->a));
+      if (equal(expr->a, a87->b)) {
+        return (expr->a && (a21->a || a87->a));
       }
     }
-    if (const And *a91 = a21->a->as<And>()) {
-      if (equal(expr->a, a91->a)) {
-        return (expr->a && (a91->b || a21->b));
+    if (const And *a95 = a21->a->as<And>()) {
+      if (equal(expr->a, a95->a)) {
+        return (expr->a && (a95->b || a21->b));
       }
-      if (equal(expr->a, a91->b)) {
-        return (expr->a && (a91->a || a21->b));
+      if (equal(expr->a, a95->b)) {
+        return (expr->a && (a95->a || a21->b));
       }
     }
   }
@@ -246,61 +250,61 @@ ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
       }
     }
     if (is_const_v(a54->b)) {
-      if (const LT *a61 = expr->b->as<LT>()) {
-        if (is_const_v(a61->a)) {
-          if (equal(a54->a, a61->b)) {
-            if (evaluate_predicate(fold((a54->b <= a61->a)))) {
+      if (const LT *a65 = expr->b->as<LT>()) {
+        if (is_const_v(a65->a)) {
+          if (equal(a54->a, a65->b)) {
+            if (evaluate_predicate(fold((a54->b <= a65->a)))) {
               return false;
             }
           }
         }
       }
-      if (const LE *a67 = expr->b->as<LE>()) {
-        if (is_const_v(a67->a)) {
-          if (equal(a54->a, a67->b)) {
-            if (evaluate_predicate(fold((a54->b < a67->a)))) {
+      if (const LE *a71 = expr->b->as<LE>()) {
+        if (is_const_v(a71->a)) {
+          if (equal(a54->a, a71->b)) {
+            if (evaluate_predicate(fold((a54->b < a71->a)))) {
               return false;
             }
           }
         }
-        if (equal(a54->a, a67->a)) {
-          if (is_const_v(a67->b)) {
-            return (a54->a <= fold(min(a54->b, a67->b)));
+        if (equal(a54->a, a71->a)) {
+          if (is_const_v(a71->b)) {
+            return (a54->a <= fold(min(a54->b, a71->b)));
           }
         }
       }
     }
     if (is_const_v(a54->a)) {
-      if (const LT *a63 = expr->b->as<LT>()) {
-        if (equal(a54->b, a63->a)) {
-          if (is_const_v(a63->b)) {
-            if (evaluate_predicate(fold((a63->b <= a54->a)))) {
+      if (const LT *a67 = expr->b->as<LT>()) {
+        if (equal(a54->b, a67->a)) {
+          if (is_const_v(a67->b)) {
+            if (evaluate_predicate(fold((a67->b <= a54->a)))) {
               return false;
             }
           }
         }
       }
-      if (const LE *a65 = expr->b->as<LE>()) {
-        if (equal(a54->b, a65->a)) {
-          if (is_const_v(a65->b)) {
-            if (evaluate_predicate(fold((a65->b < a54->a)))) {
+      if (const LE *a69 = expr->b->as<LE>()) {
+        if (equal(a54->b, a69->a)) {
+          if (is_const_v(a69->b)) {
+            if (evaluate_predicate(fold((a69->b < a54->a)))) {
               return false;
             }
           }
         }
-        if (is_const_v(a65->a)) {
-          if (equal(a54->b, a65->b)) {
-            return (fold(min(a54->a, a65->a)) <= a54->b);
+        if (is_const_v(a69->a)) {
+          if (equal(a54->b, a69->b)) {
+            return (fold(min(a54->a, a69->a)) <= a54->b);
           }
         }
       }
     }
-    if (const LE *a123 = expr->b->as<LE>()) {
-      if (equal(a54->a, a123->a)) {
-        return (a54->a <= min(a54->b, a123->b));
+    if (const LE *a127 = expr->b->as<LE>()) {
+      if (equal(a54->a, a127->a)) {
+        return (a54->a <= min(a54->b, a127->b));
       }
-      if (equal(a54->b, a123->b)) {
-        return (min(a54->a, a123->a) <= a54->b);
+      if (equal(a54->b, a127->b)) {
+        return (min(a54->a, a127->a) <= a54->b);
       }
     }
   }
@@ -317,39 +321,53 @@ ExprPtr Simplify_And(const And *expr, Simplify *simplifier) {
       }
     }
   }
-  if (const LT *a68 = expr->a->as<LT>()) {
-    if (is_const_v(a68->a)) {
-      if (const LT *a69 = expr->b->as<LT>()) {
-        if (is_const_v(a69->a)) {
-          if (equal(a68->b, a69->b)) {
-            return (fold(min(a68->a, a69->a)) < a68->b);
+  if (const LT *a60 = expr->a->as<LT>()) {
+    if (is_const_v(a60->a)) {
+      if (const LT *a61 = expr->b->as<LT>()) {
+        if (equal(a60->b, a61->a)) {
+          if (is_const_v(a61->b)) {
+            if (evaluate_predicate(fold((!(is_float(a60->b)) && (a61->b <= (a60->a + 1)))))) {
+              return false;
+            }
+          }
+        }
+        if (is_const_v(a61->a)) {
+          if (equal(a60->b, a61->b)) {
+            return (fold(min(a60->a, a61->a)) < a60->b);
           }
         }
       }
     }
-    if (is_const_v(a68->b)) {
-      if (const LT *a73 = expr->b->as<LT>()) {
-        if (equal(a68->a, a73->a)) {
-          if (is_const_v(a73->b)) {
-            return (a68->a < fold(min(a68->b, a73->b)));
+    if (is_const_v(a60->b)) {
+      if (const LT *a63 = expr->b->as<LT>()) {
+        if (is_const_v(a63->a)) {
+          if (equal(a60->a, a63->b)) {
+            if (evaluate_predicate(fold((!(is_float(a60->a)) && (a60->b <= (a63->a + 1)))))) {
+              return false;
+            }
+          }
+        }
+        if (equal(a60->a, a63->a)) {
+          if (is_const_v(a63->b)) {
+            return (a60->a < fold(min(a60->b, a63->b)));
           }
         }
       }
     }
-    if (const LT *a119 = expr->b->as<LT>()) {
-      if (equal(a68->a, a119->a)) {
-        return (a68->a < min(a68->b, a119->b));
+    if (const LT *a123 = expr->b->as<LT>()) {
+      if (equal(a60->a, a123->a)) {
+        return (a60->a < min(a60->b, a123->b));
       }
-      if (equal(a68->b, a119->b)) {
-        return (min(a68->a, a119->a) < a68->b);
+      if (equal(a60->b, a123->b)) {
+        return (min(a60->a, a123->a) < a60->b);
       }
     }
   }
-  if (const Broadcast *a76 = expr->a->as<Broadcast>()) {
-    if (is_const_v(a76->lanes)) {
-      if (const Broadcast *a77 = expr->b->as<Broadcast>()) {
-        if (equal(a76->lanes, a77->lanes)) {
-          return broadcast((a76->value && a77->value), a76->lanes);
+  if (const Broadcast *a80 = expr->a->as<Broadcast>()) {
+    if (is_const_v(a80->lanes)) {
+      if (const Broadcast *a81 = expr->b->as<Broadcast>()) {
+        if (equal(a80->lanes, a81->lanes)) {
+          return broadcast((a80->value && a81->value), a80->lanes);
         }
       }
     }

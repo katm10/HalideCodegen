@@ -1,4 +1,5 @@
-rewrite(x*y - z*y, (x - z)*y),
+rewrite(x - max(x, y), min(x - y, 0), !is_const(x)),
+rewrite(x - min(x, y), max(x - y, 0), !is_const(x)),
 rewrite(x*y - y*z, (x - z)*y), // this is a comment
 rewrite(y*x - z*y, y*(x - z)),
 rewrite(y*x - y*z, y*(x - z)),

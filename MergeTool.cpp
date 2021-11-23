@@ -439,8 +439,8 @@ void print_function_typed(const vector<Rule *> &rules, const std::string &func_n
 {
     shared_ptr<Node> root = create_graph_typed<T>(rules, "expr");
 
-    // TODO: include files? ie. #include "AST.h"
-    std::cout << "ExprPtr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
+    std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
+    std::cout << "Expr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
     root->print(std::cout, "");
     std::cout << "  return expr;\n}\n";
 }

@@ -1,4 +1,8 @@
-ExprPtr Simplify_Max(const Min *expr, Simplify *simplifier) {
+#include "Simplify_Internal.h"
+#include "Expr.h"
+#include "Type.h"
+
+Expr Simplify_Max(const Min *expr, Simplify *simplifier) {
   if (equal(expr->a, expr->b)) {
     return expr->a;
   }
@@ -503,10 +507,10 @@ ExprPtr Simplify_Max(const Min *expr, Simplify *simplifier) {
                       return b;
                     }
                   }
-                  if (const Add *a460 = a67->b->as<Add>()) {
-                    if (equal(a110->a, a460->a)) {
-                      if (is_const_v(a460->b)) {
-                        if (evaluate_predicate(fold(((a95->b > 0) && ((a110->b + 1) >= (a95->b + a460->b)))))) {
+                  if (const Add *a472 = a67->b->as<Add>()) {
+                    if (equal(a110->a, a472->a)) {
+                      if (is_const_v(a472->b)) {
+                        if (evaluate_predicate(fold(((a95->b > 0) && ((a110->b + 1) >= (a95->b + a472->b)))))) {
                           return (((a110->a + a110->b) / a95->b) * a95->b);
                         }
                       }
@@ -745,28 +749,50 @@ ExprPtr Simplify_Max(const Min *expr, Simplify *simplifier) {
               }
             }
           }
-          if (const Mul *a475 = a67->b->as<Mul>()) {
-            if (const Div *a476 = a475->a->as<Div>()) {
-              if (const Add *a477 = a476->a->as<Add>()) {
-                if (equal(a451->a, a477->a)) {
-                  if (is_const_v(a477->b)) {
-                    if (is_const_v(a476->b)) {
-                      if (is_const_v(a475->b)) {
-                        if (evaluate_predicate(fold(((((a477->b <= 0) && (a451->b > 0)) && (a476->b > 0)) && ((a451->b * a475->b) == a476->b))))) {
+          if (is_const_v(a67->b)) {
+            if (evaluate_predicate(fold(((a451->b > 0) && !(overflows((a67->b * a451->b))))))) {
+              return (min(a451->a, fold((a67->b * a451->b))) / a451->b);
+            }
+            if (evaluate_predicate(fold(((a451->b < 0) && !(overflows((a67->b * a451->b))))))) {
+              return (min(a451->a, fold((a67->b * a451->b))) / a451->b);
+            }
+          }
+          if (const Add *a462 = a67->b->as<Add>()) {
+            if (const Div *a463 = a462->a->as<Div>()) {
+              if (equal(a451->b, a463->b)) {
+                if (is_const_v(a462->b)) {
+                  if (evaluate_predicate(fold(((a451->b > 0) && !(overflows((a462->b * a451->b))))))) {
+                    return (min(a451->a, (a463->a + fold((a462->b * a451->b)))) / a451->b);
+                  }
+                  if (evaluate_predicate(fold(((a451->b < 0) && !(overflows((a462->b * a451->b))))))) {
+                    return (min(a451->a, (a463->a + fold((a462->b * a451->b)))) / a451->b);
+                  }
+                }
+              }
+            }
+          }
+          if (const Mul *a487 = a67->b->as<Mul>()) {
+            if (const Div *a488 = a487->a->as<Div>()) {
+              if (const Add *a489 = a488->a->as<Add>()) {
+                if (equal(a451->a, a489->a)) {
+                  if (is_const_v(a489->b)) {
+                    if (is_const_v(a488->b)) {
+                      if (is_const_v(a487->b)) {
+                        if (evaluate_predicate(fold(((((a489->b <= 0) && (a451->b > 0)) && (a488->b > 0)) && ((a451->b * a487->b) == a488->b))))) {
                           return (a451->a / a451->b);
                         }
-                        if (evaluate_predicate(fold((((((a476->b - a451->b) <= a477->b) && (a451->b > 0)) && (a476->b > 0)) && ((a451->b * a475->b) == a476->b))))) {
-                          return (((a451->a + a477->b) / a476->b) * a475->b);
+                        if (evaluate_predicate(fold((((((a488->b - a451->b) <= a489->b) && (a451->b > 0)) && (a488->b > 0)) && ((a451->b * a487->b) == a488->b))))) {
+                          return (((a451->a + a489->b) / a488->b) * a487->b);
                         }
                       }
                     }
                   }
                 }
               }
-              if (equal(a451->a, a476->a)) {
-                if (is_const_v(a476->b)) {
-                  if (is_const_v(a475->b)) {
-                    if (evaluate_predicate(fold((((a451->b > 0) && (a476->b > 0)) && ((a451->b * a475->b) == a476->b))))) {
+              if (equal(a451->a, a488->a)) {
+                if (is_const_v(a488->b)) {
+                  if (is_const_v(a487->b)) {
+                    if (evaluate_predicate(fold((((a451->b > 0) && (a488->b > 0)) && ((a451->b * a487->b) == a488->b))))) {
                       return (a451->a / a451->b);
                     }
                   }
@@ -775,35 +801,35 @@ ExprPtr Simplify_Max(const Min *expr, Simplify *simplifier) {
             }
           }
         }
-        if (const Add *a463 = a451->a->as<Add>()) {
-          if (is_const_v(a463->b)) {
+        if (const Add *a475 = a451->a->as<Add>()) {
+          if (is_const_v(a475->b)) {
             if (is_const_v(a451->b)) {
-              if (const Mul *a464 = a67->b->as<Mul>()) {
-                if (const Div *a465 = a464->a->as<Div>()) {
-                  if (const Add *a466 = a465->a->as<Add>()) {
-                    if (equal(a463->a, a466->a)) {
-                      if (is_const_v(a466->b)) {
-                        if (is_const_v(a465->b)) {
-                          if (is_const_v(a464->b)) {
-                            if (evaluate_predicate(fold(((((a466->b <= a463->b) && (a451->b > 0)) && (a465->b > 0)) && ((a451->b * a464->b) == a465->b))))) {
-                              return ((a463->a + a463->b) / a451->b);
+              if (const Mul *a476 = a67->b->as<Mul>()) {
+                if (const Div *a477 = a476->a->as<Div>()) {
+                  if (const Add *a478 = a477->a->as<Add>()) {
+                    if (equal(a475->a, a478->a)) {
+                      if (is_const_v(a478->b)) {
+                        if (is_const_v(a477->b)) {
+                          if (is_const_v(a476->b)) {
+                            if (evaluate_predicate(fold(((((a478->b <= a475->b) && (a451->b > 0)) && (a477->b > 0)) && ((a451->b * a476->b) == a477->b))))) {
+                              return ((a475->a + a475->b) / a451->b);
                             }
-                            if (evaluate_predicate(fold(((((((a463->b + a465->b) - a451->b) <= a466->b) && (a451->b > 0)) && (a465->b > 0)) && ((a451->b * a464->b) == a465->b))))) {
-                              return (((a463->a + a466->b) / a465->b) * a464->b);
+                            if (evaluate_predicate(fold(((((((a475->b + a477->b) - a451->b) <= a478->b) && (a451->b > 0)) && (a477->b > 0)) && ((a451->b * a476->b) == a477->b))))) {
+                              return (((a475->a + a478->b) / a477->b) * a476->b);
                             }
                           }
                         }
                       }
                     }
                   }
-                  if (equal(a463->a, a465->a)) {
-                    if (is_const_v(a465->b)) {
-                      if (is_const_v(a464->b)) {
-                        if (evaluate_predicate(fold(((((0 <= a463->b) && (a451->b > 0)) && (a465->b > 0)) && ((a451->b * a464->b) == a465->b))))) {
-                          return ((a463->a + a463->b) / a451->b);
+                  if (equal(a475->a, a477->a)) {
+                    if (is_const_v(a477->b)) {
+                      if (is_const_v(a476->b)) {
+                        if (evaluate_predicate(fold(((((0 <= a475->b) && (a451->b > 0)) && (a477->b > 0)) && ((a451->b * a476->b) == a477->b))))) {
+                          return ((a475->a + a475->b) / a451->b);
                         }
-                        if (evaluate_predicate(fold(((((((a463->b + a465->b) - a451->b) <= 0) && (a451->b > 0)) && (a465->b > 0)) && ((a451->b * a464->b) == a465->b))))) {
-                          return ((a463->a / a465->b) * a464->b);
+                        if (evaluate_predicate(fold(((((((a475->b + a477->b) - a451->b) <= 0) && (a451->b > 0)) && (a477->b > 0)) && ((a451->b * a476->b) == a477->b))))) {
+                          return ((a475->a / a477->b) * a476->b);
                         }
                       }
                     }

@@ -1,4 +1,8 @@
-ExprPtr Simplify_Add(const Add *expr, Simplify *simplifier) {
+#include "Simplify_Internal.h"
+#include "Expr.h"
+#include "Type.h"
+
+Expr Simplify_Add(const Add *expr, Simplify *simplifier) {
   if (is_const_int(expr->b, 0)) {
     return expr->a;
   }
