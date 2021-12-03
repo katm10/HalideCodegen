@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cfir/Printer.h"
+#include "cfir/Visitor.h"
 #include "Identifier.h"
 #include <algorithm>
 #include <memory>
@@ -48,9 +49,12 @@ enum class IRType {
     Sequence,
 };
 
+struct Visitor;
+
 struct Node {
     virtual void print(std::ostream &stream, const std::string &indent) const = 0;  // This makes the struct abstract.
     virtual bool equal(const shared_ptr<Node> &other) const = 0;
+    virtual void accept(Visitor *v) const = 0;
     virtual ~Node() = default;  // Otherwise C++ breaks for some reason.
 
     vector<shared_ptr<Node>> children;
@@ -117,6 +121,10 @@ struct TypeCheck : public Node {
             child->print(stream, indent + "  ");
         }
         stream << indent << "}\n";
+    }
+
+    void accept(Visitor *v) const override {
+        v->visit((T*)this);
     }
 };
 
@@ -261,6 +269,7 @@ struct ConstantInt final : public Node {
     const int64_t value;
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 struct Equality final : public Node {
@@ -271,6 +280,7 @@ struct Equality final : public Node {
     }
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 struct Return final : public Node {
@@ -280,6 +290,7 @@ struct Return final : public Node {
     }
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 // Used as a generic condition, makes a lot of stuff easier. Probably could have just inherited from this.
@@ -291,6 +302,7 @@ struct Condition final : public Node {
     }
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 struct IsConstant final : public Node {
@@ -300,6 +312,7 @@ struct IsConstant final : public Node {
     }
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 struct Predicate final : public Node {
@@ -309,6 +322,7 @@ struct Predicate final : public Node {
     }
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 
@@ -319,6 +333,7 @@ struct Sequence final : public Node {
     }
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
 };
 
 }  // namespace CFIR

@@ -1,6 +1,7 @@
 #include "cfir/Nodes.h"
 
 #include "ast/Printer.h"
+#include "cfir/Visitor.h"
 #include <string>
 #include <iostream>
 #include <cassert>
@@ -124,4 +125,33 @@ void Sequence::print(std::ostream &stream, const std::string &indent) const {
         child->print(stream, indent + "  ");
     }
 }
+
+void ConstantInt::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Equality::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Return::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Condition::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void IsConstant::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Predicate::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Sequence::accept(Visitor *v) const {
+    v->visit(this);
+}
+
 }  // namespace CFIR
