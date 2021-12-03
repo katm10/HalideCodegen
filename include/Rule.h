@@ -1,7 +1,7 @@
 #ifndef TRS_CODEGEN_RULE
 #define TRS_CODEGEN_RULE
 
-#include "AST.h"
+#include "ast/Types.h"
 #include <string>
 #include <vector>
 

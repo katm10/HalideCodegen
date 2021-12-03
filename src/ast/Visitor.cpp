@@ -1,5 +1,5 @@
-#include "Visitor.h"
-#include "AST.h"
+#include "ast/Visitor.h"
+#include "ast/Types.h"
 
 namespace AST {
 

@@ -1,6 +1,6 @@
-#include "ASTPrinter.h"
-#include "AST.h"
-#include "Substitute.h"
+#include "ast/Printer.h"
+#include "ast/Types.h"
+#include "ast/Substitute.h"
 #include <sstream>
 
 namespace AST {

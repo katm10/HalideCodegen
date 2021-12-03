@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "AST.h"
+#include "ast/Types.h"
 #include "Rule.h"
 
 // Helper routines for writing a parser and routines for parsing
