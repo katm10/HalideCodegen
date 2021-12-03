@@ -1,5 +1,7 @@
 #pragma once
+
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -17,7 +19,7 @@ struct Identifier {
 
 // TODO: might not want these to be constants.
 struct Name : public Identifier {
-    Name(const std::string &_name, bool declared = false) : Identifier(declared), name(_name) {}
+    Name(const std::string &_name, bool declared) : Identifier(declared), name(_name) {}
     void print(std::ostream &stream) const override;
     bool equals(const std::shared_ptr<Identifier> &other_id) const override;
 
@@ -38,6 +40,8 @@ struct PtrAccess : public Identifier {
 }  // namespace CFIR
 
 typedef std::shared_ptr<CFIR::Identifier> IdPtr;
+typedef std::map<std::string, IdPtr> VarScope;
 
-IdPtr make_name(const std::string &name);
+IdPtr make_name(const std::string &name, bool declared = false);
 IdPtr make_id_ptr(const IdPtr &id, const std::string &member);
+const IdPtr substitute(const IdPtr id, const VarScope &scope);

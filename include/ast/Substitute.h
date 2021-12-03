@@ -1,7 +1,8 @@
 #pragma once
 
 #include "ast/Mutator.h"
-#include "VarScope.h"
+#include "Identifier.h"
+
 #include <map>
 #include <string>
 
