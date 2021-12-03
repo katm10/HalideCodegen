@@ -205,4 +205,70 @@ ExprPtr Call::mutate(Mutator *m) const {
     return m->visit(this);
 }
 
+
+bool ConstantInt::equals(const ExprPtr expr) const {
+    if (const ConstantInt *as = expr->as<ConstantInt>()) {
+        return value == as->value;
+    } else {
+        return false;
+    }
+}
+
+bool Select::equals(const ExprPtr expr) const {
+    if (const Select *as = expr->as<Select>()) {
+        return cond->equals(as->cond) && a->equals(as->a) && b->equals(as->b);
+    } else {
+        return false;
+    }
+}
+
+bool Ramp::equals(const ExprPtr expr) const {
+    if (const Ramp *as = expr->as<Ramp>()) {
+        return base->equals(as->base) && stride->equals(as->stride) && lanes->equals(as->lanes);
+    } else {
+        return false;
+    }
+}
+
+bool Broadcast::equals(const ExprPtr expr) const {
+    if (const Broadcast *as = expr->as<Broadcast>()) {
+        return value->equals(as->value) && lanes->equals(as->lanes);
+    } else {
+        return false;
+    }
+}
+
+bool Fold::equals(const ExprPtr expr) const {
+    if (const Fold *as = expr->as<Fold>()) {
+        return value->equals(as->value);
+    } else {
+        return false;
+    }
+}
+
+bool CanProve::equals(const ExprPtr expr) const {
+    if (const CanProve *as = expr->as<CanProve>()) {
+        return value->equals(as->value);
+    } else {
+        return false;
+    }
+}
+
+bool Call::equals(const ExprPtr expr) const {
+    if (const Call *as = expr->as<Call>()) {
+        if (name != as->name || args.size() != as->args.size()) {
+            return false;
+        }
+        for (size_t i = 0; i < args.size(); i++) {
+            if (!args[i]->equals(as->args[i])) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 }  // namsepace AST

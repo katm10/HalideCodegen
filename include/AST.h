@@ -8,8 +8,6 @@
 #include <vector>
 #include <map>
 
-typedef std::map<std::string, std::string> VarScope;
-
 namespace AST
 {
 
@@ -63,6 +61,7 @@ namespace AST
         NodeType node_type;
         virtual void accept(Visitor *v) const = 0;
         virtual ExprPtr mutate(Mutator *m) const = 0;
+        virtual bool equals(const ExprPtr expr) const = 0;
 
         template <typename T>
         const T *as() const
@@ -88,6 +87,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::ConstantInt;
+        bool equals(const ExprPtr expr) const override;
     };
 
     template <typename T>
@@ -97,6 +97,13 @@ namespace AST
         VariableBase(const std::string &_name)
             : Expr(T::_node_type), name(_name)
         {
+        }
+        bool equals(const ExprPtr expr) const override {
+            if (const T *as = expr->as<T>()) {
+                return name == as->name;
+            } else {
+                return false;
+            }
         }
     };
 
@@ -108,6 +115,14 @@ namespace AST
             : Expr(T::_node_type), a(std::move(_a)), b(std::move(_b))
         {
         }
+
+        bool equals(const ExprPtr expr) const override {
+            if (const T *as = expr->as<T>()) {
+                return a->equals(as->a) && b->equals(as->b);
+            } else {
+                return false;
+            }
+        }
     };
 
     template <typename T>
@@ -117,6 +132,14 @@ namespace AST
         UnaryOp(ExprPtr &_a)
             : Expr(T::_node_type), a(std::move(_a))
         {
+        }
+
+        bool equals(const ExprPtr expr) const override {
+            if (const T *as = expr->as<T>()) {
+                return a->equals(as->a);
+            } else {
+                return false;
+            }
         }
     };
 
@@ -316,6 +339,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::Select;
+        bool equals(const ExprPtr expr) const override;
     };
 
     struct Ramp final : public Expr
@@ -329,6 +353,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::Ramp;
+        bool equals(const ExprPtr expr) const override;
     };
 
     struct Broadcast final : public Expr
@@ -342,6 +367,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::Broadcast;
+        bool equals(const ExprPtr expr) const override;
     };
 
     struct Fold final : public Expr
@@ -356,6 +382,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::Fold;
+        bool equals(const ExprPtr expr) const override;
     };
 
     struct CanProve final : public Expr
@@ -370,6 +397,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::CanProve;
+        bool equals(const ExprPtr expr) const override;
     };
 
     struct Call final : public Expr
@@ -385,6 +413,7 @@ namespace AST
         void accept(Visitor *v) const override;
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::Call;
+        bool equals(const ExprPtr expr) const override;
     };
 
 } // namespace AST

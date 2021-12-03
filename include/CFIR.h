@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CFIRPrinter.h"
+#include "Identifier.h"
 #include <algorithm>
 #include <memory>
 #include <vector>
@@ -42,11 +43,13 @@ enum class IRType {
     Equality,
     Return,
     Condition,
+    IsConstant,
+    Predicate,
     Sequence,
 };
 
 struct Node {
-    virtual void print(std::ostream &stream, std::string indent) const = 0;  // This makes the struct abstract.
+    virtual void print(std::ostream &stream, const std::string &indent) const = 0;  // This makes the struct abstract.
     virtual bool equal(const shared_ptr<Node> &other) const = 0;
     virtual ~Node() = default;  // Otherwise C++ breaks for some reason.
 
@@ -84,20 +87,20 @@ struct Node {
 
 template<typename T>
 struct TypeCheck : public Node {
-    std::string current_name;
-    std::string output_name;
+    const IdPtr current_id;
+    const IdPtr typed_id;
 
     bool equal(const shared_ptr<Node> &other) const override {
         if (const T *other_tc = other->as<T>(type)) {
             // We only care about the object's name (and type of course)
-            return (current_name == other_tc->current_name);
+            return current_id->equals(other_tc->current_id);
         } else {
             return false;
         }
     }
 
-    TypeCheck(IRType _type, const std::string &_curr, const std::string &_out)
-        : Node(_type), current_name(_curr), output_name(_out) {
+    TypeCheck(IRType _type, const IdPtr &_curr, const IdPtr &_out)
+        : Node(_type), current_id(_curr), typed_id(_out) {
     }
 
     // TODO: this could probably be manually inlined below.
@@ -105,10 +108,11 @@ struct TypeCheck : public Node {
         return T::type_name;
     }
 
-    void print(std::ostream &stream, std::string indent) const override {
+    void print(std::ostream &stream, const std::string &indent) const override {
         const std::string type_name = get_type_name();
-        std::string str_cond = make_type_checker_condition(current_name, type_name, output_name);
-        stream << indent << "if (" << str_cond << ") {\n";
+        stream << indent << "if (";
+        print_type_checker_condition(stream, current_id, type_name, typed_id);
+        stream << ") {\n";
         for (const auto &child : children) {
             child->print(stream, indent + "  ");
         }
@@ -117,175 +121,196 @@ struct TypeCheck : public Node {
 };
 
 struct Add final : public TypeCheck<Add> {
-    Add(const std::string &_curr, const std::string &_out)
+    Add(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Add, _curr, _out) {
     }
     inline static const std::string type_name = "Add";
 };
 
 struct Sub final : public TypeCheck<Sub> {
-    Sub(const std::string &_curr, const std::string &_out)
+    Sub(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Sub, _curr, _out) {
     }
     inline static const std::string type_name = "Sub";
 };
 
 struct Mod final : public TypeCheck<Mod> {
-    Mod(const std::string &_curr, const std::string &_out)
+    Mod(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Mod, _curr, _out) {
     }
     inline static const std::string type_name = "Mod";
 };
 
 struct Mul final : public TypeCheck<Mul> {
-    Mul(const std::string &_curr, const std::string &_out)
+    Mul(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Mul, _curr, _out) {
     }
     inline static const std::string type_name = "Mul";
 };
 
 struct Div final : public TypeCheck<Div> {
-    Div(const std::string &_curr, const std::string &_out)
+    Div(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Div, _curr, _out) {
     }
     inline static const std::string type_name = "Div";
 };
 
 struct Min final : public TypeCheck<Min> {
-    Min(const std::string &_curr, const std::string &_out)
+    Min(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Min, _curr, _out) {
     }
     inline static const std::string type_name = "Min";
 };
 
 struct Max final : public TypeCheck<Max> {
-    Max(const std::string &_curr, const std::string &_out)
+    Max(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Max, _curr, _out) {
     }
     inline static const std::string type_name = "Max";
 };
 
 struct EQ final : public TypeCheck<EQ> {
-    EQ(const std::string &_curr, const std::string &_out)
+    EQ(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::EQ, _curr, _out) {
     }
     inline static const std::string type_name = "EQ";
 };
 
 struct NE final : public TypeCheck<NE> {
-    NE(const std::string &_curr, const std::string &_out)
+    NE(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::NE, _curr, _out) {
     }
     inline static const std::string type_name = "NE";
 };
 
 struct LT final : public TypeCheck<LT> {
-    LT(const std::string &_curr, const std::string &_out)
+    LT(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::LT, _curr, _out) {
     }
     inline static const std::string type_name = "LT";
 };
 
 struct LE final : public TypeCheck<LE> {
-    LE(const std::string &_curr, const std::string &_out)
+    LE(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::LE, _curr, _out) {
     }
     inline static const std::string type_name = "LE";
 };
 
 struct GT final : public TypeCheck<GT> {
-    GT(const std::string &_curr, const std::string &_out)
+    GT(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::GT, _curr, _out) {
     }
     inline static const std::string type_name = "GT";
 };
 
 struct GE final : public TypeCheck<GE> {
-    GE(const std::string &_curr, const std::string &_out)
+    GE(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::GE, _curr, _out) {
     }
     inline static const std::string type_name = "GE";
 };
 
 struct And final : public TypeCheck<And> {
-    And(const std::string &_curr, const std::string &_out)
+    And(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::And, _curr, _out) {
     }
     inline static const std::string type_name = "And";
 };
 
 struct Or final : public TypeCheck<Or> {
-    Or(const std::string &_curr, const std::string &_out)
+    Or(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Or, _curr, _out) {
     }
     inline static const std::string type_name = "Or";
 };
 
 struct Not final : public TypeCheck<Not> {
-    Not(const std::string &_curr, const std::string &_out)
+    Not(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Not, _curr, _out) {
     }
     inline static const std::string type_name = "Not";
 };
 
 struct Select final : public TypeCheck<Select> {
-    Select(const std::string &_curr, const std::string &_out)
+    Select(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Select, _curr, _out) {
     }
     inline static const std::string type_name = "Select";
 };
 
 struct Broadcast final : public TypeCheck<Broadcast> {
-    Broadcast(const std::string &_curr, const std::string &_out)
+    Broadcast(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Broadcast, _curr, _out) {
     }
     inline static const std::string type_name = "Broadcast";
 };
 
 struct Ramp final : public TypeCheck<Ramp> {
-    Ramp(const std::string &_curr, const std::string &_out)
+    Ramp(const IdPtr &_curr, const IdPtr &_out)
         : TypeCheck(IRType::Ramp, _curr, _out) {
     }
     inline static const std::string type_name = "Ramp";
 };
 
 struct ConstantInt final : public Node {
-    ConstantInt(const std::string &_name, int64_t _value)
-        : Node(IRType::ConstantInt), name(_name), value(_value) {
+    ConstantInt(const IdPtr &_id, int64_t _value)
+        : Node(IRType::ConstantInt), id(_id), value(_value) {
     }
-    const std::string name;
+    const IdPtr id;
     const int64_t value;
     bool equal(const shared_ptr<Node> &other) const override;
-    void print(std::ostream &stream, std::string indent) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
 };
 
 struct Equality final : public Node {
-    std::string name1, name2;
-    Equality(const std::string &_name1, const std::string &_name2)
-        : Node(IRType::Equality), name1(_name1), name2(_name2) {
+    const IdPtr expr0, expr1;
+
+    Equality(const IdPtr &e0, const IdPtr &e1)
+        : Node(IRType::Equality), expr0(e0), expr1(e1) {
     }
     bool equal(const shared_ptr<Node> &other) const override;
-    void print(std::ostream &stream, std::string indent) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
 };
 
 struct Return final : public Node {
-    std::string retval;
-    Return(const std::string &_retval)
-        : Node(IRType::Return), retval(_retval) {
+    const AST::ExprPtr ret_expr;
+    Return(const AST::ExprPtr &retval)
+        : Node(IRType::Return), ret_expr(retval) {
     }
     bool equal(const shared_ptr<Node> &other) const override;
-    void print(std::ostream &stream, std::string indent) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
 };
 
 // Used as a generic condition, makes a lot of stuff easier. Probably could have just inherited from this.
+// TODO: NEED TO GET RID OF THIS.
 struct Condition final : public Node {
     std::string condition;
     Condition(const std::string &_condition)
         : Node(IRType::Condition), condition(_condition) {
     }
     bool equal(const shared_ptr<Node> &other) const override;
-    void print(std::ostream &stream, std::string indent) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
 };
+
+struct IsConstant final : public Node {
+    const IdPtr id;
+    IsConstant(const IdPtr &_id)
+        : Node(IRType::IsConstant), id(_id) {
+    }
+    bool equal(const shared_ptr<Node> &other) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
+};
+
+struct Predicate final : public Node {
+    const AST::ExprPtr pred_expr;
+    Predicate(const AST::ExprPtr &pred)
+        : Node(IRType::Predicate), pred_expr(pred) {
+    }
+    bool equal(const shared_ptr<Node> &other) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
+};
+
 
 // Used as the top level node *ONLY*
 struct Sequence final : public Node {
@@ -293,7 +318,7 @@ struct Sequence final : public Node {
         : Node(IRType::Sequence) {
     }
     bool equal(const shared_ptr<Node> &other) const override;
-    void print(std::ostream &stream, std::string indent) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
 };
 
 }  // namespace CFIR

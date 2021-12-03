@@ -1,11 +1,15 @@
 #include "Substitute.h"
+#include <sstream>
 
 namespace AST {
 
 ExprPtr Substitute::visit(const ConstantVar *expr){
     auto replacement = replacements.find(expr->name);
-    if (replacement != replacements.end()){
-        return std::make_shared<ConstantVar>(replacement->second);
+    if (replacement != replacements.end()) {
+        // TODO: fix this jankiness
+        std::ostringstream stream;
+        replacement->second->print(stream);
+        return std::make_shared<ConstantVar>(stream.str());
     }
     return std::make_shared<ConstantVar>(expr->name);
 }
@@ -13,7 +17,10 @@ ExprPtr Substitute::visit(const ConstantVar *expr){
 ExprPtr Substitute::visit(const Var *expr){
     auto replacement = replacements.find(expr->name);
     if (replacement != replacements.end()){
-        return std::make_shared<Var>(replacement->second);
+        // TODO: fix this jankiness
+        std::ostringstream stream;
+        replacement->second->print(stream);
+        return std::make_shared<Var>(stream.str());
     }
     return std::make_shared<Var>(expr->name);
 }
