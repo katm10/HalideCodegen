@@ -2,6 +2,7 @@
 
 #include "ast/Printer.h"
 #include "cfir/Visitor.h"
+#include "cfir/Mutator.h"
 #include <string>
 #include <iostream>
 #include <cassert>
@@ -152,6 +153,34 @@ void Predicate::accept(Visitor *v) const {
 
 void Sequence::accept(Visitor *v) const {
     v->visit(this);
+}
+
+NodePtr ConstantInt::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Equality::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Return::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Condition::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr IsConstant::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Predicate::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Sequence::mutate(Mutator *m) const {
+    return m->visit(this);
 }
 
 }  // namespace CFIR

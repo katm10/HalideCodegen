@@ -89,14 +89,6 @@ void Visitor::visit(const Ramp *node) {
     visit((const Node *)node);
 }
 
-void Visitor::visit(const Fold *node) {
-    visit((const Node *)node);
-}
-
-void Visitor::visit(const CanProve *node) {
-    visit((const Node *)node);
-}
-
 void Visitor::visit(const Equality *node) {
     visit((const Node *)node);
 }
