@@ -89,10 +89,6 @@ void Visitor::visit(const Ramp *node) {
     visit((const Node *)node);
 }
 
-void Visitor::visit(const Call *node) {
-    visit((const Node *)node);
-}
-
 void Visitor::visit(const Fold *node) {
     visit((const Node *)node);
 }

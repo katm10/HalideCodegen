@@ -36,7 +36,6 @@ enum class IRType {
     ConstantInt,
     Broadcast,
     Ramp,
-    Call,
     Fold,
     CanProve,
 

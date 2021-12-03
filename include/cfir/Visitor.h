@@ -23,7 +23,6 @@ struct Select;
 struct ConstantInt;
 struct Broadcast;
 struct Ramp;
-struct Call;
 struct Fold;
 struct CanProve;
 struct Equality;
@@ -55,7 +54,6 @@ struct Visitor {
     virtual void visit(const ConstantInt *);
     virtual void visit(const Broadcast *);
     virtual void visit(const Ramp *);
-    virtual void visit(const Call *);
     virtual void visit(const Fold *);
     virtual void visit(const CanProve *);
     virtual void visit(const Equality *);
