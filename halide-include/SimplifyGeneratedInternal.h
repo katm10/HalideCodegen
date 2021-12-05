@@ -1,16 +1,18 @@
-#pragma once
+#include "Expr.h"
+#include "IR.h"
+#include "IROperator.h"
+#include "Simplify_Internal.h"
+#include "Type.h"
 
-#include "Expr.h" // Halide's Expr.h
-#include "Type.h" // Halide's Type.h
-
-namespace TypeCheck {
+namespace Halide {
+namespace Internal {
 
 // Taken from FindIntrinsics.cpp, should be moved somewhere more useful.
-bool no_overflow_int(Type t) {
+inline bool no_overflow_int(Type t) {
     return t.is_int() && t.bits() >= 32;
 }
 
-bool no_overflow(Type t) {
+inline bool no_overflow(Type t) {
     return t.is_float() || no_overflow_int(t);
 }
 
@@ -92,4 +94,30 @@ inline bool is_const_int(const Expr &expr, int64_t value) {
     return false;
 }
 
-}  // namespace TypeCheck
+Expr fold(bool value);
+Expr fold(const Expr &expr);
+bool evaluate_predicate(const Expr &expr);
+bool can_prove(const Expr &expr, Simplify *simplifier);
+
+inline Expr ramp(const Expr &base, const Expr &stride, int lanes) {
+    return Ramp::make(base, stride, lanes);
+}
+
+inline Expr broadcast(const Expr &value, const Expr &lanes) {
+    const int64_t *planes = as_const_int(lanes);
+    internal_assert(planes) << "Expected constant lanes for forming Broadcast\n";
+    const int64_t clanes = *planes;
+    return Broadcast::make(value, clanes);
+}
+
+// Ramps and Casts are not constants.
+// Same behavior as WildConst matching.
+bool is_const_v(const Expr &expr);
+constexpr bool is_const_v(int value) {
+    return true;
+}
+
+bool overflows(const Expr &expr);
+
+}  // namespace Internal
+}  // namespace Halide
