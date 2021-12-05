@@ -10,10 +10,7 @@ struct Substitute : public Mutator {
     ExprPtr visit(const ConstantVar *expr) override {
         auto replacement = replacements.find(expr->name);
         if (replacement != replacements.end()) {
-            // TODO: fix this jankiness
-            std::ostringstream stream;
-            replacement->second->print(stream);
-            return std::make_shared<ConstantVar>(stream.str());
+            return std::make_shared<IdWrapper>(replacement->second, /* is_const */true);
         }
         return std::make_shared<ConstantVar>(expr->name);
     }
@@ -21,12 +18,14 @@ struct Substitute : public Mutator {
     ExprPtr visit(const Var *expr) override {
         auto replacement = replacements.find(expr->name);
         if (replacement != replacements.end()){
-            // TODO: fix this jankiness
-            std::ostringstream stream;
-            replacement->second->print(stream);
-            return std::make_shared<Var>(stream.str());
+            return std::make_shared<IdWrapper>(replacement->second, /* is_const */false);
         }
         return std::make_shared<Var>(expr->name);
+    }
+
+    ExprPtr visit(const IdWrapper *expr) override {
+        const IdPtr new_id = substitute(expr->id, replacements);
+        return std::make_shared<IdWrapper>(new_id, expr->is_const);
     }
 
 private: 

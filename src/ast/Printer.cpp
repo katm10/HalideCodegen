@@ -159,6 +159,10 @@ void Printer::visit(const Call *expr) {
     stream << ")";
 }
 
+void Printer::visit(const IdWrapper *expr) {
+    expr->id->print(stream);
+}
+
 void print(std::ostream &os, ExprPtr expr) {
     Printer printer(os);
     expr->accept(&printer);

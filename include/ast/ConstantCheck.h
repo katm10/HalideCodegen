@@ -22,6 +22,10 @@ struct ConstantCheck final : public Visitor {
         _is_const = false;
     }
 
+    void visit(const IdWrapper *expr) override {
+        _is_const = _is_const && expr->is_const;
+    }
+
     template <typename T>
     void visit(const BinaryOp<T> *expr) {
         expr->a->accept(this);

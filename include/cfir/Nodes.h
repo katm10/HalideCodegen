@@ -121,9 +121,9 @@ struct TypeCheck : public Node {
 
     void print(std::ostream &stream, const std::string &indent) const override {
         const std::string type_name = get_type_name();
-        stream << indent << "if (";
+        stream << indent << "if ((";
         print_type_checker_condition(stream, current_id, type_name, typed_id);
-        stream << ") {\n";
+        stream << ")) {\n";
         for (const auto &child : children) {
             child->print(stream, indent + "  ");
         }
