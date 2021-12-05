@@ -3,12 +3,8 @@
 #include "ast/Printer.h"
 #include <cassert>
 
-// std::string make_type_checker_condition(const std::string &var_name, const std::string &type_name, const std::string &output_name) {
-//     return "const " + type_name + " *" + output_name + " = " + var_name + ".as<" + type_name + ">()";
-// }
-
 // TODO: Stop typing these now, pre-declare them.
-void print_type_checker_condition(std::ostream &stream, const std::shared_ptr<CFIR::Identifier> &current_id, const std::string &type_name, const std::shared_ptr<CFIR::Identifier> &output_id) {
+void print_type_checker_condition(std::ostream &stream, const IdPtr &current_id, const std::string &type_name, const IdPtr &output_id) {
     if (!output_id->pre_declared) {
         stream << "const " << type_name << " *";
     }
