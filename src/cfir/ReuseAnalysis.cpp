@@ -3,6 +3,8 @@
 #include "cfir/Nodes.h"
 #include "cfir/Visitor.h"
 
+#include "ast/Substitute.h"
+
 #include <algorithm>
 #include <memory>
 
@@ -110,15 +112,18 @@ struct VariableCounter : public Visitor {
 };
 
 struct VariableReplacer : public Mutator {
+    const std::string prefix;
     size_t variable_count = 0;
     VarScope map;
+
+    VariableReplacer(const std::string &_prefix) : prefix(_prefix) {}
 
     IdPtr update_id(const IdPtr id) {
         return substitute(id, map);
     }
 
     const std::string make_id() {
-        const std::string name = "r" + std::to_string(variable_count++);
+        const std::string name = prefix + std::to_string(variable_count++);
         return name;
     }
 
@@ -139,7 +144,7 @@ struct VariableReplacer : public Mutator {
             // TODO: is there a cleaner way than this?
             // Should include type as part of Identifier.
             const std::string new_id = make_id();
-            const std::string typed_id = "((" + T::type_name + "*)" + new_id + ")";
+            const std::string typed_id = "((const " + T::type_name + "*)" + new_id + ")";
             const std::shared_ptr<Name> as_name = std::dynamic_pointer_cast<Name>(node->typed_id);
             assert(as_name);
             // In the map, give this value a type.
@@ -240,20 +245,63 @@ struct VariableReplacer : public Mutator {
         return ptr;
     }
 
-    // TODO: ConstantInt, Equality, Return, IsConstant, Predicate
+
+    NodePtr visit(const Equality *node) override {
+        const size_t current = variable_count;
+        const IdPtr expr0 = substitute(node->expr0, map);
+        const IdPtr expr1 = substitute(node->expr1, map);
+        std::shared_ptr<Equality> ptr = std::make_shared<Equality>(expr0, expr1);
+        recurse_on_children<Equality>(node, ptr, current);
+        variable_count = current;
+        return ptr;
+    }
+
+    NodePtr visit(const Return *node) override {
+        const size_t current = variable_count;
+        // TODO: this doesn't work because variables are in pointer form here...
+        const AST::ExprPtr ret_expr = AST::substitute(node->ret_expr, map);
+        std::shared_ptr<Return> ptr = std::make_shared<Return>(ret_expr);
+        recurse_on_children<Return>(node, ptr, current);
+        variable_count = current;
+        return ptr;
+    }
+
+    NodePtr visit(const IsConstant *node) override {
+        const size_t current = variable_count;
+        const IdPtr id = substitute(node->id, map);
+        std::shared_ptr<IsConstant> ptr = std::make_shared<IsConstant>(id);
+        recurse_on_children<IsConstant>(node, ptr, current);
+        variable_count = current;
+        return ptr;
+    }
+
+    NodePtr visit(const Predicate *node) override {
+        const size_t current = variable_count;
+        const AST::ExprPtr pred_expr = AST::substitute(node->pred_expr, map);
+        std::shared_ptr<Predicate> ptr = std::make_shared<Predicate>(pred_expr);
+        recurse_on_children<Predicate>(node, ptr, current);
+        variable_count = current;
+        return ptr;
+    }
 };
 
-size_t get_max_types_needed(std::shared_ptr<Node> &root) {
+size_t get_max_types_needed(const std::shared_ptr<Node> &root) {
     VariableCounter counter;
     root->accept(&counter);
     return counter.n_variables;
 }
 
-ReuseResult do_reuse_analysis(std::shared_ptr<Node> &root) {
+NodePtr do_reuse_analysis(const std::shared_ptr<Node> &root) {
     size_t n_declarations = get_max_types_needed(root);
-    std::cerr << "Deepest depth: " << n_declarations << "\n";
-    assert(false);
-    return {root, n_declarations};
+    static const std::string replacement_prefix = "r";
+    VariableReplacer replacer(replacement_prefix);
+    std::shared_ptr<Node> update = root->mutate(&replacer);
+
+    // Add pre-declarations.
+    NodePtr declare = std::make_shared<Declaration>(n_declarations, replacement_prefix);
+    update->children.insert(update->children.begin(), declare);
+
+    return update;
 }
 
 }  // namespace CFIR

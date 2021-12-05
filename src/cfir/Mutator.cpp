@@ -121,4 +121,8 @@ NodePtr Mutator::visit(const Sequence *node) {
     return make_new_node<Sequence>(this, node);
 }
 
+NodePtr Mutator::visit(const Declaration *node) {
+    return make_new_node<Declaration>(this, node);
+}
+
 }  // namsepace CFIR

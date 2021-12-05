@@ -44,7 +44,9 @@ enum class IRType {
     Condition,
     IsConstant,
     Predicate,
+
     Sequence,
+    Declaration,
 };
 
 struct Node;
@@ -393,5 +395,21 @@ struct Sequence final : public Node {
     NodePtr mutate(Mutator *m) const override;
 };
 
+// Used for reuse analysis to pre-declare a series of `const BaseExprNode *`s
+struct Declaration final : public Node {
+    const size_t n;
+    const std::string prefix;
+    Declaration(size_t _n, const std::string _prefix)
+        : Node(IRType::Declaration), n(_n), prefix(_prefix) {
+        assert(!_prefix.empty());
+    }
+    Declaration(const Declaration *d)
+        : Node(IRType::Declaration), n(d->n), prefix(d->prefix) {
+    }
+    bool equal(const shared_ptr<Node> &other) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
+    NodePtr mutate(Mutator *m) const override;
+};
 }  // namespace CFIR
 
