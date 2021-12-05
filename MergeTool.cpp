@@ -442,6 +442,7 @@ template <typename T>
 void print_function_typed(const vector<Rule *> &rules, const std::string &func_name, const std::string &type_name)
 {
     shared_ptr<Node> root = create_graph_typed<T>(rules, "expr");
+    root = do_reuse_analysis(root);
 
     std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
     std::cout << "Expr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
