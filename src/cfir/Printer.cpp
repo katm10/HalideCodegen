@@ -24,8 +24,3 @@ IdPtr make_new_unique_name() {
     const std::string name = "a" + std::to_string(counter++);
     return make_name(name);
 }
-
-AST::ExprPtr substitute(const AST::ExprPtr &expr, const VarScope &scope) {
-    AST::Substitute substitute(scope);
-    return expr->mutate(&substitute);
-}

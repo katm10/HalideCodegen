@@ -7,14 +7,7 @@
 #include <string>
 
 namespace AST {
-    struct Substitute : public Mutator {
 
-        Substitute(const VarScope &_replacements) : replacements(_replacements) {}
+    AST::ExprPtr substitute(const AST::ExprPtr &expr, const VarScope &scope);
 
-        ExprPtr visit(const ConstantVar *) override;
-        ExprPtr visit(const Var *) override;
-
-        private: 
-        const VarScope &replacements;
-    };
 } // namespace AST

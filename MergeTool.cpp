@@ -1,11 +1,13 @@
-#include "ast/Types.h"
 #include "ast/Printer.h"
+#include "ast/Substitute.h"
+#include "ast/Types.h"
 #include "cfir/Nodes.h"
 #include "cfir/Printer.h"
+#include "cfir/ReuseAnalysis.h"
 #include "Identifier.h"
 #include "Rule.h"
 #include "Parser.h"
-#include "VarScope.h"
+
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -411,13 +413,13 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
 
     if (rule->pred)
     {
-        const AST::ExprPtr predicate = substitute(rule->pred, scope);
+        const AST::ExprPtr predicate = AST::substitute(rule->pred, scope);
         // TODO: probably want to assert that child node doesn't exist...?
         shared_ptr<CFIR::Predicate> cond_node = make_shared<CFIR::Predicate>(predicate);
         deepest = deepest->get_child(cond_node);
     }
 
-    const AST::ExprPtr retval = substitute(rule->after, scope);
+    const AST::ExprPtr retval = AST::substitute(rule->after, scope);
     shared_ptr<CFIR::Return> ret_node = make_shared<CFIR::Return>(retval);
     deepest = deepest->get_child(ret_node);
 }
