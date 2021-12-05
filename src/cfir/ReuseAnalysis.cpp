@@ -123,7 +123,7 @@ struct VariableReplacer : public Mutator {
     }
 
     template<typename T>
-    void recurse_on_children(const T *node, const T *n, const size_t current) {
+    void recurse_on_children(const T *node, std::shared_ptr<T> n, const size_t current) {
         for (const auto &child : node->children) {
             variable_count = current;
             n->children.push_back(child->mutate(this));
@@ -133,7 +133,7 @@ struct VariableReplacer : public Mutator {
     template<typename T>
     NodePtr visit_type_check(const T *node) {
         const size_t current = variable_count;
-        NodePtr n = nullptr;
+        std::shared_ptr<T> n = nullptr;
 
         {
             // TODO: is there a cleaner way than this?
@@ -148,7 +148,7 @@ struct VariableReplacer : public Mutator {
             const IdPtr current_id = update_id(node->current_id);
             n = std::make_shared<T>(current_id, id);
 
-            recurse_on_children(node, n, current + 1);
+            recurse_on_children<T>(node, n, current + 1);
         }
 
         variable_count = current;
@@ -229,6 +229,15 @@ struct VariableReplacer : public Mutator {
 
     NodePtr visit(const Ramp *node) override {
         return visit_type_check(node);
+    }
+
+    NodePtr visit(const ConstantInt *node) override {
+        const size_t current = variable_count;
+        const IdPtr new_id = substitute(node->id, map);
+        std::shared_ptr<ConstantInt> ptr = std::make_shared<ConstantInt>(new_id, node->value);
+        recurse_on_children<ConstantInt>(node, ptr, current);
+        variable_count = current;
+        return ptr;
     }
 
     // TODO: ConstantInt, Equality, Return, IsConstant, Predicate
