@@ -31,8 +31,9 @@ uint16_t Rule::get_types()
     return types;
 }
 
-std::string Rule::generate_condition(std::string expr_name) const
+std::string Rule::generate_condition(const std::string &type_name) const
 {
+    // TODO: special cases for no_overflow stuff.
     std::string condition = "";
     uint8_t setbits = get_setbits(types);
     if (setbits < 8)
@@ -43,7 +44,7 @@ std::string Rule::generate_condition(std::string expr_name) const
         {
             if (types & (uint16_t)typePair.second)
             {
-                condition += expr_name + "->is_" + typePair.first + "()";
+                condition += type_name + ".is_" + typePair.first + "()";
                 if (setbits > 1)
                 {
                     condition += " || ";
@@ -62,7 +63,7 @@ std::string Rule::generate_condition(std::string expr_name) const
         {
             if (!(types & (uint16_t)typePair.second))
             {
-                condition += expr_name + "->is_" + typePair.first + "()";
+                condition += type_name + ".is_" + typePair.first + "()";
                 if (setbits > 1)
                 {
                     condition += " || ";

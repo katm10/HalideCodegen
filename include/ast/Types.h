@@ -77,6 +77,10 @@ namespace AST
             }
             return nullptr;
         }
+
+        virtual bool is_bin_op() const {
+            return false;
+        }
     };
 
     typedef std::shared_ptr<Expr> ExprPtr;
@@ -127,6 +131,10 @@ namespace AST
             } else {
                 return false;
             }
+        }
+
+        bool is_bin_op() const override {
+            return true;
         }
     };
 
