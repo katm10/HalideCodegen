@@ -248,7 +248,7 @@ class Parser
             expect(",");
             ExprPtr b = parse_expr();
             expect(")");
-            return std::make_shared<Min>(a, b);
+            return std::make_shared<Max>(a, b);
         }
         if (consume("select("))
         {
