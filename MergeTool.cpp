@@ -18,6 +18,8 @@ using std::vector;
 // Too many conflicts with Halide IR for other names
 using CFIR::Node;
 
+const std::string ROOT_NAME = "expr";
+
 shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const ExprPtr &expr, const std::string &name, VarScope &scope);
 
 template <typename BinOp>
@@ -51,7 +53,6 @@ inline shared_ptr<Node> handle_bin_op(shared_ptr<Node> &root, const ExprPtr &exp
 
 shared_ptr<Node> handle_variable(shared_ptr<Node> root, const Var *var, const std::string &name, VarScope &scope)
 {
-    // TODO: handle constants
     auto iter = scope.find(var->name);
     if (iter == scope.end())
     {
@@ -70,13 +71,11 @@ shared_ptr<Node> handle_variable(shared_ptr<Node> root, const Var *var, const st
 
 shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar *var, const std::string &name, VarScope &scope)
 {
-    // TODO: handle constants
     auto iter = scope.find(var->name);
     if (iter == scope.end())
     {
         scope.insert(std::make_pair(var->name, name));
 
-        // TODO: change this to is_const, I am using is_const_v for testing purposes
         const std::string condition = "is_const(" + name + ")";
         shared_ptr<CFIR::Condition> cond_node = make_shared<CFIR::Condition>(condition);
         return root->get_child(cond_node);
@@ -92,7 +91,7 @@ shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar 
 
 inline shared_ptr<Node> handle_select_helper(shared_ptr<Node> &typed_root, const Select *expr, const std::string &typed_name, VarScope &scope)
 {
-    const std::string cond_name = typed_name + "->cond";
+    const std::string cond_name = typed_name + "->condition";
     const std::string true_name = typed_name + "->true_value";
     const std::string false_name = typed_name + "->false_value";
 
@@ -397,10 +396,19 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
 
     if (rule->types != UINT16_MAX)
     {
+
         const std::string type_condition = rule->generate_condition(name);
         shared_ptr<CFIR::Condition> type_node = make_shared<CFIR::Condition>(type_condition);
         deepest = root->get_child(type_node);
-        deepest = tree_constructor(deepest, rule->before, name, scope);
+        // TODO: not the best solution, but a solution nonetheless
+        if (name != ROOT_NAME)
+        {
+            deepest = tree_constructor(deepest, rule->before, name, scope);
+        }
+        else
+        {
+            deepest = start_tree_constructor(deepest, expr, name, scope);
+        }
     }
     else
     {
@@ -437,12 +445,21 @@ shared_ptr<Node> create_graph_typed(const vector<Rule *> &rules, const std::stri
 template <typename T>
 void print_function_typed(const vector<Rule *> &rules, const std::string &func_name, const std::string &type_name)
 {
-    shared_ptr<Node> root = create_graph_typed<T>(rules, "expr");
-
-    std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
-    std::cout << "Expr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
+    shared_ptr<Node> root = create_graph_typed<T>(rules, ROOT_NAME);
+    // TODO: this is ugly
+    std::cout << "#include \"Expr.h\"\n";
+    std::cout << "#include \"Type.h\"\n";
+    std::cout << "#include \"Simplify_Internal.h\"\n";
+    std::cout << "#include \"SimplifyGeneratedInternal.h\"\n\n";
+    std::cout << "namespace Halide {\n";
+    std::cout << "namespace Internal {\n";
+    std::cout << "namespace CodeGen {\n";
+    std::cout << "Expr " << func_name << "(const " << type_name << " *" << ROOT_NAME << ", Simplify *simplifier) {\n";
     root->print(std::cout, "");
-    std::cout << "  return expr;\n}\n";
+    std::cout << "  return Expr();\n}\n";
+    std::cout << "}  // namespace CodeGen\n";
+    std::cout << "}  // namespace Internal\n";
+    std::cout << "}  // namespace Halide\n";
 }
 
 int main(int argc, char *argv[])

@@ -43,7 +43,7 @@ std::string Rule::generate_condition(std::string expr_name) const
         {
             if (types & (uint16_t)typePair.second)
             {
-                condition += expr_name + "->is_" + typePair.first + "()";
+                condition += "is_" + typePair.first + "(" + expr_name + ")";
                 if (setbits > 1)
                 {
                     condition += " || ";
@@ -62,7 +62,7 @@ std::string Rule::generate_condition(std::string expr_name) const
         {
             if (!(types & (uint16_t)typePair.second))
             {
-                condition += expr_name + "->is_" + typePair.first + "()";
+                condition += "is_" + typePair.first + "(" + expr_name + ")";
                 if (setbits > 1)
                 {
                     condition += " || ";

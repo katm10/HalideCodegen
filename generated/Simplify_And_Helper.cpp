@@ -1,7 +1,11 @@
-#include "Simplify_Internal.h"
 #include "Expr.h"
 #include "Type.h"
+#include "Simplify_Internal.h"
+#include "SimplifyGeneratedInternal.h"
 
+namespace Halide {
+namespace Internal {
+namespace CodeGen {
 Expr Simplify_And(const And *expr, Simplify *simplifier) {
   return expr->a;
   return expr->b;
@@ -224,7 +228,7 @@ Expr Simplify_And(const And *expr, Simplify *simplifier) {
         if (equal(a24->a, a57->a)) {
           if (is_const(a57->b)) {
             if (evaluate_predicate(fold((a24->b != a57->b)))) {
-              return b;
+              return (a24->a == a57->b);
             }
           }
         }
@@ -294,7 +298,7 @@ Expr Simplify_And(const And *expr, Simplify *simplifier) {
         }
         if (is_const(a69->a)) {
           if (equal(a54->b, a69->b)) {
-            return (fold(min(a54->a, a69->a)) <= a54->b);
+            return (fold(max(a54->a, a69->a)) <= a54->b);
           }
         }
       }
@@ -304,7 +308,7 @@ Expr Simplify_And(const And *expr, Simplify *simplifier) {
         return (a54->a <= min(a54->b, a127->b));
       }
       if (equal(a54->b, a127->b)) {
-        return (min(a54->a, a127->a) <= a54->b);
+        return (max(a54->a, a127->a) <= a54->b);
       }
     }
   }
@@ -333,7 +337,7 @@ Expr Simplify_And(const And *expr, Simplify *simplifier) {
         }
         if (is_const(a61->a)) {
           if (equal(a60->b, a61->b)) {
-            return (fold(min(a60->a, a61->a)) < a60->b);
+            return (fold(max(a60->a, a61->a)) < a60->b);
           }
         }
       }
@@ -359,7 +363,7 @@ Expr Simplify_And(const And *expr, Simplify *simplifier) {
         return (a60->a < min(a60->b, a123->b));
       }
       if (equal(a60->b, a123->b)) {
-        return (min(a60->a, a123->a) < a60->b);
+        return (max(a60->a, a123->a) < a60->b);
       }
     }
   }
@@ -372,5 +376,8 @@ Expr Simplify_And(const And *expr, Simplify *simplifier) {
       }
     }
   }
-  return expr;
+  return Expr();
 }
+}  // namespace CodeGen
+}  // namespace Internal
+}  // namespace Halide
