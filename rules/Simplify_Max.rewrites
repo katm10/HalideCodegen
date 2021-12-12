@@ -1,11 +1,11 @@
 // do not recompute bounds
 rewrite(max(x, x), x),
 rewrite(max(c0, c1), fold(max(c0, c1))),
-rewrite(max(IRMatcher::Overflow(), x), a),
-rewrite(max(x, IRMatcher::Overflow()), b),
+// rewrite(max(IRMatcher::Overflow(), x), a),
+// rewrite(max(x, IRMatcher::Overflow()), b),
 // Cases where one side dominates:
-rewrite(max(x, c0), b, is_max_value(c0)),
-rewrite(max(x, c0), x, is_min_value(c0)),
+// rewrite(max(x, c0), b, is_max_value(c0)),
+// rewrite(max(x, c0), x, is_min_value(c0)),
 rewrite(max((x/c0)*c0, x), b, c0 > 0),
 rewrite(max(x, (x/c0)*c0), a, c0 > 0),
 rewrite(max(max(x, y), x), a),
@@ -45,10 +45,10 @@ rewrite(max(select(x, max(z, y), w), y), max(select(x, z, w), y)),
 rewrite(max(select(x, w, max(z, y)), z), max(select(x, w, y), z)),
 rewrite(max(select(x, w, max(z, y)), y), max(select(x, w, z), y)),
 
-rewrite(max(intrin(Call::likely, x), x), b),
-rewrite(max(x, intrin(Call::likely, x)), a),
-rewrite(max(intrin(Call::likely_if_innermost, x), x), b),
-rewrite(max(x, intrin(Call::likely_if_innermost, x)), a),
+// rewrite(max(intrin(Call::likely, x), x), b),
+// rewrite(max(x, intrin(Call::likely, x)), a),
+// rewrite(max(intrin(Call::likely_if_innermost, x), x), b),
+// rewrite(max(x, intrin(Call::likely_if_innermost, x)), a),
 
 
 // no_overflow
@@ -216,11 +216,10 @@ rewrite(max(select(x, y, z), select(x, w, u)), select(x, max(y, w), max(z, u))),
   rewrite(max(x / c0, y / c0), max(x, y) / c0, c0 > 0),
   rewrite(max(x / c0, y / c0), min(x, y) / c0, c0 < 0),
 
-  /* Causes some things to cancel, but also creates large constants and breaks peephole patterns
+// Causes some things to cancel, but also creates large constants and breaks peephole patterns
   rewrite(max(x / c0, c1), max(x, fold(c1 * c0)) / c0, c0 > 0 && !overflows(c1 * c0)),
   rewrite(max(x / c0, c1), min(x, fold(c1 * c0)) / c0, c0 < 0 && !overflows(c1 * c0)),
-  */
-
+  
   rewrite(max(x / c0, y / c0 + c1), max(x, y + fold(c1 * c0)) / c0, c0 > 0 && !overflows(c1 * c0)),
   rewrite(max(x / c0, y / c0 + c1), min(x, y + fold(c1 * c0)) / c0, c0 < 0 && !overflows(c1 * c0)),
 

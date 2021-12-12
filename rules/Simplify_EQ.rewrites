@@ -2,7 +2,7 @@ rewrite(broadcast(x, c0) == 0, broadcast(x == 0, c0)),
 
 // allowed_overflow
 (rewrite(x * y == 0, (x == 0) || (y == 0)),
-  rewrite(x * c0 + c1 == 0, x == fold((0 - c1) / c0), c1 % c0 == 0)) |- allowed_overflow,
+  rewrite(x * c0 + c1 == 0, x == fold((0 - c1) / c0), c1 % c0 == 0)) |- operand_no_overflow,
 
 rewrite(select(x, 0, y) == 0, x || (y == 0)),
 rewrite(select(x, c0, y) == 0, !x && (y == 0), c0 != 0),
@@ -30,7 +30,7 @@ rewrite(y - min(y, x) == 0, y <= x),
   rewrite(max(x, c0) + c1 == 0, false, c0 + c1 > 0),
   rewrite(min(x, c0) + c1 == 0, false, c0 + c1 < 0),
   rewrite(max(x, c0) + c1 == 0, x <= c0, c0 + c1 == 0),
-  rewrite(min(x, c0) + c1 == 0, c0 <= x, c0 + c1 == 0)) |- allowed_overflow
+  rewrite(min(x, c0) + c1 == 0, c0 <= x, c0 + c1 == 0)) |- operand_no_overflow
 
 rewrite(max(x, c0) == 0, x == 0, c0 < 0),
 rewrite(min(x, c0) == 0, x == 0, c0 > 0),

@@ -1,10 +1,9 @@
 #include "ASTPrinter.h"
 #include "AST.h"
+#include "Substitute.h"
 #include <sstream>
 
 namespace AST {
-
-
 void Printer::visit(const ConstantInt *expr) {
     stream << expr->value;
 }
@@ -27,7 +26,7 @@ void Printer::print_binary_op_inner(const T *bop, const std::string &bop_symbol)
 }
 
 template<typename T>
-void Printer::print_binary_op_outter(const T *bop, const std::string &bop_symbol) {
+void Printer::print_binary_op_outer(const T *bop, const std::string &bop_symbol) {
     stream << bop_symbol << "(";
     bop->a->accept(this);
     stream << ", ";
@@ -63,11 +62,11 @@ void Printer::visit(const Div *expr) {
 }
 
 void Printer::visit(const Min *expr) {
-    print_binary_op_outter(expr, "min");
+    print_binary_op_outer(expr, "min");
 }
 
 void Printer::visit(const Max *expr) {
-    print_binary_op_outter(expr, "max");
+    print_binary_op_outer(expr, "max");
 }
 
 void Printer::visit(const EQ *expr) {
@@ -143,7 +142,7 @@ void Printer::visit(const Fold *expr) {
 void Printer::visit(const CanProve *expr) {
     stream << "can_prove(";
     expr->value->accept(this);
-    stream << ")";
+    stream << ", simplifier)";
 }
 
 void Printer::visit(const Call *expr) {

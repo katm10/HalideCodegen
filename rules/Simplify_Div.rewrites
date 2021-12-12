@@ -1,9 +1,9 @@
 // do not recompute bounds
-rewrite(IRMatcher::Overflow() / x, a),
-rewrite(x / IRMatcher::Overflow(), b),
+//rewrite(IRMatcher::Overflow() / x, a),
+//rewrite(x / IRMatcher::Overflow(), b),
 rewrite(x / 1, x),
-(!op->type.is_float() && rewrite(x / 0, 0)),
-(!op->type.is_float() && denominator_non_zero && rewrite(x / x, 1)),
+//(!op->type.is_float() && rewrite(x / 0, 0)),
+//(!op->type.is_float() && denominator_non_zero && rewrite(x / x, 1)),
 rewrite(0 / x, 0),
 
 // do recompute bounds
@@ -62,47 +62,8 @@ rewrite(x / x, select(x == 0, 0, 1)) |- !float,
 
 // no_overflow_int
 
-/**
-  In (x + c0) / c1, when can we pull the constant
-  addition out of the numerator? An obvious answer is
-  the constant is a multiple of the denominator, but
-  there are other cases too. The condition for the
-  rewrite to be correct is:
-
-  (x + c0) / c1 == x / c1 + c2
-
-  Say we know (x + c0) = a_mod * y + a_rem
-
-  (a_mod * y + a_rem) / c1 == (a_mod * y + a_rem - c0) / c1 + c2
-
-  If a_mod % c1 == 0, we can subtract the term in y
-  from both sides and get:
-
-  a_rem / c1 == (a_rem - c0) / c1 + c2
-
-  c2 == a_rem / c1 - (a_rem - c0) / c1
-
-  This is a sufficient and necessary condition for the case when x_mod % c1 == 0.
-*/
 (rewrite((x + c0) / c1, x / c1 + fold(a_rem / c1 - (a_rem - c0) / c1), a_mod % c1 == 0),
-/**
-  Now do the same thing for subtraction from a constant.
 
-  (c0 - x) / c1 == c2 - x / c1
-
-  where c0 - x == a_mod * y + a_rem
-
-  So x = c0 - a_mod * y - a_rem
-
-  (a_mod * y + a_rem) / c1 == c2 - (c0 - a_mod * y - a_rem) / c1
-
-  If a_mod % c1 == 0, we can pull that term out and cancel it:
-
-  a_rem / c1 == c2 - (c0 - a_rem) / c1
-
-  c2 == a_rem / c1 + (c0 - a_rem) / c1
-
-*/
 rewrite((c0 - x)/c1, fold(a_rem / c1 + (c0 - a_rem) / c1) - x / c1, a_mod % c1 == 0),
 
 // We can also pull it out when the constant is a
@@ -128,7 +89,7 @@ rewrite((z + y*x)/x, z/x + y),
 rewrite((x*y - z)/x, y + (-z)/x),
 rewrite((y*x - z)/x, y + (-z)/x),
 rewrite((z - x*y)/x, z/x - y),
-rewrite((z - y*x)/x, z/x - y)) |- denominator_non_zero
+rewrite((z - y*x)/x, z/x - y)) // |- denominator_non_zero
 
 rewrite(x/c0, x * fold(1/c0)) |- float,
 

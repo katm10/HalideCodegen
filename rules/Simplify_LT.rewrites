@@ -281,7 +281,8 @@ rewrite(c1 < x * c0, fold(c1 / c0) < x, c0 > 0),
   // w = 0
   rewrite(broadcast(x, lanes) < ramp(x + z, y, lanes), 0 < ramp(z, y, lanes)),
   rewrite(broadcast(x, lanes) < ramp(z + x, y, lanes), 0 < ramp(z, y, lanes)),
-  rewrite(broadcast(x, lanes) < ramp(x - z, y, lanes), 0 < ramp(0 - z, y, lanes), !is_const(x, 0))) |- operand_no_overflow,
+  rewrite(broadcast(x, lanes) < ramp(x - z, y, lanes), 0 < ramp(0 - z, y, lanes), !is_const(x, 0))
+ ) |- operand_no_overflow,
 
 
 
