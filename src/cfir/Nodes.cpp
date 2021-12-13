@@ -1,6 +1,6 @@
-#include "CFIR.h"
+#include "cfir/Nodes.h"
 
-#include "ASTPrinter.h"
+#include "ast/Printer.h"
 #include <string>
 #include <iostream>
 #include <cassert>

@@ -1,6 +1,6 @@
-#include "AST.h"
-#include "Mutator.h"
-#include "Visitor.h"
+#include "ast/Types.h"
+#include "ast/Mutator.h"
+#include "ast/Visitor.h"
 
 
 namespace AST {

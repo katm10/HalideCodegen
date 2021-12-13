@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CFIRPrinter.h"
+#include "cfir/Printer.h"
 #include "Identifier.h"
 #include <algorithm>
 #include <memory>

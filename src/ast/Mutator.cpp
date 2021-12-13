@@ -1,5 +1,5 @@
-#include "Mutator.h"
-#include "AST.h"
+#include "ast/Mutator.h"
+#include "ast/Types.h"
 
 namespace AST {
 

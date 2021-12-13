@@ -1,5 +1,5 @@
-#include "AST.h"
-#include "ASTPrinter.h"
+#include "ast/Types.h"
+#include "ast/Printer.h"
 #include "Parser.h"
 
 #include <iostream>

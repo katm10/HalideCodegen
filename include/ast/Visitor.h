@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST.h"
+#include "ast/Types.h"
 
 namespace AST {
 

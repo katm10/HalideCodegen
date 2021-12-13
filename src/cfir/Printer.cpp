@@ -1,6 +1,6 @@
-#include "CFIRPrinter.h"
-#include "Substitute.h"
-#include "ASTPrinter.h"
+#include "cfir/Printer.h"
+#include "ast/Substitute.h"
+#include "ast/Printer.h"
 #include <cassert>
 
 // std::string make_type_checker_condition(const std::string &var_name, const std::string &type_name, const std::string &output_name) {

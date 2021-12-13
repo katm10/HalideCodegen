@@ -3,7 +3,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include "AST.h"
+#include "ast/Types.h"
 #include "Identifier.h"
 #include "VarScope.h"
 
