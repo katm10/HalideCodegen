@@ -125,4 +125,8 @@ void Visitor::visit(const Call *expr) {
     }
 }
 
+void Visitor::visit(const IdWrapper *expr) {
+
+}
+
 }  // namespace AST

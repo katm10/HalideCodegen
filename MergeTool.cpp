@@ -1,11 +1,13 @@
-#include "ast/Types.h"
 #include "ast/Printer.h"
+#include "ast/Substitute.h"
+#include "ast/Types.h"
 #include "cfir/Nodes.h"
 #include "cfir/Printer.h"
+#include "cfir/ReuseAnalysis.h"
 #include "Identifier.h"
 #include "Rule.h"
 #include "Parser.h"
-#include "VarScope.h"
+
 #include <iostream>
 #include <sstream>
 #include <map>
@@ -27,6 +29,16 @@ inline shared_ptr<Node> handle_bin_op_helper(shared_ptr<Node> &typed_root, const
 {
     const IdPtr a_id = make_id_ptr(typed_id, "a");
     const IdPtr b_id = make_id_ptr(typed_id, "b");
+
+    shared_ptr<Node> a_node = tree_constructor(typed_root, expr->a, a_id, scope);
+    return tree_constructor(a_node, expr->b, b_id, scope);
+}
+
+template <typename BinOp>
+inline shared_ptr<Node> handle_bin_op_starter(shared_ptr<Node> &typed_root, const BinOp *expr, VarScope &scope)
+{
+    const IdPtr a_id = make_name("a");
+    const IdPtr b_id = make_name("b");
 
     shared_ptr<Node> a_node = tree_constructor(typed_root, expr->a, a_id, scope);
     return tree_constructor(a_node, expr->b, b_id, scope);
@@ -96,6 +108,17 @@ inline shared_ptr<Node> handle_select_helper(shared_ptr<Node> &typed_root, const
     return tree_constructor(true_node, expr->b, false_id, scope);
 }
 
+inline shared_ptr<Node> handle_select_starter(shared_ptr<Node> &typed_root, const Select *expr, VarScope &scope)
+{
+    const IdPtr cond_id = make_name("condition");
+    const IdPtr true_id = make_name("true_value");
+    const IdPtr false_id = make_name("false_value");
+
+    shared_ptr<Node> cond_node = tree_constructor(typed_root, expr->cond, cond_id, scope);
+    shared_ptr<Node> true_node = tree_constructor(cond_node, expr->a, true_id, scope);
+    return tree_constructor(true_node, expr->b, false_id, scope);
+}
+
 inline shared_ptr<Node> handle_select(shared_ptr<Node> &root, const ExprPtr &expr, const IdPtr &id, VarScope &scope)
 {
     const Select *op = expr->as<Select>();
@@ -117,6 +140,19 @@ inline shared_ptr<Node> handle_broadcast_helper(shared_ptr<Node> &typed_root, co
     const IdPtr value_id = make_id_ptr(typed_id, "value");
     // TODO: should probably not recurse on lanes, they should be constants?
     const IdPtr lanes_id = make_id_ptr(typed_id, "lanes");
+
+    const ExprPtr value = expr->value;
+    const ExprPtr lanes = expr->lanes;
+
+    shared_ptr<Node> value_node = tree_constructor(typed_root, value, value_id, scope);
+    return tree_constructor(value_node, lanes, lanes_id, scope);
+}
+
+inline shared_ptr<Node> handle_broadcast_starter(shared_ptr<Node> &typed_root, const Broadcast *expr, VarScope &scope)
+{
+    const IdPtr value_id = make_name("value");
+    // TODO: should probably not recurse on lanes, they should be constants?
+    const IdPtr lanes_id = make_name("lanes");
 
     const ExprPtr value = expr->value;
     const ExprPtr lanes = expr->lanes;
@@ -155,6 +191,21 @@ inline shared_ptr<Node> handle_ramp_helper(shared_ptr<Node> &typed_root, const R
     return tree_constructor(stride_node, lanes, lanes_id, scope);
 }
 
+inline shared_ptr<Node> handle_ramp_starter(shared_ptr<Node> &typed_root, const Ramp *expr, VarScope &scope)
+{
+    const IdPtr base_id = make_name("base");
+    const IdPtr stride_id = make_name("stride");
+    // TODO: should probably not recurse on lanes, they should be constants?
+    const IdPtr lanes_id = make_name("lanes");
+
+    const ExprPtr base = expr->base;
+    const ExprPtr stride = expr->stride;
+    const ExprPtr lanes = expr->lanes;
+    shared_ptr<Node> base_node = tree_constructor(typed_root, base, base_id, scope);
+    shared_ptr<Node> stride_node = tree_constructor(base_node, stride, stride_id, scope);
+    return tree_constructor(stride_node, lanes, lanes_id, scope);
+}
+
 inline shared_ptr<Node> handle_ramp(shared_ptr<Node> &root, const ExprPtr &expr, const IdPtr &id, VarScope &scope)
 {
     const Ramp *op = expr->as<Ramp>();
@@ -173,6 +224,12 @@ inline shared_ptr<Node> handle_ramp(shared_ptr<Node> &root, const ExprPtr &expr,
 inline shared_ptr<Node> handle_not_helper(shared_ptr<Node> &typed_root, const Not *expr, const IdPtr &typed_id, VarScope &scope)
 {
     const IdPtr a_id = make_id_ptr(typed_id, "a");
+    return tree_constructor(typed_root, expr->a, a_id, scope);
+}
+
+inline shared_ptr<Node> handle_not_starter(shared_ptr<Node> &typed_root, const Not *expr, VarScope &scope)
+{
+    const IdPtr a_id = make_name("a");
     return tree_constructor(typed_root, expr->a, a_id, scope);
 }
 
@@ -295,87 +352,87 @@ shared_ptr<Node> tree_constructor(shared_ptr<Node> root, const ExprPtr &expr, co
 }
 
 template <typename T>
-shared_ptr<Node> start_tree_constructor(shared_ptr<Node> root, const T *expr, const IdPtr &id, VarScope &scope)
+shared_ptr<Node> start_tree_constructor(shared_ptr<Node> root, const T *expr, VarScope &scope)
 {
     if constexpr (std::is_same_v<T, Sub>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Add>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Mod>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Mul>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Div>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Min>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Max>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Mod>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, EQ>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, NE>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, LT>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, LE>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, GT>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, GE>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, And>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Or>)
     {
-        return handle_bin_op_helper<T>(root, expr, id, scope);
+        return handle_bin_op_starter<T>(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Not>)
     {
-        return handle_not_helper(root, expr, id, scope); // todo** check that this works
+        return handle_not_starter(root, expr, scope); // TODO: check that this works
     }
     else if constexpr (std::is_same_v<T, Select>)
     {
-        return handle_select_helper(root, expr, id, scope);
+        return handle_select_starter(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Broadcast>)
     {
-        return handle_broadcast_helper(root, expr, id, scope);
+        return handle_broadcast_starter(root, expr, scope);
     }
     else if constexpr (std::is_same_v<T, Ramp>)
     {
-        return handle_ramp_helper(root, expr, id, scope);
+        return handle_ramp_helper(root, expr, scope);
     }
     else
     {
@@ -386,44 +443,43 @@ shared_ptr<Node> start_tree_constructor(shared_ptr<Node> root, const T *expr, co
 }
 
 template <typename T>
-void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &name)
+void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &type_name)
 {
     VarScope scope;
     const T *expr = rule->before->as<T>();
     assert(expr);
     shared_ptr<Node> deepest;
-    IdPtr id = make_name(name);
 
     // TODO: GET RID OF GENERIC CONDITION NODES AND DON"T USE STRINGS FOR RETURNS.
 
     if (rule->types != UINT16_MAX)
     {
         // TODO: need to get rid of generic Condition node.
-        const std::string type_condition = rule->generate_condition(name);
+        const std::string type_condition = rule->generate_condition(type_name);
         shared_ptr<CFIR::Condition> type_node = make_shared<CFIR::Condition>(type_condition);
         deepest = root->get_child(type_node);
-        deepest = tree_constructor(deepest, rule->before, id, scope);
+        deepest = start_tree_constructor(deepest, expr, scope);
     }
     else
     {
-        deepest = start_tree_constructor(root, expr, id, scope);
+        deepest = start_tree_constructor(root, expr, scope);
     }
 
     if (rule->pred)
     {
-        const AST::ExprPtr predicate = substitute(rule->pred, scope);
+        const AST::ExprPtr predicate = AST::substitute(rule->pred, scope);
         // TODO: probably want to assert that child node doesn't exist...?
         shared_ptr<CFIR::Predicate> cond_node = make_shared<CFIR::Predicate>(predicate);
         deepest = deepest->get_child(cond_node);
     }
 
-    const AST::ExprPtr retval = substitute(rule->after, scope);
+    const AST::ExprPtr retval = AST::substitute(rule->after, scope);
     shared_ptr<CFIR::Return> ret_node = make_shared<CFIR::Return>(retval);
     deepest = deepest->get_child(ret_node);
 }
 
 template <typename T>
-shared_ptr<Node> create_graph_typed(const vector<Rule *> &rules, const std::string &expr_name)
+shared_ptr<Node> create_graph_typed(const vector<Rule *> &rules, const std::string &type_name)
 {
     assert(rules.size() > 0);
 
@@ -431,20 +487,43 @@ shared_ptr<Node> create_graph_typed(const vector<Rule *> &rules, const std::stri
 
     for (const auto &rule : rules)
     {
-        add_rule_typed<T>(root, rule, expr_name);
+        add_rule_typed<T>(root, rule, type_name);
     }
     return root;
 }
 
+std::string get_input_string(const ExprPtr &starter) {
+    if (starter->is_bin_op()) {
+        return "(const Expr &a, const Expr &b, const Type &type, Simplify *simplifier)";
+    } else {
+        std::cerr << "Not implemented:\n";
+        print(std::cerr, starter);
+        std::cerr << "\n";
+        assert(false);
+    }
+}
+
 template <typename T>
-void print_function_typed(const vector<Rule *> &rules, const std::string &func_name, const std::string &type_name)
+void print_function_typed(const vector<Rule *> &rules, const std::string &func_name)
 {
-    shared_ptr<Node> root = create_graph_typed<T>(rules, "expr");
+    const std::string type_name = "type";
+    const std::string arg_string = get_input_string(rules.front()->before);
+
+    shared_ptr<Node> root = create_graph_typed<T>(rules, type_name);
+    root = do_reuse_analysis(root);
 
     std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
-    std::cout << "Expr " << func_name << "(const " << type_name << " *expr, Simplify *simplifier) {\n";
+    std::cout << "namespace Halide {\n"
+              << "namespace Internal {\n"
+              << "namespace CodeGen {\n\n";
+
+    std::cout << "Expr " << func_name << arg_string << " {\n";
     root->print(std::cout, "");
-    std::cout << "  return expr;\n}\n";
+    std::cout << "  return Expr();\n}\n";
+
+    std::cout << "}  // namespace CodeGen\n"
+              << "}  // namespace Internal\n"
+              << "}  // namespace Halide\n";
 }
 
 int main(int argc, char *argv[])
@@ -475,49 +554,49 @@ int main(int argc, char *argv[])
     switch (rules.front()->before->node_type)
     {
     case NodeType::Add:
-        print_function_typed<Add>(rules, filename, "Add");
+        print_function_typed<Add>(rules, filename);
         break;
     case NodeType::Sub:
-        print_function_typed<Sub>(rules, filename, "Sub");
+        print_function_typed<Sub>(rules, filename);
         break;
     case NodeType::Mod:
-        print_function_typed<Mod>(rules, filename, "Mod");
+        print_function_typed<Mod>(rules, filename);
         break;
     case NodeType::Mul:
-        print_function_typed<Mul>(rules, filename, "Mul");
+        print_function_typed<Mul>(rules, filename);
         break;
     case NodeType::Div:
-        print_function_typed<Div>(rules, filename, "Div");
+        print_function_typed<Div>(rules, filename);
         break;
     case NodeType::And:
-        print_function_typed<And>(rules, filename, "And");
+        print_function_typed<And>(rules, filename);
         break;
     case NodeType::Or:
-        print_function_typed<Or>(rules, filename, "Or");
+        print_function_typed<Or>(rules, filename);
         break;
     case NodeType::EQ:
-        print_function_typed<EQ>(rules, filename, "EQ");
+        print_function_typed<EQ>(rules, filename);
         break;
     case NodeType::NE:
-        print_function_typed<EQ>(rules, filename, "NE");
+        print_function_typed<EQ>(rules, filename);
         break;
     case NodeType::LT:
-        print_function_typed<LT>(rules, filename, "LT");
+        print_function_typed<LT>(rules, filename);
         break;
     case NodeType::GT:
-        print_function_typed<GT>(rules, filename, "GT");
+        print_function_typed<GT>(rules, filename);
         break;
     case NodeType::GE:
-        print_function_typed<GE>(rules, filename, "GE");
+        print_function_typed<GE>(rules, filename);
         break;
     case NodeType::LE:
-        print_function_typed<LE>(rules, filename, "LE");
+        print_function_typed<LE>(rules, filename);
         break;
     case NodeType::Max:
-        print_function_typed<Max>(rules, filename, "Max");
+        print_function_typed<Max>(rules, filename);
         break;
     case NodeType::Min:
-        print_function_typed<Min>(rules, filename, "Min");
+        print_function_typed<Min>(rules, filename);
         break;
     // TODO add more of these
     default:

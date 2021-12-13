@@ -48,6 +48,8 @@ namespace AST
         void visit(const Fold *) override;
         void visit(const CanProve *) override;
         void visit(const Call *) override;
+
+        void visit(const IdWrapper *) override;
     };
 
     void print(std::ostream &os, ExprPtr expr);

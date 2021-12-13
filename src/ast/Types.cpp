@@ -105,6 +105,10 @@ void Call::accept(Visitor *v) const {
     v->visit(this);
 }
 
+void IdWrapper::accept(Visitor *v) const {
+    v->visit(this);
+}
+
 ExprPtr ConstantInt::mutate(Mutator *m) const {
     return m->visit(this);
 }
@@ -205,6 +209,10 @@ ExprPtr Call::mutate(Mutator *m) const {
     return m->visit(this);
 }
 
+ExprPtr IdWrapper::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
 
 bool ConstantInt::equals(const ExprPtr expr) const {
     if (const ConstantInt *as = expr->as<ConstantInt>()) {
@@ -270,5 +278,12 @@ bool Call::equals(const ExprPtr expr) const {
     }
 }
 
+bool IdWrapper::equals(const ExprPtr expr) const {
+    if (const IdWrapper *as = expr->as<IdWrapper>()) {
+        return (is_const == as->is_const) && id->equals(as->id);
+    } else {
+        return false;
+    }
+}
 
 }  // namsepace AST

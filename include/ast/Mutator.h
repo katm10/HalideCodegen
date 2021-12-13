@@ -31,6 +31,8 @@ struct Mutator {
     virtual ExprPtr visit(const Fold *);
     virtual ExprPtr visit(const CanProve *);
     virtual ExprPtr visit(const Call *);
+
+    virtual ExprPtr visit(const IdWrapper *);
 };
 
 }  // namsepace AST

@@ -8,6 +8,8 @@
 #include <vector>
 #include <map>
 
+#include "Identifier.h"
+
 namespace AST
 {
 
@@ -47,6 +49,9 @@ namespace AST
         Fold,
         CanProve,
         Call,
+
+        // This is used for reuse-analysis / substitutions.
+        IdWrapper,
     };
 
     struct Visitor;
@@ -71,6 +76,10 @@ namespace AST
                 return (const T *)this;
             }
             return nullptr;
+        }
+
+        virtual bool is_bin_op() const {
+            return false;
         }
     };
 
@@ -122,6 +131,10 @@ namespace AST
             } else {
                 return false;
             }
+        }
+
+        bool is_bin_op() const override {
+            return true;
         }
     };
 
@@ -345,7 +358,7 @@ namespace AST
     struct Ramp final : public Expr
     {
         const ExprPtr base, stride;
-        const ExprPtr lanes; // restrict this to ConstantInt or ConstantVar
+        const ExprPtr lanes; // TODO: restrict this to ConstantInt or ConstantVar
 
         Ramp(ExprPtr _base, ExprPtr _stride, ExprPtr _lanes)
             : Expr(NodeType::Ramp), base(std::move(_base)), stride(std::move(_stride)), lanes(std::move(_lanes)) {}
@@ -359,7 +372,7 @@ namespace AST
     struct Broadcast final : public Expr
     {
         const ExprPtr value;
-        const ExprPtr lanes; // restrict this to ConstantInt or ConstantVar
+        const ExprPtr lanes; // TODO: restrict this to ConstantInt or ConstantVar
 
         Broadcast(ExprPtr _value, ExprPtr _lanes)
             : Expr(NodeType::Broadcast), value(std::move(_value)), lanes(std::move(_lanes)) {}
@@ -416,4 +429,17 @@ namespace AST
         bool equals(const ExprPtr expr) const override;
     };
 
+    struct IdWrapper final : public Expr
+    {
+        const IdPtr id;
+        bool is_const;
+
+        IdWrapper(const IdPtr &_id, bool _is_const)
+          : Expr(NodeType::IdWrapper), id(_id), is_const(_is_const) {}
+
+        void accept(Visitor *v) const override;
+        ExprPtr mutate(Mutator *m) const override;
+        static const NodeType _node_type = NodeType::IdWrapper;
+        bool equals(const ExprPtr expr) const override;
+    };
 } // namespace AST

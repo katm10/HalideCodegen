@@ -1,6 +1,9 @@
 #include "cfir/Nodes.h"
 
 #include "ast/Printer.h"
+#include "cfir/Visitor.h"
+#include "cfir/Mutator.h"
+#include <ios>
 #include <string>
 #include <iostream>
 #include <cassert>
@@ -124,4 +127,80 @@ void Sequence::print(std::ostream &stream, const std::string &indent) const {
         child->print(stream, indent + "  ");
     }
 }
+
+bool Declaration::equal(const shared_ptr<Node> &other) const {
+    assert(false);  // Should never be compared to other nodes.
+}
+
+void Declaration::print(std::ostream &stream, const std::string &indent) const {
+    assert(children.size() == 0);
+    for (size_t i = 0; i < n; i++) {
+        stream << indent << "const BaseExprNode *" << prefix << i << " = nullptr;\n";
+    }
+}
+
+void ConstantInt::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Equality::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Return::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Condition::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void IsConstant::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Predicate::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Sequence::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void Declaration::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+NodePtr ConstantInt::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Equality::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Return::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Condition::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr IsConstant::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Predicate::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Sequence::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr Declaration::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
 }  // namespace CFIR
