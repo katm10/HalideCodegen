@@ -14,14 +14,13 @@ struct VariableCounter : public Visitor {
     size_t n_variables = 0;
 
     void visit(const Node *node) override {
-        const size_t current = n_variables;
         size_t maximum = 0;
         for (const auto &child : node->children) {
-            n_variables = current;
+            n_variables = 0;
             child->accept(this);
             maximum = std::max(maximum, n_variables);
         }
-        n_variables = current + maximum;
+        n_variables = maximum;
     }
 
     template<typename T>
