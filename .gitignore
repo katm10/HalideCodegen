@@ -36,3 +36,6 @@
 
 # Mac garbage
 *.dSYM/
+
+# Generated files
+generated/*
