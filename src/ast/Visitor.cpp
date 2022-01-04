@@ -1,5 +1,5 @@
-#include "Visitor.h"
-#include "AST.h"
+#include "ast/Visitor.h"
+#include "ast/Types.h"
 
 namespace AST {
 
@@ -123,6 +123,10 @@ void Visitor::visit(const Call *expr) {
     for (const auto &arg : expr->args) {
         arg->accept(this);
     }
+}
+
+void Visitor::visit(const IdWrapper *expr) {
+
 }
 
 }  // namespace AST

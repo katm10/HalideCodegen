@@ -1,6 +1,6 @@
-#include "ASTPrinter.h"
-#include "AST.h"
-#include "Substitute.h"
+#include "ast/Printer.h"
+#include "ast/Types.h"
+#include "ast/Substitute.h"
 #include <sstream>
 
 namespace AST {
@@ -157,6 +157,10 @@ void Printer::visit(const Call *expr) {
         }
     }
     stream << ")";
+}
+
+void Printer::visit(const IdWrapper *expr) {
+    expr->id->print(stream);
 }
 
 void print(std::ostream &os, ExprPtr expr) {

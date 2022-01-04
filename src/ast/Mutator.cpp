@@ -1,5 +1,5 @@
-#include "Mutator.h"
-#include "AST.h"
+#include "ast/Mutator.h"
+#include "ast/Types.h"
 
 namespace AST {
 
@@ -127,4 +127,7 @@ ExprPtr Mutator::visit(const Call *expr) {
     return std::make_shared<Call>(args, expr->name);
 }
 
+ExprPtr Mutator::visit(const IdWrapper *expr) {
+    return std::make_shared<IdWrapper>(expr->id, expr->is_const);
+}
 }  // namespace AST

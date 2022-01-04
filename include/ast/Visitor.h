@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AST.h"
+#include "ast/Types.h"
 
 namespace AST {
 
@@ -31,6 +31,8 @@ struct Visitor {
     virtual void visit(const Fold *);
     virtual void visit(const CanProve *);
     virtual void visit(const Call *);
+
+    virtual void visit(const IdWrapper *);
 };
 
 }  // namsepace AST

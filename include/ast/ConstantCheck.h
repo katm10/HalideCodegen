@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Visitor.h"
+#include "ast/Visitor.h"
 
 #include <iostream>
 #include <string>
@@ -20,6 +20,10 @@ struct ConstantCheck final : public Visitor {
 
     void visit(const Var *expr) override {
         _is_const = false;
+    }
+
+    void visit(const IdWrapper *expr) override {
+        _is_const = _is_const && expr->is_const;
     }
 
     template <typename T>

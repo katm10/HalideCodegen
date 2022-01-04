@@ -1,7 +1,7 @@
 #ifndef TRS_CODEGEN_RULE
 #define TRS_CODEGEN_RULE
 
-#include "AST.h"
+#include "ast/Types.h"
 #include <string>
 #include <vector>
 
@@ -61,7 +61,7 @@ public:
     void add_type(bool allowed, uint16_t type);
     void set_types(uint16_t _types);
     uint16_t get_types();
-    std::string generate_condition(std::string expr_name) const;
+    std::string generate_condition(const std::string &type_name) const;
 };
 
 #endif

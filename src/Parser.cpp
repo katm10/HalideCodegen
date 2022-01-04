@@ -1,5 +1,5 @@
 #include "Parser.h"
-#include "ConstantCheck.h"
+#include "ast/ConstantCheck.h"
 
 #include <cstdint>
 #include <fstream>
