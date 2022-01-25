@@ -125,4 +125,8 @@ NodePtr Mutator::visit(const Declaration *node) {
     return make_new_node<Declaration>(this, node);
 }
 
+NodePtr Mutator::visit(const TypeSwitch *node) {
+    return make_new_node<TypeSwitch>(this, node);
+}
+
 }  // namsepace CFIR

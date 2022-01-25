@@ -47,6 +47,7 @@ enum class IRType {
 
     Sequence,
     Declaration,
+    TypeSwitch
 };
 
 struct Node;
@@ -406,6 +407,36 @@ struct Declaration final : public Node {
     Declaration(const Declaration *d)
         : Node(IRType::Declaration), n(d->n), prefix(d->prefix) {
     }
+    bool equal(const shared_ptr<Node> &other) const override;
+    void print(std::ostream &stream, const std::string &indent) const override;
+    void accept(Visitor *v) const override;
+    NodePtr mutate(Mutator *m) const override;
+};
+
+struct TypeSwitch final : public Node {
+    IdPtr current_id;
+    IdPtr typed_id;
+
+    vector<std::string> types;
+
+    TypeSwitch() : Node(IRType::TypeSwitch) {}
+
+    TypeSwitch(const IdPtr &_current_id, const IdPtr &_typed_id, vector<std::string> _types, vector<shared_ptr<Node>> _type_checks) : 
+        Node(IRType::TypeSwitch), current_id(_current_id), typed_id(_typed_id), types(_types) {
+        // Might want to assert that all nodes in type_checks are 
+        // 1. TypeCheck classes
+        // 2. Have the same current_ids and typed_ids
+        children = _type_checks;
+    }
+
+    TypeSwitch(const IdPtr &_current_id, const IdPtr &_typed_id) : 
+        Node(IRType::TypeSwitch), current_id(_current_id), typed_id(_typed_id) {}
+
+    TypeSwitch(const TypeSwitch *ts)
+        : Node(IRType::TypeSwitch), current_id(ts->current_id), typed_id(ts->typed_id), types(ts->types)  {
+        children = ts->children;
+    }
+
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
     void accept(Visitor *v) const override;

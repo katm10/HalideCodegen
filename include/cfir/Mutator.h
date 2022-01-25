@@ -34,6 +34,7 @@ struct IsConstant;
 struct Predicate;
 struct Sequence;
 struct Declaration;
+struct TypeSwitch;
 
 struct Mutator {
     virtual std::shared_ptr<Node> visit(const Add *);
@@ -63,6 +64,7 @@ struct Mutator {
     virtual std::shared_ptr<Node> visit(const Predicate *);
     virtual std::shared_ptr<Node> visit(const Sequence *);
     virtual std::shared_ptr<Node> visit(const Declaration *);
+    virtual std::shared_ptr<Node> visit(const TypeSwitch *);
 };
 
 }  // namsepace CFIR

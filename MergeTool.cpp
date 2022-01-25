@@ -4,6 +4,7 @@
 #include "cfir/Nodes.h"
 #include "cfir/Printer.h"
 #include "cfir/ReuseAnalysis.h"
+#include "cfir/SwitchOnType.h"
 #include "Identifier.h"
 #include "Rule.h"
 #include "Parser.h"
@@ -137,6 +138,8 @@ inline shared_ptr<Node> handle_broadcast_helper(shared_ptr<Node> &typed_root, co
 {
     const IdPtr value_id = make_id_ptr(typed_id, "value");
     // TODO: should probably not recurse on lanes, they should be constants?
+
+    
     const IdPtr lanes_id = make_id_ptr(typed_id, "lanes");
 
     const ExprPtr value = expr->value;
@@ -508,9 +511,10 @@ void print_function_typed(const vector<Rule *> &rules, const std::string &func_n
     const std::string arg_string = get_input_string(rules.front()->before);
 
     shared_ptr<Node> root = create_graph_typed<T>(rules, type_name);
-    root = do_reuse_analysis(root);
+    root = switch_on_type(root);
+    // root = do_reuse_analysis(root);
 
-    std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
+    std::cout << "#include \"Simplify_Internal.h\"\n#include \"SimplifyGeneratedInternal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
     std::cout << "namespace Halide {\n"
               << "namespace Internal {\n"
               << "namespace CodeGen {\n\n";

@@ -1,1627 +1,2438 @@
+bb((const Broadcast*)r1)->value((const Ramp*)r0)->base((const Ramp*)r1)->base((const Broadcast*)r0)->value((const Add*)r0)->b((const Add*)r0)->a((const Add*)r1)->bb((const Add*)r2)->b((const Add*)r0)->b((const Add*)r1)->bb((const Add*)r2)->bb((const Add*)r1)->bbbbb((const Add*)r0)->b((const Add*)r0)->a((const Add*)r1)->b((const Add*)r0)->b((const Add*)r1)->b((const Add*)r0)->a((const Min*)r1)->b((const Add*)r0)->a((const Max*)r1)->b((const Add*)r0)->a((const Select*)r1)->false_valueb((const Min*)r0)->bbbb((const Min*)r1)->ab((const Max*)r0)->bbbb((const Max*)r1)->a((const Min*)r0)->b((const Max*)r0)->b((const Select*)r0)->false_value((const Select*)r0)->false_valueb((const Add*)r0)->bb((const Add*)r1)->bb((const Add*)r0)->bb((const Add*)r2)->a((const Min*)r3)->b((const Add*)r2)->a((const Max*)r3)->bb((const Min*)r2)->bb((const Max*)r2)->b((const Max*)r2)->b((const Max*)r2)->a((const Max*)r2)->a((const Add*)r1)->a((const Min*)r2)->b((const Min*)r2)->a((const Min*)r2)->ab((const Min*)r1)->bb((const Max*)r1)->b((const Div*)r0)->a((const Max*)r1)->b((const Max*)r1)->a((const Max*)r1)->a((const Div*)r0)->a((const Min*)r1)->b((const Min*)r1)->a((const Min*)r1)->ab((const Max*)r0)->bbbb((const Min*)r0)->bbb((const Ramp*)r0)->base#include "Simplify_Internal.h"
+#include "SimplifyGeneratedInternal.h"
 #include "Expr.h"
 #include "Type.h"
-#include "Simplify_Internal.h"
-#include "SimplifyGeneratedInternal.h"
 
 namespace Halide {
 namespace Internal {
 namespace CodeGen {
-Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
-  if (is_const(expr->a)) {
-    if (is_const(expr->b)) {
-      return fold((expr->a < expr->b));
+
+Expr Simplify_LT(const Expr &a, const Expr &b, const Type &type, Simplify *simplifier) {
+  const BaseExprNode *r0 = nullptr;
+  const BaseExprNode *r1 = nullptr;
+  const BaseExprNode *r2 = nullptr;
+  const BaseExprNode *r3 = nullptr;
+  const BaseExprNode *r4 = nullptr;
+  if (is_const_v(a)) {
+    if (is_const_v(b)) {
+      return fold((a < b));
     }
-    if (const Mod *a27 = expr->b.as<Mod>()) {
-      if (is_const(a27->b)) {
-        if (evaluate_predicate(fold((((expr->a + 2) == a27->b) && (a27->b > 0))))) {
-          return ((a27->a % a27->b) == fold((a27->b - 1)));
+    if ((r0 = b.as<Mod>())) {
+      if (is_const_v(((const Mod*)r0)->b)) {
+        if (evaluate_predicate(fold((((a + 2) == ((const Mod*)r0)->b) && (((const Mod*)r0)->b > 0))))) {
+          return ((((const Mod*)r0)->a % ((const Mod*)r0)->b) == fold((((const Mod*)r0)->b - 1)));
         }
       }
     }
-    if (const Mul *a214 = expr->b.as<Mul>()) {
-      if (is_const(a214->b)) {
-        if (evaluate_predicate(fold((a214->b > 0)))) {
-          return (fold((expr->a / a214->b)) < a214->a);
+    if ((r0 = b.as<Mul>())) {
+      if (is_const_v(((const Mul*)r0)->b)) {
+        if (evaluate_predicate(fold((((const Mul*)r0)->b > 0)))) {
+          return (fold((a / ((const Mul*)r0)->b)) < ((const Mul*)r0)->a);
         }
       }
     }
-  }
-  if (equal(expr->a, expr->b)) {
+    switch (b.node_type())
+      {
+      case IRNodeType::Mod: {        0x55a8cb214b00 = 0x55a8cb19aa90.as<Mod>();
+        break;
+      }
+      case IRNodeType::Mul: {        0x55a8cb214b00 = 0x55a8cb19aa90.as<Mul>();
+        break;
+      }
+      default:
+        break;
+      }  }
+  if (equal(a, b)) {
     return false;
   }
-  if (const Max *a0 = expr->a.as<Max>()) {
-    if (equal(a0->a, expr->b)) {
+  if ((r0 = a.as<Max>())) {
+    if (equal(((const Max*)r0)->a, b)) {
       return false;
     }
-    if (equal(a0->b, expr->b)) {
+    if (equal(((const Max*)r0)->b, b)) {
       return false;
     }
-    if (const Min *a5 = expr->b.as<Min>()) {
-      if (equal(a0->a, a5->b)) {
+    if ((r1 = b.as<Min>())) {
+      if (equal(((const Max*)r0)->a, ((const Min*)r1)->b)) {
         return false;
       }
-      if (equal(a0->a, a5->a)) {
+      if (equal(((const Max*)r0)->a, ((const Min*)r1)->a)) {
         return false;
       }
-      if (equal(a0->b, a5->b)) {
+      if (equal(((const Max*)r0)->b, ((const Min*)r1)->b)) {
         return false;
       }
-      if (equal(a0->b, a5->a)) {
+      if (equal(((const Max*)r0)->b, ((const Min*)r1)->a)) {
         return false;
       }
+    }
+    switch (b.node_type())
+      {
+      case IRNodeType::Min: {        0x55a8cb215f60 = 0x55a8cb126b20.as<Min>();
+        break;
+      }
+      default:
+        break;
+      }  }
+  if ((r0 = b.as<Min>())) {
+    if (equal(a, ((const Min*)r0)->a)) {
+      return false;
+    }
+    if (equal(a, ((const Min*)r0)->b)) {
+      return false;
     }
   }
-  if (const Min *a2 = expr->b.as<Min>()) {
-    if (equal(expr->a, a2->a)) {
-      return false;
-    }
-    if (equal(expr->a, a2->b)) {
-      return false;
-    }
-  }
-  if (is_operand_no_overflow(expr)) {
-    if (const Ramp *a12 = expr->a.as<Ramp>()) {
-      if (is_const(a12->stride)) {
-        if (is_const(a12->lanes)) {
-          if (const Broadcast *a13 = expr->b.as<Broadcast>()) {
-            if (equal(a12->lanes, a13->lanes)) {
-              if (evaluate_predicate(fold(can_prove(((a12->base + fold(max(0, (a12->stride * (a12->lanes - 1))))) < a13->value), simplifier)))) {
+  if (type.is_operand_no_overflow()) {
+    if ((r0 = a.as<Ramp>())) {
+      if (is_const_v(((const Ramp*)r0)->stride)) {
+        if (is_const_v(((const Ramp*)r0)->lanes)) {
+          if ((r1 = b.as<Broadcast>())) {
+            if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r1)->lanes)) {
+              if (evaluate_predicate(fold(can_prove(((((const Ramp*)r0)->base + fold(max(0, (((const Ramp*)r0)->stride * (((const Ramp*)r0)->lanes - 1))))) < ((const Broadcast*)r1)->value), simplifier)))) {
                 return true;
               }
-              if (evaluate_predicate(fold(can_prove(((a12->base + fold(min(0, (a12->stride * (a12->lanes - 1))))) >= a13->value), simplifier)))) {
+              if (evaluate_predicate(fold(can_prove(((((const Ramp*)r0)->base + fold(min(0, (((const Ramp*)r0)->stride * (((const Ramp*)r0)->lanes - 1))))) >= ((const Broadcast*)r1)->value), simplifier)))) {
                 return false;
               }
             }
           }
-        }
+          switch (b.node_type())
+            {
+            case IRNodeType::Broadcast: {              0x55a8cb217140 = 0x55a8cb127370.as<Broadcast>();
+              break;
+            }
+            default:
+              break;
+            }        }
       }
-      if (is_const(a12->lanes)) {
-        if (const Ramp *a29 = expr->b.as<Ramp>()) {
-          if (equal(a12->stride, a29->stride)) {
-            if (equal(a12->lanes, a29->lanes)) {
-              return broadcast((a12->base < a29->base), a12->lanes);
+      if (is_const_v(((const Ramp*)r0)->lanes)) {
+        if ((r1 = b.as<Ramp>())) {
+          if (equal(((const Ramp*)r0)->stride, ((const Ramp*)r1)->stride)) {
+            if (equal(((const Ramp*)r0)->lanes, ((const Ramp*)r1)->lanes)) {
+              return broadcast((((const Ramp*)r0)->base < ((const Ramp*)r1)->base), ((const Ramp*)r0)->lanes);
             }
           }
-          if (equal(a12->lanes, a29->lanes)) {
-            return (ramp((a12->base - a29->base), (a12->stride - a29->stride), a12->lanes) < 0);
+          if (equal(((const Ramp*)r0)->lanes, ((const Ramp*)r1)->lanes)) {
+            return (ramp((((const Ramp*)r0)->base - ((const Ramp*)r1)->base), (((const Ramp*)r0)->stride - ((const Ramp*)r1)->stride), ((const Ramp*)r0)->lanes) < 0);
           }
         }
-        if (const Broadcast *a412 = expr->b.as<Broadcast>()) {
-          if (const Add *a413 = a412->value.as<Add>()) {
-            if (equal(a12->base, a413->a)) {
-              if (equal(a12->lanes, a412->lanes)) {
-                return (ramp(0, a12->stride, a12->lanes) < broadcast(a413->b, a12->lanes));
+        if ((r1 = b.as<Broadcast>())) {
+          if ((r2 = ((const Broadcast*)r1)->value.as<Add>())) {
+            if (equal(((const Ramp*)r0)->base, ((const Add*)r2)->a)) {
+              if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r1)->lanes)) {
+                return (ramp(0, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Add*)r2)->b, ((const Ramp*)r0)->lanes));
               }
             }
-            if (equal(a12->base, a413->b)) {
-              if (equal(a12->lanes, a412->lanes)) {
-                return (ramp(0, a12->stride, a12->lanes) < broadcast(a413->a, a12->lanes));
+            if (equal(((const Ramp*)r0)->base, ((const Add*)r2)->b)) {
+              if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r1)->lanes)) {
+                return (ramp(0, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Add*)r2)->a, ((const Ramp*)r0)->lanes));
               }
             }
           }
-          if (const Sub *a419 = a412->value.as<Sub>()) {
-            if (equal(a12->base, a419->a)) {
-              if (equal(a12->lanes, a412->lanes)) {
-                if (evaluate_predicate(fold(!(is_const(a12->base, 0))))) {
-                  return (ramp(0, a12->stride, a12->lanes) < broadcast((0 - a419->b), a12->lanes));
+          if ((r2 = ((const Broadcast*)r1)->value.as<Sub>())) {
+            if (equal(((const Ramp*)r0)->base, ((const Sub*)r2)->a)) {
+              if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r1)->lanes)) {
+                if (evaluate_predicate(fold(!(is_const(((const Ramp*)r0)->base, 0))))) {
+                  return (ramp(0, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast((0 - ((const Sub*)r2)->b), ((const Ramp*)r0)->lanes));
                 }
               }
             }
           }
-        }
+          switch (((const Broadcast*)r1)->value.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb219010 = 0x55a8cb219060.as<Add>();
+              break;
+            }
+            case IRNodeType::Sub: {              0x55a8cb219010 = 0x55a8cb219060.as<Sub>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Ramp: {            0x55a8cb218110 = 0x55a8cb19b300.as<Ramp>();
+            break;
+          }
+          case IRNodeType::Broadcast: {            0x55a8cb218110 = 0x55a8cb19b300.as<Broadcast>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Ramp*)r0)->base.as<Add>())) {
+        if (is_const_v(((const Ramp*)r0)->lanes)) {
+          if ((r2 = b.as<Broadcast>())) {
+            if ((r3 = ((const Broadcast*)r2)->value.as<Add>())) {
+              if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+                if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                  return (ramp(((const Add*)r1)->b, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Add*)r3)->b, ((const Ramp*)r0)->lanes));
+                }
+              }
+              if (equal(((const Add*)r1)->b, ((const Add*)r3)->a)) {
+                if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                  return (ramp(((const Add*)r1)->a, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Add*)r3)->b, ((const Ramp*)r0)->lanes));
+                }
+              }
+              if (equal(((const Add*)r1)->a, ((const Add*)r3)->b)) {
+                if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                  return (ramp(((const Add*)r1)->b, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Add*)r3)->a, ((const Ramp*)r0)->lanes));
+                }
+              }
+              if (equal(((const Add*)r1)->b, ((const Add*)r3)->b)) {
+                if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                  return (ramp(((const Add*)r1)->a, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Add*)r3)->a, ((const Ramp*)r0)->lanes));
+                }
+              }
+            }
+            if (equal(((const Add*)r1)->a, ((const Broadcast*)r2)->value)) {
+              if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                return (ramp(((const Add*)r1)->b, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < 0);
+              }
+            }
+            if (equal(((const Add*)r1)->b, ((const Broadcast*)r2)->value)) {
+              if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                return (ramp(((const Add*)r1)->a, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < 0);
+              }
+            }
+            switch (((const Broadcast*)r2)->value.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb21aec0 = 0x55a8cb21af10.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Broadcast: {              0x55a8cb21ad30 = 0x55a8cb1cd520.as<Broadcast>();
+              break;
+            }
+            default:
+              break;
+            }        }
       }
-      if (const Add *a388 = a12->base.as<Add>()) {
-        if (is_const(a12->lanes)) {
-          if (const Broadcast *a389 = expr->b.as<Broadcast>()) {
-            if (const Add *a390 = a389->value.as<Add>()) {
-              if (equal(a388->a, a390->a)) {
-                if (equal(a12->lanes, a389->lanes)) {
-                  return (ramp(a388->b, a12->stride, a12->lanes) < broadcast(a390->b, a12->lanes));
-                }
-              }
-              if (equal(a388->b, a390->a)) {
-                if (equal(a12->lanes, a389->lanes)) {
-                  return (ramp(a388->a, a12->stride, a12->lanes) < broadcast(a390->b, a12->lanes));
-                }
-              }
-              if (equal(a388->a, a390->b)) {
-                if (equal(a12->lanes, a389->lanes)) {
-                  return (ramp(a388->b, a12->stride, a12->lanes) < broadcast(a390->a, a12->lanes));
-                }
-              }
-              if (equal(a388->b, a390->b)) {
-                if (equal(a12->lanes, a389->lanes)) {
-                  return (ramp(a388->a, a12->stride, a12->lanes) < broadcast(a390->a, a12->lanes));
-                }
-              }
-            }
-            if (equal(a388->a, a389->value)) {
-              if (equal(a12->lanes, a389->lanes)) {
-                return (ramp(a388->b, a12->stride, a12->lanes) < 0);
-              }
-            }
-            if (equal(a388->b, a389->value)) {
-              if (equal(a12->lanes, a389->lanes)) {
-                return (ramp(a388->a, a12->stride, a12->lanes) < 0);
-              }
-            }
-          }
-        }
-      }
-      if (const Sub *a404 = a12->base.as<Sub>()) {
-        if (is_const(a12->lanes)) {
-          if (const Broadcast *a405 = expr->b.as<Broadcast>()) {
-            if (const Sub *a406 = a405->value.as<Sub>()) {
-              if (equal(a404->a, a406->a)) {
-                if (equal(a12->lanes, a405->lanes)) {
-                  if (evaluate_predicate(fold(!(is_const(a404->a, 0))))) {
-                    return (ramp((0 - a404->b), a12->stride, a12->lanes) < broadcast((0 - a406->b), a12->lanes));
+      if ((r1 = ((const Ramp*)r0)->base.as<Sub>())) {
+        if (is_const_v(((const Ramp*)r0)->lanes)) {
+          if ((r2 = b.as<Broadcast>())) {
+            if ((r3 = ((const Broadcast*)r2)->value.as<Sub>())) {
+              if (equal(((const Sub*)r1)->a, ((const Sub*)r3)->a)) {
+                if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                  if (evaluate_predicate(fold(!(is_const(((const Sub*)r1)->a, 0))))) {
+                    return (ramp((0 - ((const Sub*)r1)->b), ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast((0 - ((const Sub*)r3)->b), ((const Ramp*)r0)->lanes));
                   }
                 }
               }
-              if (equal(a404->b, a406->b)) {
-                if (equal(a12->lanes, a405->lanes)) {
-                  return (ramp(a404->a, a12->stride, a12->lanes) < broadcast(a406->a, a12->lanes));
+              if (equal(((const Sub*)r1)->b, ((const Sub*)r3)->b)) {
+                if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                  return (ramp(((const Sub*)r1)->a, ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < broadcast(((const Sub*)r3)->a, ((const Ramp*)r0)->lanes));
                 }
               }
             }
-            if (equal(a404->a, a405->value)) {
-              if (equal(a12->lanes, a405->lanes)) {
-                if (evaluate_predicate(fold(!(is_const(a404->a, 0))))) {
-                  return (ramp((0 - a404->b), a12->stride, a12->lanes) < 0);
+            if (equal(((const Sub*)r1)->a, ((const Broadcast*)r2)->value)) {
+              if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                if (evaluate_predicate(fold(!(is_const(((const Sub*)r1)->a, 0))))) {
+                  return (ramp((0 - ((const Sub*)r1)->b), ((const Ramp*)r0)->stride, ((const Ramp*)r0)->lanes) < 0);
                 }
               }
             }
-          }
-        }
+            switch (((const Broadcast*)r2)->value.node_type())
+              {
+              case IRNodeType::Sub: {                0x55a8cb21dcc0 = 0x55a8cb21dd10.as<Sub>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Broadcast: {              0x55a8cb21db40 = 0x55a8cb1cf2b0.as<Broadcast>();
+              break;
+            }
+            default:
+              break;
+            }        }
       }
-    }
-    if (const Broadcast *a16 = expr->a.as<Broadcast>()) {
-      if (is_const(a16->lanes)) {
-        if (const Ramp *a17 = expr->b.as<Ramp>()) {
-          if (is_const(a17->stride)) {
-            if (equal(a16->lanes, a17->lanes)) {
-              if (evaluate_predicate(fold(can_prove((a16->value < (a17->base + fold(min(0, (a17->stride * (a16->lanes - 1)))))), simplifier)))) {
+      switch (((const Ramp*)r0)->base.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb21aa90 = 0x55a8cb21aae0.as<Add>();
+          break;
+        }
+        case IRNodeType::Sub: {          0x55a8cb21aa90 = 0x55a8cb21aae0.as<Sub>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Broadcast>())) {
+      if (is_const_v(((const Broadcast*)r0)->lanes)) {
+        if ((r1 = b.as<Ramp>())) {
+          if (is_const_v(((const Ramp*)r1)->stride)) {
+            if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r1)->lanes)) {
+              if (evaluate_predicate(fold(can_prove((((const Broadcast*)r0)->value < (((const Ramp*)r1)->base + fold(min(0, (((const Ramp*)r1)->stride * (((const Broadcast*)r0)->lanes - 1)))))), simplifier)))) {
                 return true;
               }
-              if (evaluate_predicate(fold(can_prove((a16->value >= (a17->base + fold(max(0, (a17->stride * (a16->lanes - 1)))))), simplifier)))) {
+              if (evaluate_predicate(fold(can_prove((((const Broadcast*)r0)->value >= (((const Ramp*)r1)->base + fold(max(0, (((const Ramp*)r1)->stride * (((const Broadcast*)r0)->lanes - 1)))))), simplifier)))) {
                 return false;
               }
             }
           }
-          if (const Add *a464 = a17->base.as<Add>()) {
-            if (equal(a16->value, a464->a)) {
-              if (equal(a16->lanes, a17->lanes)) {
-                return (0 < ramp(a464->b, a17->stride, a16->lanes));
+          if ((r2 = ((const Ramp*)r1)->base.as<Add>())) {
+            if (equal(((const Broadcast*)r0)->value, ((const Add*)r2)->a)) {
+              if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r1)->lanes)) {
+                return (0 < ramp(((const Add*)r2)->b, ((const Ramp*)r1)->stride, ((const Broadcast*)r0)->lanes));
               }
             }
-            if (equal(a16->value, a464->b)) {
-              if (equal(a16->lanes, a17->lanes)) {
-                return (0 < ramp(a464->a, a17->stride, a16->lanes));
+            if (equal(((const Broadcast*)r0)->value, ((const Add*)r2)->b)) {
+              if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r1)->lanes)) {
+                return (0 < ramp(((const Add*)r2)->a, ((const Ramp*)r1)->stride, ((const Broadcast*)r0)->lanes));
               }
             }
           }
-          if (const Sub *a470 = a17->base.as<Sub>()) {
-            if (equal(a16->value, a470->a)) {
-              if (equal(a16->lanes, a17->lanes)) {
-                if (evaluate_predicate(fold(!(is_const(a16->value, 0))))) {
-                  return (0 < ramp((0 - a470->b), a17->stride, a16->lanes));
+          if ((r2 = ((const Ramp*)r1)->base.as<Sub>())) {
+            if (equal(((const Broadcast*)r0)->value, ((const Sub*)r2)->a)) {
+              if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r1)->lanes)) {
+                if (evaluate_predicate(fold(!(is_const(((const Broadcast*)r0)->value, 0))))) {
+                  return (0 < ramp((0 - ((const Sub*)r2)->b), ((const Ramp*)r1)->stride, ((const Broadcast*)r0)->lanes));
                 }
               }
             }
           }
-        }
+          switch (((const Ramp*)r1)->base.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb220a00 = 0x55a8cb220a50.as<Add>();
+              break;
+            }
+            case IRNodeType::Sub: {              0x55a8cb220a00 = 0x55a8cb220a50.as<Sub>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Ramp: {            0x55a8cb21fa40 = 0x55a8cb198630.as<Ramp>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Broadcast*)r0)->value.as<Add>())) {
+        if (is_const_v(((const Broadcast*)r0)->lanes)) {
+          if ((r2 = b.as<Ramp>())) {
+            if ((r3 = ((const Ramp*)r2)->base.as<Add>())) {
+              if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+                if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                  return (broadcast(((const Add*)r1)->b, ((const Broadcast*)r0)->lanes) < ramp(((const Add*)r3)->b, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
+                }
+              }
+              if (equal(((const Add*)r1)->a, ((const Add*)r3)->b)) {
+                if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                  return (broadcast(((const Add*)r1)->b, ((const Broadcast*)r0)->lanes) < ramp(((const Add*)r3)->a, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
+                }
+              }
+              if (equal(((const Add*)r1)->b, ((const Add*)r3)->a)) {
+                if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                  return (broadcast(((const Add*)r1)->a, ((const Broadcast*)r0)->lanes) < ramp(((const Add*)r3)->b, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
+                }
+              }
+              if (equal(((const Add*)r1)->b, ((const Add*)r3)->b)) {
+                if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                  return (broadcast(((const Add*)r1)->a, ((const Broadcast*)r0)->lanes) < ramp(((const Add*)r3)->a, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
+                }
+              }
+            }
+            if (equal(((const Add*)r1)->a, ((const Ramp*)r2)->base)) {
+              if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                return (broadcast(((const Add*)r1)->b, ((const Broadcast*)r0)->lanes) < ramp(0, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
+              }
+            }
+            if (equal(((const Add*)r1)->b, ((const Ramp*)r2)->base)) {
+              if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                return (broadcast(((const Add*)r1)->a, ((const Broadcast*)r0)->lanes) < ramp(0, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
+              }
+            }
+            switch (((const Ramp*)r2)->base.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb222600 = 0x55a8cb222650.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Ramp: {              0x55a8cb222480 = 0x55a8cb1d2df0.as<Ramp>();
+              break;
+            }
+            default:
+              break;
+            }        }
       }
-      if (const Add *a430 = a16->value.as<Add>()) {
-        if (is_const(a16->lanes)) {
-          if (const Ramp *a431 = expr->b.as<Ramp>()) {
-            if (const Add *a432 = a431->base.as<Add>()) {
-              if (equal(a430->a, a432->a)) {
-                if (equal(a16->lanes, a431->lanes)) {
-                  return (broadcast(a430->b, a16->lanes) < ramp(a432->b, a431->stride, a16->lanes));
-                }
-              }
-              if (equal(a430->a, a432->b)) {
-                if (equal(a16->lanes, a431->lanes)) {
-                  return (broadcast(a430->b, a16->lanes) < ramp(a432->a, a431->stride, a16->lanes));
-                }
-              }
-              if (equal(a430->b, a432->a)) {
-                if (equal(a16->lanes, a431->lanes)) {
-                  return (broadcast(a430->a, a16->lanes) < ramp(a432->b, a431->stride, a16->lanes));
-                }
-              }
-              if (equal(a430->b, a432->b)) {
-                if (equal(a16->lanes, a431->lanes)) {
-                  return (broadcast(a430->a, a16->lanes) < ramp(a432->a, a431->stride, a16->lanes));
-                }
-              }
-            }
-            if (equal(a430->a, a431->base)) {
-              if (equal(a16->lanes, a431->lanes)) {
-                return (broadcast(a430->b, a16->lanes) < ramp(0, a431->stride, a16->lanes));
-              }
-            }
-            if (equal(a430->b, a431->base)) {
-              if (equal(a16->lanes, a431->lanes)) {
-                return (broadcast(a430->a, a16->lanes) < ramp(0, a431->stride, a16->lanes));
-              }
-            }
-          }
-        }
-      }
-      if (const Sub *a446 = a16->value.as<Sub>()) {
-        if (is_const(a16->lanes)) {
-          if (const Ramp *a447 = expr->b.as<Ramp>()) {
-            if (const Sub *a448 = a447->base.as<Sub>()) {
-              if (equal(a446->a, a448->a)) {
-                if (equal(a16->lanes, a447->lanes)) {
-                  if (evaluate_predicate(fold(!(is_const(a446->a, 0))))) {
-                    return (broadcast((0 - a446->b), a16->lanes) < ramp((0 - a448->b), a447->stride, a16->lanes));
+      if ((r1 = ((const Broadcast*)r0)->value.as<Sub>())) {
+        if (is_const_v(((const Broadcast*)r0)->lanes)) {
+          if ((r2 = b.as<Ramp>())) {
+            if ((r3 = ((const Ramp*)r2)->base.as<Sub>())) {
+              if (equal(((const Sub*)r1)->a, ((const Sub*)r3)->a)) {
+                if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                  if (evaluate_predicate(fold(!(is_const(((const Sub*)r1)->a, 0))))) {
+                    return (broadcast((0 - ((const Sub*)r1)->b), ((const Broadcast*)r0)->lanes) < ramp((0 - ((const Sub*)r3)->b), ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
                   }
                 }
               }
-              if (equal(a446->b, a448->b)) {
-                if (equal(a16->lanes, a447->lanes)) {
-                  return (broadcast(a446->a, a16->lanes) < ramp(a448->a, a447->stride, a16->lanes));
+              if (equal(((const Sub*)r1)->b, ((const Sub*)r3)->b)) {
+                if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                  return (broadcast(((const Sub*)r1)->a, ((const Broadcast*)r0)->lanes) < ramp(((const Sub*)r3)->a, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
                 }
               }
             }
-            if (equal(a446->a, a447->base)) {
-              if (equal(a16->lanes, a447->lanes)) {
-                if (evaluate_predicate(fold(!(is_const(a446->a, 0))))) {
-                  return (broadcast((0 - a446->b), a16->lanes) < ramp(0, a447->stride, a16->lanes));
+            if (equal(((const Sub*)r1)->a, ((const Ramp*)r2)->base)) {
+              if (equal(((const Broadcast*)r0)->lanes, ((const Ramp*)r2)->lanes)) {
+                if (evaluate_predicate(fold(!(is_const(((const Sub*)r1)->a, 0))))) {
+                  return (broadcast((0 - ((const Sub*)r1)->b), ((const Broadcast*)r0)->lanes) < ramp(0, ((const Ramp*)r2)->stride, ((const Broadcast*)r0)->lanes));
                 }
               }
             }
+            switch (((const Ramp*)r2)->base.node_type())
+              {
+              case IRNodeType::Sub: {                0x55a8cb2255a0 = 0x55a8cb2255f0.as<Sub>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Ramp: {              0x55a8cb2253f0 = 0x55a8cb1d4bd0.as<Ramp>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      switch (((const Broadcast*)r0)->value.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb2221f0 = 0x55a8cb222240.as<Add>();
+          break;
+        }
+        case IRNodeType::Sub: {          0x55a8cb2221f0 = 0x55a8cb222240.as<Sub>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Add>())) {
+      if (is_const_v(((const Add*)r0)->b)) {
+        return (((const Add*)r0)->a < (b + fold((0 - ((const Add*)r0)->b))));
+      }
+      if ((r1 = ((const Add*)r0)->a.as<Sub>())) {
+        return ((((const Sub*)r1)->a + ((const Add*)r0)->b) < (((const Sub*)r1)->b + b));
+      }
+      if ((r1 = ((const Add*)r0)->b.as<Sub>())) {
+        return ((((const Sub*)r1)->a + ((const Add*)r0)->a) < (((const Sub*)r1)->b + b));
+      }
+      if ((r1 = ((const Add*)r0)->a.as<Add>())) {
+        if ((r2 = ((const Add*)r1)->a.as<Sub>())) {
+          return (((((const Sub*)r2)->a + ((const Add*)r1)->b) + ((const Add*)r0)->b) < (b + ((const Sub*)r2)->b));
+        }
+        if ((r2 = ((const Add*)r1)->b.as<Sub>())) {
+          return (((((const Sub*)r2)->a + ((const Add*)r1)->a) + ((const Add*)r0)->b) < (b + ((const Sub*)r2)->b));
+        }
+        if (equal(((const Add*)r1)->a, b)) {
+          return ((((const Add*)r1)->b + ((const Add*)r0)->b) < 0);
+        }
+        if (equal(((const Add*)r1)->b, b)) {
+          return ((((const Add*)r1)->a + ((const Add*)r0)->b) < 0);
+        }
+        if ((r2 = b.as<Add>())) {
+          if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+            return ((((const Add*)r1)->b + ((const Add*)r0)->b) < ((const Add*)r2)->b);
+          }
+          if (equal(((const Add*)r1)->b, ((const Add*)r2)->a)) {
+            return ((((const Add*)r1)->a + ((const Add*)r0)->b) < ((const Add*)r2)->b);
+          }
+          if (equal(((const Add*)r1)->a, ((const Add*)r2)->b)) {
+            return ((((const Add*)r1)->b + ((const Add*)r0)->b) < ((const Add*)r2)->a);
+          }
+          if (equal(((const Add*)r1)->b, ((const Add*)r2)->b)) {
+            return ((((const Add*)r1)->a + ((const Add*)r0)->b) < ((const Add*)r2)->a);
+          }
+          if ((r3 = ((const Add*)r2)->a.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->b) < (((const Add*)r3)->b + ((const Add*)r2)->b));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->b) < (((const Add*)r3)->b + ((const Add*)r2)->b));
+            }
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->b) < (((const Add*)r3)->a + ((const Add*)r2)->b));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->b) < (((const Add*)r3)->a + ((const Add*)r2)->b));
+            }
+          }
+          if ((r3 = ((const Add*)r2)->b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->b) < (((const Add*)r3)->b + ((const Add*)r2)->a));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->b) < (((const Add*)r3)->b + ((const Add*)r2)->a));
+            }
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->b) < (((const Add*)r3)->a + ((const Add*)r2)->a));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->b) < (((const Add*)r3)->a + ((const Add*)r2)->a));
+            }
+          }
+          switch (((const Add*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb22aa40 = 0x55a8cb22aa90.as<Add>();
+              break;
+            }
+            case IRNodeType::Add: {              0x55a8cb22aa40 = 0x55a8cb22aa90.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Sub: {            0x55a8cb228490 = 0x55a8cb2284e0.as<Sub>();
+            break;
+          }
+          case IRNodeType::Sub: {            0x55a8cb228490 = 0x55a8cb2284e0.as<Sub>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb228490 = 0x55a8cb2284e0.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Add*)r0)->b.as<Add>())) {
+        if ((r2 = ((const Add*)r1)->a.as<Sub>())) {
+          return (((((const Sub*)r2)->a + ((const Add*)r1)->b) + ((const Add*)r0)->a) < (b + ((const Sub*)r2)->b));
+        }
+        if ((r2 = ((const Add*)r1)->b.as<Sub>())) {
+          return (((((const Sub*)r2)->a + ((const Add*)r1)->a) + ((const Add*)r0)->a) < (b + ((const Sub*)r2)->b));
+        }
+        if (equal(((const Add*)r1)->a, b)) {
+          return ((((const Add*)r0)->a + ((const Add*)r1)->b) < 0);
+        }
+        if (equal(((const Add*)r1)->b, b)) {
+          return ((((const Add*)r0)->a + ((const Add*)r1)->a) < 0);
+        }
+        if ((r2 = b.as<Add>())) {
+          if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+            return ((((const Add*)r1)->b + ((const Add*)r0)->a) < ((const Add*)r2)->b);
+          }
+          if (equal(((const Add*)r1)->b, ((const Add*)r2)->a)) {
+            return ((((const Add*)r1)->a + ((const Add*)r0)->a) < ((const Add*)r2)->b);
+          }
+          if (equal(((const Add*)r1)->a, ((const Add*)r2)->b)) {
+            return ((((const Add*)r1)->b + ((const Add*)r0)->a) < ((const Add*)r2)->a);
+          }
+          if (equal(((const Add*)r1)->b, ((const Add*)r2)->b)) {
+            return ((((const Add*)r1)->a + ((const Add*)r0)->a) < ((const Add*)r2)->a);
+          }
+          if ((r3 = ((const Add*)r2)->a.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->a) < (((const Add*)r3)->b + ((const Add*)r2)->b));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->a) < (((const Add*)r3)->b + ((const Add*)r2)->b));
+            }
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->a) < (((const Add*)r3)->a + ((const Add*)r2)->b));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->a) < (((const Add*)r3)->a + ((const Add*)r2)->b));
+            }
+          }
+          if ((r3 = ((const Add*)r2)->b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->a) < (((const Add*)r3)->b + ((const Add*)r2)->a));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->a)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->a) < (((const Add*)r3)->b + ((const Add*)r2)->a));
+            }
+            if (equal(((const Add*)r1)->a, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->b + ((const Add*)r0)->a) < (((const Add*)r3)->a + ((const Add*)r2)->a));
+            }
+            if (equal(((const Add*)r1)->b, ((const Add*)r3)->b)) {
+              return ((((const Add*)r1)->a + ((const Add*)r0)->a) < (((const Add*)r3)->a + ((const Add*)r2)->a));
+            }
+          }
+          switch (((const Add*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb22fe80 = 0x55a8cb22fed0.as<Add>();
+              break;
+            }
+            case IRNodeType::Add: {              0x55a8cb22fe80 = 0x55a8cb22fed0.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Sub: {            0x55a8cb22d930 = 0x55a8cb22d980.as<Sub>();
+            break;
+          }
+          case IRNodeType::Sub: {            0x55a8cb22d930 = 0x55a8cb22d980.as<Sub>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb22d930 = 0x55a8cb22d980.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if (equal(((const Add*)r0)->a, b)) {
+        return (((const Add*)r0)->b < 0);
+      }
+      if (equal(((const Add*)r0)->b, b)) {
+        return (((const Add*)r0)->a < 0);
+      }
+      if ((r1 = b.as<Add>())) {
+        if (equal(((const Add*)r0)->a, ((const Add*)r1)->a)) {
+          return (((const Add*)r0)->b < ((const Add*)r1)->b);
+        }
+        if (equal(((const Add*)r0)->a, ((const Add*)r1)->b)) {
+          return (((const Add*)r0)->b < ((const Add*)r1)->a);
+        }
+        if (equal(((const Add*)r0)->b, ((const Add*)r1)->a)) {
+          return (((const Add*)r0)->a < ((const Add*)r1)->b);
+        }
+        if (equal(((const Add*)r0)->b, ((const Add*)r1)->b)) {
+          return (((const Add*)r0)->a < ((const Add*)r1)->a);
+        }
+        if ((r2 = ((const Add*)r1)->a.as<Add>())) {
+          if (equal(((const Add*)r0)->a, ((const Add*)r2)->a)) {
+            return (((const Add*)r0)->b < (((const Add*)r2)->b + ((const Add*)r1)->b));
+          }
+          if (equal(((const Add*)r0)->a, ((const Add*)r2)->b)) {
+            return (((const Add*)r0)->b < (((const Add*)r2)->a + ((const Add*)r1)->b));
+          }
+          if (equal(((const Add*)r0)->b, ((const Add*)r2)->a)) {
+            return (((const Add*)r0)->a < (((const Add*)r2)->b + ((const Add*)r1)->b));
+          }
+          if (equal(((const Add*)r0)->b, ((const Add*)r2)->b)) {
+            return (((const Add*)r0)->a < (((const Add*)r2)->a + ((const Add*)r1)->b));
+          }
+        }
+        if ((r2 = ((const Add*)r1)->b.as<Add>())) {
+          if (equal(((const Add*)r0)->a, ((const Add*)r2)->a)) {
+            return (((const Add*)r0)->b < (((const Add*)r2)->b + ((const Add*)r1)->a));
+          }
+          if (equal(((const Add*)r0)->a, ((const Add*)r2)->b)) {
+            return (((const Add*)r0)->b < (((const Add*)r2)->a + ((const Add*)r1)->a));
+          }
+          if (equal(((const Add*)r0)->b, ((const Add*)r2)->a)) {
+            return (((const Add*)r0)->a < (((const Add*)r2)->b + ((const Add*)r1)->a));
+          }
+          if (equal(((const Add*)r0)->b, ((const Add*)r2)->b)) {
+            return (((const Add*)r0)->a < (((const Add*)r2)->a + ((const Add*)r1)->a));
+          }
+        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb233e60 = 0x55a8cb233eb0.as<Add>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb233e60 = 0x55a8cb233eb0.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Add*)r0)->a.node_type())
+        {
+        case IRNodeType::Sub: {          0x55a8cb227790 = 0x55a8cb2277e0.as<Sub>();
+          break;
+        }
+        case IRNodeType::Sub: {          0x55a8cb227790 = 0x55a8cb2277e0.as<Sub>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb227790 = 0x55a8cb2277e0.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb227790 = 0x55a8cb2277e0.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb227790 = 0x55a8cb2277e0.as<Add>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if (is_const_v(a)) {
+      if ((r0 = b.as<Sub>())) {
+        if (is_const_v(((const Sub*)r0)->a)) {
+          return (((const Sub*)r0)->b < fold((((const Sub*)r0)->a - a)));
+        }
+      }
+      if ((r0 = b.as<Add>())) {
+        if (is_const_v(((const Add*)r0)->b)) {
+          return (fold((a - ((const Add*)r0)->b)) < ((const Add*)r0)->a);
+        }
+      }
+      if ((r0 = b.as<Min>())) {
+        if (is_const_v(((const Min*)r0)->b)) {
+          return ((a < ((const Min*)r0)->a) && fold((a < ((const Min*)r0)->b)));
+        }
+      }
+      if ((r0 = b.as<Max>())) {
+        if (is_const_v(((const Max*)r0)->b)) {
+          return ((a < ((const Max*)r0)->a) || fold((a < ((const Max*)r0)->b)));
+        }
+      }
+      if ((r0 = b.as<Select>())) {
+        if (is_const_v(((const Select*)r0)->true_value)) {
+          if (is_const_v(((const Select*)r0)->false_value)) {
+            return select(((const Select*)r0)->condition, fold((a < ((const Select*)r0)->true_value)), fold((a < ((const Select*)r0)->false_value)));
           }
         }
       }
+      switch (b.node_type())
+        {
+        case IRNodeType::Sub: {          0x55a8cb236450 = 0x55a8cb19bf20.as<Sub>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb236450 = 0x55a8cb19bf20.as<Add>();
+          break;
+        }
+        case IRNodeType::Min: {          0x55a8cb236450 = 0x55a8cb19bf20.as<Min>();
+          break;
+        }
+        case IRNodeType::Max: {          0x55a8cb236450 = 0x55a8cb19bf20.as<Max>();
+          break;
+        }
+        case IRNodeType::Select: {          0x55a8cb236450 = 0x55a8cb19bf20.as<Select>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Sub>())) {
+      return (((const Sub*)r0)->a < (b + ((const Sub*)r0)->b));
     }
-    if (const Add *a30 = expr->a.as<Add>()) {
-      if (is_const(a30->b)) {
-        return (a30->a < (expr->b + fold((0 - a30->b))));
-      }
-      if (const Sub *a36 = a30->a.as<Sub>()) {
-        return ((a36->a + a30->b) < (a36->b + expr->b));
-      }
-      if (const Sub *a38 = a30->b.as<Sub>()) {
-        return ((a38->a + a30->a) < (a38->b + expr->b));
-      }
-      if (const Add *a44 = a30->a.as<Add>()) {
-        if (const Sub *a45 = a44->a.as<Sub>()) {
-          return (((a45->a + a44->b) + a30->b) < (expr->b + a45->b));
-        }
-        if (const Sub *a48 = a44->b.as<Sub>()) {
-          return (((a48->a + a44->a) + a30->b) < (expr->b + a48->b));
-        }
-        if (equal(a44->a, expr->b)) {
-          return ((a44->b + a30->b) < 0);
-        }
-        if (equal(a44->b, expr->b)) {
-          return ((a44->a + a30->b) < 0);
-        }
-        if (const Add *a97 = expr->b.as<Add>()) {
-          if (equal(a44->a, a97->a)) {
-            return ((a44->b + a30->b) < a97->b);
-          }
-          if (equal(a44->b, a97->a)) {
-            return ((a44->a + a30->b) < a97->b);
-          }
-          if (equal(a44->a, a97->b)) {
-            return ((a44->b + a30->b) < a97->a);
-          }
-          if (equal(a44->b, a97->b)) {
-            return ((a44->a + a30->b) < a97->a);
-          }
-          if (const Add *a146 = a97->a.as<Add>()) {
-            if (equal(a44->a, a146->a)) {
-              return ((a44->b + a30->b) < (a146->b + a97->b));
-            }
-            if (equal(a44->b, a146->a)) {
-              return ((a44->a + a30->b) < (a146->b + a97->b));
-            }
-            if (equal(a44->a, a146->b)) {
-              return ((a44->b + a30->b) < (a146->a + a97->b));
-            }
-            if (equal(a44->b, a146->b)) {
-              return ((a44->a + a30->b) < (a146->a + a97->b));
-            }
-          }
-          if (const Add *a178 = a97->b.as<Add>()) {
-            if (equal(a44->a, a178->a)) {
-              return ((a44->b + a30->b) < (a178->b + a97->a));
-            }
-            if (equal(a44->b, a178->a)) {
-              return ((a44->a + a30->b) < (a178->b + a97->a));
-            }
-            if (equal(a44->a, a178->b)) {
-              return ((a44->b + a30->b) < (a178->a + a97->a));
-            }
-            if (equal(a44->b, a178->b)) {
-              return ((a44->a + a30->b) < (a178->a + a97->a));
-            }
-          }
-        }
-      }
-      if (const Add *a50 = a30->b.as<Add>()) {
-        if (const Sub *a51 = a50->a.as<Sub>()) {
-          return (((a51->a + a50->b) + a30->a) < (expr->b + a51->b));
-        }
-        if (const Sub *a54 = a50->b.as<Sub>()) {
-          return (((a54->a + a50->a) + a30->a) < (expr->b + a54->b));
-        }
-        if (equal(a50->a, expr->b)) {
-          return ((a30->a + a50->b) < 0);
-        }
-        if (equal(a50->b, expr->b)) {
-          return ((a30->a + a50->a) < 0);
-        }
-        if (const Add *a103 = expr->b.as<Add>()) {
-          if (equal(a50->a, a103->a)) {
-            return ((a50->b + a30->a) < a103->b);
-          }
-          if (equal(a50->b, a103->a)) {
-            return ((a50->a + a30->a) < a103->b);
-          }
-          if (equal(a50->a, a103->b)) {
-            return ((a50->b + a30->a) < a103->a);
-          }
-          if (equal(a50->b, a103->b)) {
-            return ((a50->a + a30->a) < a103->a);
-          }
-          if (const Add *a162 = a103->a.as<Add>()) {
-            if (equal(a50->a, a162->a)) {
-              return ((a50->b + a30->a) < (a162->b + a103->b));
-            }
-            if (equal(a50->b, a162->a)) {
-              return ((a50->a + a30->a) < (a162->b + a103->b));
-            }
-            if (equal(a50->a, a162->b)) {
-              return ((a50->b + a30->a) < (a162->a + a103->b));
-            }
-            if (equal(a50->b, a162->b)) {
-              return ((a50->a + a30->a) < (a162->a + a103->b));
-            }
-          }
-          if (const Add *a194 = a103->b.as<Add>()) {
-            if (equal(a50->a, a194->a)) {
-              return ((a50->b + a30->a) < (a194->b + a103->a));
-            }
-            if (equal(a50->b, a194->a)) {
-              return ((a50->a + a30->a) < (a194->b + a103->a));
-            }
-            if (equal(a50->a, a194->b)) {
-              return ((a50->b + a30->a) < (a194->a + a103->a));
-            }
-            if (equal(a50->b, a194->b)) {
-              return ((a50->a + a30->a) < (a194->a + a103->a));
-            }
-          }
-        }
-      }
-      if (equal(a30->a, expr->b)) {
-        return (a30->b < 0);
-      }
-      if (equal(a30->b, expr->b)) {
-        return (a30->a < 0);
-      }
-      if (const Add *a88 = expr->b.as<Add>()) {
-        if (equal(a30->a, a88->a)) {
-          return (a30->b < a88->b);
-        }
-        if (equal(a30->a, a88->b)) {
-          return (a30->b < a88->a);
-        }
-        if (equal(a30->b, a88->a)) {
-          return (a30->a < a88->b);
-        }
-        if (equal(a30->b, a88->b)) {
-          return (a30->a < a88->a);
-        }
-        if (const Add *a121 = a88->a.as<Add>()) {
-          if (equal(a30->a, a121->a)) {
-            return (a30->b < (a121->b + a88->b));
-          }
-          if (equal(a30->a, a121->b)) {
-            return (a30->b < (a121->a + a88->b));
-          }
-          if (equal(a30->b, a121->a)) {
-            return (a30->a < (a121->b + a88->b));
-          }
-          if (equal(a30->b, a121->b)) {
-            return (a30->a < (a121->a + a88->b));
-          }
-        }
-        if (const Add *a127 = a88->b.as<Add>()) {
-          if (equal(a30->a, a127->a)) {
-            return (a30->b < (a127->b + a88->a));
-          }
-          if (equal(a30->a, a127->b)) {
-            return (a30->b < (a127->a + a88->a));
-          }
-          if (equal(a30->b, a127->a)) {
-            return (a30->a < (a127->b + a88->a));
-          }
-          if (equal(a30->b, a127->b)) {
-            return (a30->a < (a127->a + a88->a));
-          }
-        }
-      }
+    if ((r0 = b.as<Sub>())) {
+      return ((a + ((const Sub*)r0)->b) < ((const Sub*)r0)->a);
     }
-    if (is_const(expr->a)) {
-      if (const Sub *a31 = expr->b.as<Sub>()) {
-        if (is_const(a31->a)) {
-          return (a31->b < fold((a31->a - expr->a)));
-        }
+    if ((r0 = b.as<Add>())) {
+      if ((r1 = ((const Add*)r0)->a.as<Sub>())) {
+        return ((a + ((const Sub*)r1)->b) < (((const Sub*)r1)->a + ((const Add*)r0)->b));
       }
-      if (const Add *a32 = expr->b.as<Add>()) {
-        if (is_const(a32->b)) {
-          return (fold((expr->a - a32->b)) < a32->a);
-        }
+      if ((r1 = ((const Add*)r0)->b.as<Sub>())) {
+        return ((a + ((const Sub*)r1)->b) < (((const Sub*)r1)->a + ((const Add*)r0)->a));
       }
-      if (const Min *a277 = expr->b.as<Min>()) {
-        if (is_const(a277->b)) {
-          return ((expr->a < a277->a) && fold((expr->a < a277->b)));
+      if ((r1 = ((const Add*)r0)->a.as<Add>())) {
+        if ((r2 = ((const Add*)r1)->a.as<Sub>())) {
+          return ((a + ((const Sub*)r2)->b) < ((((const Sub*)r2)->a + ((const Add*)r1)->b) + ((const Add*)r0)->b));
         }
-      }
-      if (const Max *a278 = expr->b.as<Max>()) {
-        if (is_const(a278->b)) {
-          return ((expr->a < a278->a) || fold((expr->a < a278->b)));
+        if ((r2 = ((const Add*)r1)->b.as<Sub>())) {
+          return ((a + ((const Sub*)r2)->b) < ((((const Sub*)r2)->a + ((const Add*)r1)->a) + ((const Add*)r0)->b));
         }
-      }
-      if (const Select *a383 = expr->b.as<Select>()) {
-        if (is_const(a383->true_value)) {
-          if (is_const(a383->false_value)) {
-            return select(a383->condition, fold((expr->a < a383->true_value)), fold((expr->a < a383->false_value)));
+        if (equal(a, ((const Add*)r1)->a)) {
+          return (0 < (((const Add*)r1)->b + ((const Add*)r0)->b));
+        }
+        if (equal(a, ((const Add*)r1)->b)) {
+          return (0 < (((const Add*)r1)->a + ((const Add*)r0)->b));
+        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Sub: {            0x55a8cb239870 = 0x55a8cb2398c0.as<Sub>();
+            break;
           }
+          case IRNodeType::Sub: {            0x55a8cb239870 = 0x55a8cb2398c0.as<Sub>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Add*)r0)->b.as<Add>())) {
+        if ((r2 = ((const Add*)r1)->a.as<Sub>())) {
+          return ((a + ((const Sub*)r2)->b) < ((((const Sub*)r2)->a + ((const Add*)r1)->b) + ((const Add*)r0)->a));
         }
+        if ((r2 = ((const Add*)r1)->b.as<Sub>())) {
+          return ((a + ((const Sub*)r2)->b) < ((((const Sub*)r2)->a + ((const Add*)r1)->a) + ((const Add*)r0)->a));
+        }
+        if (equal(a, ((const Add*)r1)->a)) {
+          return (0 < (((const Add*)r0)->a + ((const Add*)r1)->b));
+        }
+        if (equal(a, ((const Add*)r1)->b)) {
+          return (0 < (((const Add*)r0)->a + ((const Add*)r1)->a));
+        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Sub: {            0x55a8cb23adb0 = 0x55a8cb23ae00.as<Sub>();
+            break;
+          }
+          case IRNodeType::Sub: {            0x55a8cb23adb0 = 0x55a8cb23ae00.as<Sub>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if (equal(a, ((const Add*)r0)->a)) {
+        return (0 < ((const Add*)r0)->b);
       }
-    }
-    if (const Sub *a33 = expr->a.as<Sub>()) {
-      return (a33->a < (expr->b + a33->b));
-    }
-    if (const Sub *a34 = expr->b.as<Sub>()) {
-      return ((expr->a + a34->b) < a34->a);
-    }
-    if (const Add *a39 = expr->b.as<Add>()) {
-      if (const Sub *a40 = a39->a.as<Sub>()) {
-        return ((expr->a + a40->b) < (a40->a + a39->b));
+      if (equal(a, ((const Add*)r0)->b)) {
+        return (0 < ((const Add*)r0)->a);
       }
-      if (const Sub *a42 = a39->b.as<Sub>()) {
-        return ((expr->a + a42->b) < (a42->a + a39->a));
-      }
-      if (const Add *a56 = a39->a.as<Add>()) {
-        if (const Sub *a57 = a56->a.as<Sub>()) {
-          return ((expr->a + a57->b) < ((a57->a + a56->b) + a39->b));
-        }
-        if (const Sub *a60 = a56->b.as<Sub>()) {
-          return ((expr->a + a60->b) < ((a60->a + a56->a) + a39->b));
-        }
-        if (equal(expr->a, a56->a)) {
-          return (0 < (a56->b + a39->b));
-        }
-        if (equal(expr->a, a56->b)) {
-          return (0 < (a56->a + a39->b));
-        }
-      }
-      if (const Add *a62 = a39->b.as<Add>()) {
-        if (const Sub *a63 = a62->a.as<Sub>()) {
-          return ((expr->a + a63->b) < ((a63->a + a62->b) + a39->a));
-        }
-        if (const Sub *a66 = a62->b.as<Sub>()) {
-          return ((expr->a + a66->b) < ((a66->a + a62->a) + a39->a));
-        }
-        if (equal(expr->a, a62->a)) {
-          return (0 < (a39->a + a62->b));
-        }
-        if (equal(expr->a, a62->b)) {
-          return (0 < (a39->a + a62->a));
-        }
-      }
-      if (equal(expr->a, a39->a)) {
-        return (0 < a39->b);
-      }
-      if (equal(expr->a, a39->b)) {
-        return (0 < a39->a);
-      }
-      if (const Min *a228 = a39->a.as<Min>()) {
-        if (const Add *a229 = a228->a.as<Add>()) {
-          if (equal(expr->a, a229->a)) {
-            if (is_const(a229->b)) {
-              if (is_const(a39->b)) {
-                return ((expr->a < (a228->b + a39->b)) && fold((0 < (a229->b + a39->b))));
+      if ((r1 = ((const Add*)r0)->a.as<Min>())) {
+        if ((r2 = ((const Min*)r1)->a.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Add*)r0)->b)) {
+                return ((a < (((const Min*)r1)->b + ((const Add*)r0)->b)) && fold((0 < (((const Add*)r2)->b + ((const Add*)r0)->b))));
               }
             }
           }
         }
-        if (const Add *a232 = a228->b.as<Add>()) {
-          if (equal(expr->a, a232->a)) {
-            if (is_const(a232->b)) {
-              if (is_const(a39->b)) {
-                return ((expr->a < (a228->a + a39->b)) && fold((0 < (a232->b + a39->b))));
+        if ((r2 = ((const Min*)r1)->b.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Add*)r0)->b)) {
+                return ((a < (((const Min*)r1)->a + ((const Add*)r0)->b)) && fold((0 < (((const Add*)r2)->b + ((const Add*)r0)->b))));
               }
             }
           }
         }
-        if (equal(expr->a, a228->a)) {
-          if (is_const(a39->b)) {
-            return ((expr->a < (a228->b + a39->b)) && fold((0 < a39->b)));
+        if (equal(a, ((const Min*)r1)->a)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            return ((a < (((const Min*)r1)->b + ((const Add*)r0)->b)) && fold((0 < ((const Add*)r0)->b)));
           }
         }
-        if (equal(expr->a, a228->b)) {
-          if (is_const(a39->b)) {
-            return ((expr->a < (a228->a + a39->b)) && fold((0 < a39->b)));
+        if (equal(a, ((const Min*)r1)->b)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            return ((a < (((const Min*)r1)->a + ((const Add*)r0)->b)) && fold((0 < ((const Add*)r0)->b)));
           }
         }
-      }
-      if (const Max *a234 = a39->a.as<Max>()) {
-        if (const Add *a235 = a234->a.as<Add>()) {
-          if (equal(expr->a, a235->a)) {
-            if (is_const(a235->b)) {
-              if (is_const(a39->b)) {
-                return ((expr->a < (a234->b + a39->b)) || fold((0 < (a235->b + a39->b))));
+        switch (((const Min*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb23c7e0 = 0x55a8cb23c830.as<Add>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb23c7e0 = 0x55a8cb23c830.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Add*)r0)->a.as<Max>())) {
+        if ((r2 = ((const Max*)r1)->a.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Add*)r0)->b)) {
+                return ((a < (((const Max*)r1)->b + ((const Add*)r0)->b)) || fold((0 < (((const Add*)r2)->b + ((const Add*)r0)->b))));
               }
             }
           }
         }
-        if (const Add *a238 = a234->b.as<Add>()) {
-          if (equal(expr->a, a238->a)) {
-            if (is_const(a238->b)) {
-              if (is_const(a39->b)) {
-                return ((expr->a < (a234->a + a39->b)) || fold((0 < (a238->b + a39->b))));
+        if ((r2 = ((const Max*)r1)->b.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Add*)r0)->b)) {
+                return ((a < (((const Max*)r1)->a + ((const Add*)r0)->b)) || fold((0 < (((const Add*)r2)->b + ((const Add*)r0)->b))));
               }
             }
           }
         }
-        if (equal(expr->a, a234->a)) {
-          if (is_const(a39->b)) {
-            return ((expr->a < (a234->b + a39->b)) || fold((0 < a39->b)));
+        if (equal(a, ((const Max*)r1)->a)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            return ((a < (((const Max*)r1)->b + ((const Add*)r0)->b)) || fold((0 < ((const Add*)r0)->b)));
           }
         }
-        if (equal(expr->a, a234->b)) {
-          if (is_const(a39->b)) {
-            return ((expr->a < (a234->a + a39->b)) || fold((0 < a39->b)));
+        if (equal(a, ((const Max*)r1)->b)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            return ((a < (((const Max*)r1)->a + ((const Add*)r0)->b)) || fold((0 < ((const Add*)r0)->b)));
           }
         }
-      }
-      if (const Select *a352 = a39->a.as<Select>()) {
-        if (const Add *a353 = a352->true_value.as<Add>()) {
-          if (equal(expr->a, a353->a)) {
-            if (is_const(a353->b)) {
-              if (is_const(a39->b)) {
-                if (evaluate_predicate(fold(((a353->b + a39->b) <= 0)))) {
-                  return (!(a352->condition) && (expr->a < (a352->false_value + a39->b)));
+        switch (((const Max*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb23e8d0 = 0x55a8cb23e920.as<Add>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb23e8d0 = 0x55a8cb23e920.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Add*)r0)->a.as<Select>())) {
+        if ((r2 = ((const Select*)r1)->true_value.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Add*)r0)->b)) {
+                if (evaluate_predicate(fold(((((const Add*)r2)->b + ((const Add*)r0)->b) <= 0)))) {
+                  return (!(((const Select*)r1)->condition) && (a < (((const Select*)r1)->false_value + ((const Add*)r0)->b)));
                 }
-                if (evaluate_predicate(fold(((a353->b + a39->b) > 0)))) {
-                  return (a352->condition || (expr->a < (a352->false_value + a39->b)));
-                }
-              }
-            }
-          }
-        }
-        if (const Add *a359 = a352->false_value.as<Add>()) {
-          if (equal(expr->a, a359->a)) {
-            if (is_const(a359->b)) {
-              if (is_const(a39->b)) {
-                if (evaluate_predicate(fold(((a359->b + a39->b) <= 0)))) {
-                  return (a352->condition && (expr->a < (a352->true_value + a39->b)));
-                }
-                if (evaluate_predicate(fold(((a359->b + a39->b) > 0)))) {
-                  return (!(a352->condition) || (expr->a < (a352->true_value + a39->b)));
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (const Mul *a207 = expr->a.as<Mul>()) {
-      if (is_const(a207->b)) {
-        if (const Mul *a208 = expr->b.as<Mul>()) {
-          if (equal(a207->b, a208->b)) {
-            if (evaluate_predicate(fold((a207->b > 0)))) {
-              return (a207->a < a208->a);
-            }
-            if (evaluate_predicate(fold((a207->b < 0)))) {
-              return (a208->a < a207->a);
-            }
-          }
-        }
-      }
-    }
-    if (const Min *a215 = expr->a.as<Min>()) {
-      if (const Add *a216 = a215->a.as<Add>()) {
-        if (is_const(a216->b)) {
-          if (const Add *a217 = expr->b.as<Add>()) {
-            if (equal(a216->a, a217->a)) {
-              if (is_const(a217->b)) {
-                return ((a215->b < (a216->a + a217->b)) || fold((a216->b < a217->b)));
-              }
-            }
-          }
-          if (equal(a216->a, expr->b)) {
-            return ((a215->b < a216->a) || fold((a216->b < 0)));
-          }
-          if (const Min *a307 = expr->b.as<Min>()) {
-            if (equal(a216->a, a307->b)) {
-              if (evaluate_predicate(fold((a216->b < 0)))) {
-                return (min(a215->b, (a216->a + a216->b)) < a307->a);
-              }
-            }
-            if (equal(a216->a, a307->a)) {
-              if (evaluate_predicate(fold((a216->b < 0)))) {
-                return (min(a215->b, (a216->a + a216->b)) < a307->b);
-              }
-            }
-          }
-        }
-      }
-      if (const Add *a219 = a215->b.as<Add>()) {
-        if (is_const(a219->b)) {
-          if (const Add *a220 = expr->b.as<Add>()) {
-            if (equal(a219->a, a220->a)) {
-              if (is_const(a220->b)) {
-                return ((a215->a < (a219->a + a220->b)) || fold((a219->b < a220->b)));
-              }
-            }
-          }
-          if (equal(a219->a, expr->b)) {
-            return ((a215->a < a219->a) || fold((a219->b < 0)));
-          }
-          if (const Min *a291 = expr->b.as<Min>()) {
-            if (equal(a219->a, a291->b)) {
-              if (evaluate_predicate(fold((a219->b < 0)))) {
-                return (min(a215->a, (a219->a + a219->b)) < a291->a);
-              }
-            }
-            if (equal(a219->a, a291->a)) {
-              if (evaluate_predicate(fold((a219->b < 0)))) {
-                return (min(a215->a, (a219->a + a219->b)) < a291->b);
-              }
-            }
-          }
-        }
-      }
-      if (const Add *a240 = expr->b.as<Add>()) {
-        if (equal(a215->a, a240->a)) {
-          if (is_const(a240->b)) {
-            return ((a215->b < (a215->a + a240->b)) || fold((0 < a240->b)));
-          }
-        }
-        if (equal(a215->b, a240->a)) {
-          if (is_const(a240->b)) {
-            return ((a215->a < (a215->b + a240->b)) || fold((0 < a240->b)));
-          }
-        }
-      }
-      if (equal(a215->a, expr->b)) {
-        return (a215->b < a215->a);
-      }
-      if (equal(a215->b, expr->b)) {
-        return (a215->a < a215->b);
-      }
-      if (is_const(a215->b)) {
-        if (is_const(expr->b)) {
-          return ((a215->a < expr->b) || fold((a215->b < expr->b)));
-        }
-      }
-      if (const Min *a280 = expr->b.as<Min>()) {
-        if (equal(a215->b, a280->b)) {
-          return (a215->a < min(a280->a, a215->b));
-        }
-        if (equal(a215->b, a280->a)) {
-          return (a215->a < min(a215->b, a280->b));
-        }
-        if (const Add *a285 = a280->b.as<Add>()) {
-          if (equal(a215->b, a285->a)) {
-            if (is_const(a285->b)) {
-              if (evaluate_predicate(fold((a285->b > 0)))) {
-                return (min(a215->a, a215->b) < a280->a);
-              }
-            }
-          }
-          if (equal(a215->a, a285->a)) {
-            if (is_const(a285->b)) {
-              if (evaluate_predicate(fold((a285->b > 0)))) {
-                return (min(a215->b, a215->a) < a280->a);
-              }
-            }
-          }
-        }
-        if (const Add *a288 = a280->a.as<Add>()) {
-          if (equal(a215->b, a288->a)) {
-            if (is_const(a288->b)) {
-              if (evaluate_predicate(fold((a288->b > 0)))) {
-                return (min(a215->a, a215->b) < a280->b);
-              }
-            }
-          }
-          if (equal(a215->a, a288->a)) {
-            if (is_const(a288->b)) {
-              if (evaluate_predicate(fold((a288->b > 0)))) {
-                return (min(a215->b, a215->a) < a280->b);
-              }
-            }
-          }
-        }
-        if (equal(a215->a, a280->b)) {
-          return (a215->b < min(a280->a, a215->a));
-        }
-        if (equal(a215->a, a280->a)) {
-          return (a215->b < min(a215->a, a280->b));
-        }
-      }
-    }
-    if (const Max *a221 = expr->a.as<Max>()) {
-      if (const Add *a222 = a221->a.as<Add>()) {
-        if (is_const(a222->b)) {
-          if (const Add *a223 = expr->b.as<Add>()) {
-            if (equal(a222->a, a223->a)) {
-              if (is_const(a223->b)) {
-                return ((a221->b < (a222->a + a223->b)) && fold((a222->b < a223->b)));
-              }
-            }
-          }
-          if (equal(a222->a, expr->b)) {
-            return ((a221->b < a222->a) && fold((a222->b < 0)));
-          }
-          if (const Max *a339 = expr->b.as<Max>()) {
-            if (equal(a222->a, a339->b)) {
-              if (evaluate_predicate(fold((a222->b > 0)))) {
-                return (max(a221->b, (a222->a + a222->b)) < a339->a);
-              }
-            }
-            if (equal(a222->a, a339->a)) {
-              if (evaluate_predicate(fold((a222->b > 0)))) {
-                return (max(a221->b, (a222->a + a222->b)) < a339->b);
-              }
-            }
-          }
-        }
-      }
-      if (const Add *a225 = a221->b.as<Add>()) {
-        if (is_const(a225->b)) {
-          if (const Add *a226 = expr->b.as<Add>()) {
-            if (equal(a225->a, a226->a)) {
-              if (is_const(a226->b)) {
-                return ((a221->a < (a225->a + a226->b)) && fold((a225->b < a226->b)));
-              }
-            }
-          }
-          if (equal(a225->a, expr->b)) {
-            return ((a221->a < a225->a) && fold((a225->b < 0)));
-          }
-          if (const Max *a323 = expr->b.as<Max>()) {
-            if (equal(a225->a, a323->b)) {
-              if (evaluate_predicate(fold((a225->b > 0)))) {
-                return (max(a221->a, (a225->a + a225->b)) < a323->a);
-              }
-            }
-            if (equal(a225->a, a323->a)) {
-              if (evaluate_predicate(fold((a225->b > 0)))) {
-                return (max(a221->a, (a225->a + a225->b)) < a323->b);
-              }
-            }
-          }
-        }
-      }
-      if (const Add *a244 = expr->b.as<Add>()) {
-        if (equal(a221->a, a244->a)) {
-          if (is_const(a244->b)) {
-            return ((a221->b < (a221->a + a244->b)) && fold((0 < a244->b)));
-          }
-        }
-        if (equal(a221->b, a244->a)) {
-          if (is_const(a244->b)) {
-            return ((a221->a < (a221->b + a244->b)) && fold((0 < a244->b)));
-          }
-        }
-      }
-      if (is_const(a221->b)) {
-        if (is_const(expr->b)) {
-          return ((a221->a < expr->b) && fold((a221->b < expr->b)));
-        }
-      }
-      if (const Max *a312 = expr->b.as<Max>()) {
-        if (equal(a221->b, a312->b)) {
-          return (max(a221->a, a221->b) < a312->a);
-        }
-        if (equal(a221->b, a312->a)) {
-          return (max(a221->a, a221->b) < a312->b);
-        }
-        if (const Add *a317 = a312->b.as<Add>()) {
-          if (equal(a221->b, a317->a)) {
-            if (is_const(a317->b)) {
-              if (evaluate_predicate(fold((a317->b < 0)))) {
-                return (max(a221->a, a221->b) < a312->a);
-              }
-            }
-          }
-          if (equal(a221->a, a317->a)) {
-            if (is_const(a317->b)) {
-              if (evaluate_predicate(fold((a317->b < 0)))) {
-                return (max(a221->b, a221->a) < a312->a);
-              }
-            }
-          }
-        }
-        if (const Add *a320 = a312->a.as<Add>()) {
-          if (equal(a221->b, a320->a)) {
-            if (is_const(a320->b)) {
-              if (evaluate_predicate(fold((a320->b < 0)))) {
-                return (max(a221->a, a221->b) < a312->b);
-              }
-            }
-          }
-          if (equal(a221->a, a320->a)) {
-            if (is_const(a320->b)) {
-              if (evaluate_predicate(fold((a320->b < 0)))) {
-                return (max(a221->b, a221->a) < a312->b);
-              }
-            }
-          }
-        }
-        if (equal(a221->a, a312->b)) {
-          return (max(a221->b, a221->a) < a312->a);
-        }
-        if (equal(a221->a, a312->a)) {
-          return (max(a221->b, a221->a) < a312->b);
-        }
-      }
-    }
-    if (const Min *a263 = expr->b.as<Min>()) {
-      if (const Add *a264 = a263->a.as<Add>()) {
-        if (equal(expr->a, a264->a)) {
-          if (is_const(a264->b)) {
-            return ((expr->a < a263->b) && fold((0 < a264->b)));
-          }
-        }
-      }
-      if (const Add *a266 = a263->b.as<Add>()) {
-        if (equal(expr->a, a266->a)) {
-          if (is_const(a266->b)) {
-            return ((expr->a < a263->a) && fold((0 < a266->b)));
-          }
-        }
-      }
-    }
-    if (const Max *a267 = expr->b.as<Max>()) {
-      if (const Add *a268 = a267->a.as<Add>()) {
-        if (equal(expr->a, a268->a)) {
-          if (is_const(a268->b)) {
-            return ((expr->a < a267->b) || fold((0 < a268->b)));
-          }
-        }
-      }
-      if (const Add *a270 = a267->b.as<Add>()) {
-        if (equal(expr->a, a270->a)) {
-          if (is_const(a270->b)) {
-            return ((expr->a < a267->a) || fold((0 < a270->b)));
-          }
-        }
-      }
-      if (equal(expr->a, a267->a)) {
-        return (expr->a < a267->b);
-      }
-      if (equal(expr->a, a267->b)) {
-        return (expr->a < a267->a);
-      }
-    }
-    if (const Select *a343 = expr->b.as<Select>()) {
-      if (const Add *a344 = a343->true_value.as<Add>()) {
-        if (equal(expr->a, a344->a)) {
-          if (is_const(a344->b)) {
-            if (evaluate_predicate(fold((a344->b <= 0)))) {
-              return (!(a343->condition) && (expr->a < a343->false_value));
-            }
-            if (evaluate_predicate(fold((a344->b > 0)))) {
-              return (a343->condition || (expr->a < a343->false_value));
-            }
-          }
-        }
-      }
-      if (const Add *a348 = a343->false_value.as<Add>()) {
-        if (equal(expr->a, a348->a)) {
-          if (is_const(a348->b)) {
-            if (evaluate_predicate(fold((a348->b <= 0)))) {
-              return (a343->condition && (expr->a < a343->true_value));
-            }
-            if (evaluate_predicate(fold((a348->b > 0)))) {
-              return (!(a343->condition) || (expr->a < a343->true_value));
-            }
-          }
-        }
-      }
-    }
-    if (const Select *a363 = expr->a.as<Select>()) {
-      if (const Add *a364 = a363->true_value.as<Add>()) {
-        if (is_const(a364->b)) {
-          if (equal(a364->a, expr->b)) {
-            if (evaluate_predicate(fold((a364->b >= 0)))) {
-              return (!(a363->condition) && (a363->false_value < a364->a));
-            }
-            if (evaluate_predicate(fold((a364->b < 0)))) {
-              return (a363->condition || (a363->false_value < a364->a));
-            }
-          }
-          if (const Add *a373 = expr->b.as<Add>()) {
-            if (equal(a364->a, a373->a)) {
-              if (is_const(a373->b)) {
-                if (evaluate_predicate(fold((a364->b >= a373->b)))) {
-                  return (!(a363->condition) && (a363->false_value < (a364->a + a373->b)));
-                }
-                if (evaluate_predicate(fold((a364->b < a373->b)))) {
-                  return (a363->condition || (a363->false_value < (a364->a + a373->b)));
+                if (evaluate_predicate(fold(((((const Add*)r2)->b + ((const Add*)r0)->b) > 0)))) {
+                  return (((const Select*)r1)->condition || (a < (((const Select*)r1)->false_value + ((const Add*)r0)->b)));
                 }
               }
             }
           }
         }
-      }
-      if (const Add *a368 = a363->false_value.as<Add>()) {
-        if (is_const(a368->b)) {
-          if (equal(a368->a, expr->b)) {
-            if (evaluate_predicate(fold((a368->b >= 0)))) {
-              return (a363->condition && (a363->true_value < a368->a));
-            }
-            if (evaluate_predicate(fold((a368->b < 0)))) {
-              return (!(a363->condition) || (a363->true_value < a368->a));
-            }
-          }
-          if (const Add *a379 = expr->b.as<Add>()) {
-            if (equal(a368->a, a379->a)) {
-              if (is_const(a379->b)) {
-                if (evaluate_predicate(fold((a368->b >= a379->b)))) {
-                  return (a363->condition && (a363->true_value < (a368->a + a379->b)));
+        if ((r2 = ((const Select*)r1)->false_value.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Add*)r0)->b)) {
+                if (evaluate_predicate(fold(((((const Add*)r2)->b + ((const Add*)r0)->b) <= 0)))) {
+                  return (((const Select*)r1)->condition && (a < (((const Select*)r1)->true_value + ((const Add*)r0)->b)));
                 }
-                if (evaluate_predicate(fold((a368->b < a379->b)))) {
-                  return (!(a363->condition) || (a363->true_value < (a368->a + a379->b)));
+                if (evaluate_predicate(fold(((((const Add*)r2)->b + ((const Add*)r0)->b) > 0)))) {
+                  return (!(((const Select*)r1)->condition) || (a < (((const Select*)r1)->true_value + ((const Add*)r0)->b)));
                 }
               }
             }
           }
         }
-      }
-      if (is_const(a363->true_value)) {
-        if (is_const(a363->false_value)) {
-          if (is_const(expr->b)) {
-            return select(a363->condition, fold((a363->true_value < expr->b)), fold((a363->false_value < expr->b)));
+        switch (((const Select*)r1)->true_value.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb2409c0 = 0x55a8cb240a10.as<Add>();
+            break;
           }
+          case IRNodeType::Add: {            0x55a8cb2409c0 = 0x55a8cb240a10.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Add*)r0)->a.node_type())
+        {
+        case IRNodeType::Sub: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Sub>();
+          break;
+        }
+        case IRNodeType::Sub: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Sub>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Add>();
+          break;
+        }
+        case IRNodeType::Min: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Min>();
+          break;
+        }
+        case IRNodeType::Max: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Max>();
+          break;
+        }
+        case IRNodeType::Select: {          0x55a8cb238bd0 = 0x55a8cb238c20.as<Select>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Mul>())) {
+      if (is_const_v(((const Mul*)r0)->b)) {
+        if ((r1 = b.as<Mul>())) {
+          if (equal(((const Mul*)r0)->b, ((const Mul*)r1)->b)) {
+            if (evaluate_predicate(fold((((const Mul*)r0)->b > 0)))) {
+              return (((const Mul*)r0)->a < ((const Mul*)r1)->a);
+            }
+            if (evaluate_predicate(fold((((const Mul*)r0)->b < 0)))) {
+              return (((const Mul*)r1)->a < ((const Mul*)r0)->a);
+            }
+          }
+        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Mul: {            0x55a8cb242e20 = 0x55a8cb1aedb0.as<Mul>();
+            break;
+          }
+          default:
+            break;
+          }      }
+    }
+    if ((r0 = a.as<Min>())) {
+      if ((r1 = ((const Min*)r0)->a.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if ((r2 = b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                return ((((const Min*)r0)->b < (((const Add*)r1)->a + ((const Add*)r2)->b)) || fold((((const Add*)r1)->b < ((const Add*)r2)->b)));
+              }
+            }
+          }
+          if (equal(((const Add*)r1)->a, b)) {
+            return ((((const Min*)r0)->b < ((const Add*)r1)->a) || fold((((const Add*)r1)->b < 0)));
+          }
+          if ((r2 = b.as<Min>())) {
+            if (equal(((const Add*)r1)->a, ((const Min*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b < 0)))) {
+                return (min(((const Min*)r0)->b, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Min*)r2)->a);
+              }
+            }
+            if (equal(((const Add*)r1)->a, ((const Min*)r2)->a)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b < 0)))) {
+                return (min(((const Min*)r0)->b, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Min*)r2)->b);
+              }
+            }
+          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb243c70 = 0x55a8cb1b1130.as<Add>();
+              break;
+            }
+            case IRNodeType::Min: {              0x55a8cb243c70 = 0x55a8cb1b1130.as<Min>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      if ((r1 = ((const Min*)r0)->b.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if ((r2 = b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                return ((((const Min*)r0)->a < (((const Add*)r1)->a + ((const Add*)r2)->b)) || fold((((const Add*)r1)->b < ((const Add*)r2)->b)));
+              }
+            }
+          }
+          if (equal(((const Add*)r1)->a, b)) {
+            return ((((const Min*)r0)->a < ((const Add*)r1)->a) || fold((((const Add*)r1)->b < 0)));
+          }
+          if ((r2 = b.as<Min>())) {
+            if (equal(((const Add*)r1)->a, ((const Min*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b < 0)))) {
+                return (min(((const Min*)r0)->a, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Min*)r2)->a);
+              }
+            }
+            if (equal(((const Add*)r1)->a, ((const Min*)r2)->a)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b < 0)))) {
+                return (min(((const Min*)r0)->a, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Min*)r2)->b);
+              }
+            }
+          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb245ba0 = 0x55a8cb1b1bb0.as<Add>();
+              break;
+            }
+            case IRNodeType::Min: {              0x55a8cb245ba0 = 0x55a8cb1b1bb0.as<Min>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      if ((r1 = b.as<Add>())) {
+        if (equal(((const Min*)r0)->a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((((const Min*)r0)->b < (((const Min*)r0)->a + ((const Add*)r1)->b)) || fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+        if (equal(((const Min*)r0)->b, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((((const Min*)r0)->a < (((const Min*)r0)->b + ((const Add*)r1)->b)) || fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+      }
+      if (equal(((const Min*)r0)->a, b)) {
+        return (((const Min*)r0)->b < ((const Min*)r0)->a);
+      }
+      if (equal(((const Min*)r0)->b, b)) {
+        return (((const Min*)r0)->a < ((const Min*)r0)->b);
+      }
+      if (is_const_v(((const Min*)r0)->b)) {
+        if (is_const_v(b)) {
+          return ((((const Min*)r0)->a < b) || fold((((const Min*)r0)->b < b)));
+        }
+      }
+      if ((r1 = b.as<Min>())) {
+        if (equal(((const Min*)r0)->b, ((const Min*)r1)->b)) {
+          return (((const Min*)r0)->a < min(((const Min*)r1)->a, ((const Min*)r0)->b));
+        }
+        if (equal(((const Min*)r0)->b, ((const Min*)r1)->a)) {
+          return (((const Min*)r0)->a < min(((const Min*)r0)->b, ((const Min*)r1)->b));
+        }
+        if ((r2 = ((const Min*)r1)->b.as<Add>())) {
+          if (equal(((const Min*)r0)->b, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b > 0)))) {
+                return (min(((const Min*)r0)->a, ((const Min*)r0)->b) < ((const Min*)r1)->a);
+              }
+            }
+          }
+          if (equal(((const Min*)r0)->a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b > 0)))) {
+                return (min(((const Min*)r0)->b, ((const Min*)r0)->a) < ((const Min*)r1)->a);
+              }
+            }
+          }
+        }
+        if ((r2 = ((const Min*)r1)->a.as<Add>())) {
+          if (equal(((const Min*)r0)->b, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b > 0)))) {
+                return (min(((const Min*)r0)->a, ((const Min*)r0)->b) < ((const Min*)r1)->b);
+              }
+            }
+          }
+          if (equal(((const Min*)r0)->a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b > 0)))) {
+                return (min(((const Min*)r0)->b, ((const Min*)r0)->a) < ((const Min*)r1)->b);
+              }
+            }
+          }
+        }
+        if (equal(((const Min*)r0)->a, ((const Min*)r1)->b)) {
+          return (((const Min*)r0)->b < min(((const Min*)r1)->a, ((const Min*)r0)->a));
+        }
+        if (equal(((const Min*)r0)->a, ((const Min*)r1)->a)) {
+          return (((const Min*)r0)->b < min(((const Min*)r0)->a, ((const Min*)r1)->b));
+        }
+        switch (((const Min*)r1)->b.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb249a40 = 0x55a8cb249a90.as<Add>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb249a40 = 0x55a8cb249a90.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Min*)r0)->a.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb2439b0 = 0x55a8cb243a00.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb2439b0 = 0x55a8cb243a00.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb2439b0 = 0x55a8cb243a00.as<Add>();
+          break;
+        }
+        case IRNodeType::Min: {          0x55a8cb2439b0 = 0x55a8cb243a00.as<Min>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Max>())) {
+      if ((r1 = ((const Max*)r0)->a.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if ((r2 = b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                return ((((const Max*)r0)->b < (((const Add*)r1)->a + ((const Add*)r2)->b)) && fold((((const Add*)r1)->b < ((const Add*)r2)->b)));
+              }
+            }
+          }
+          if (equal(((const Add*)r1)->a, b)) {
+            return ((((const Max*)r0)->b < ((const Add*)r1)->a) && fold((((const Add*)r1)->b < 0)));
+          }
+          if ((r2 = b.as<Max>())) {
+            if (equal(((const Add*)r1)->a, ((const Max*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b > 0)))) {
+                return (max(((const Max*)r0)->b, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Max*)r2)->a);
+              }
+            }
+            if (equal(((const Add*)r1)->a, ((const Max*)r2)->a)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b > 0)))) {
+                return (max(((const Max*)r0)->b, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Max*)r2)->b);
+              }
+            }
+          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb24c5c0 = 0x55a8cb1b2460.as<Add>();
+              break;
+            }
+            case IRNodeType::Max: {              0x55a8cb24c5c0 = 0x55a8cb1b2460.as<Max>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      if ((r1 = ((const Max*)r0)->b.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if ((r2 = b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                return ((((const Max*)r0)->a < (((const Add*)r1)->a + ((const Add*)r2)->b)) && fold((((const Add*)r1)->b < ((const Add*)r2)->b)));
+              }
+            }
+          }
+          if (equal(((const Add*)r1)->a, b)) {
+            return ((((const Max*)r0)->a < ((const Add*)r1)->a) && fold((((const Add*)r1)->b < 0)));
+          }
+          if ((r2 = b.as<Max>())) {
+            if (equal(((const Add*)r1)->a, ((const Max*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b > 0)))) {
+                return (max(((const Max*)r0)->a, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Max*)r2)->a);
+              }
+            }
+            if (equal(((const Add*)r1)->a, ((const Max*)r2)->a)) {
+              if (evaluate_predicate(fold((((const Add*)r1)->b > 0)))) {
+                return (max(((const Max*)r0)->a, (((const Add*)r1)->a + ((const Add*)r1)->b)) < ((const Max*)r2)->b);
+              }
+            }
+          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb24e4f0 = 0x55a8cb1b2e20.as<Add>();
+              break;
+            }
+            case IRNodeType::Max: {              0x55a8cb24e4f0 = 0x55a8cb1b2e20.as<Max>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      if ((r1 = b.as<Add>())) {
+        if (equal(((const Max*)r0)->a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((((const Max*)r0)->b < (((const Max*)r0)->a + ((const Add*)r1)->b)) && fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+        if (equal(((const Max*)r0)->b, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((((const Max*)r0)->a < (((const Max*)r0)->b + ((const Add*)r1)->b)) && fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+      }
+      if (is_const_v(((const Max*)r0)->b)) {
+        if (is_const_v(b)) {
+          return ((((const Max*)r0)->a < b) && fold((((const Max*)r0)->b < b)));
+        }
+      }
+      if ((r1 = b.as<Max>())) {
+        if (equal(((const Max*)r0)->b, ((const Max*)r1)->b)) {
+          return (max(((const Max*)r0)->a, ((const Max*)r0)->b) < ((const Max*)r1)->a);
+        }
+        if (equal(((const Max*)r0)->b, ((const Max*)r1)->a)) {
+          return (max(((const Max*)r0)->a, ((const Max*)r0)->b) < ((const Max*)r1)->b);
+        }
+        if ((r2 = ((const Max*)r1)->b.as<Add>())) {
+          if (equal(((const Max*)r0)->b, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b < 0)))) {
+                return (max(((const Max*)r0)->a, ((const Max*)r0)->b) < ((const Max*)r1)->a);
+              }
+            }
+          }
+          if (equal(((const Max*)r0)->a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b < 0)))) {
+                return (max(((const Max*)r0)->b, ((const Max*)r0)->a) < ((const Max*)r1)->a);
+              }
+            }
+          }
+        }
+        if ((r2 = ((const Max*)r1)->a.as<Add>())) {
+          if (equal(((const Max*)r0)->b, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b < 0)))) {
+                return (max(((const Max*)r0)->a, ((const Max*)r0)->b) < ((const Max*)r1)->b);
+              }
+            }
+          }
+          if (equal(((const Max*)r0)->a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (evaluate_predicate(fold((((const Add*)r2)->b < 0)))) {
+                return (max(((const Max*)r0)->b, ((const Max*)r0)->a) < ((const Max*)r1)->b);
+              }
+            }
+          }
+        }
+        if (equal(((const Max*)r0)->a, ((const Max*)r1)->b)) {
+          return (max(((const Max*)r0)->b, ((const Max*)r0)->a) < ((const Max*)r1)->a);
+        }
+        if (equal(((const Max*)r0)->a, ((const Max*)r1)->a)) {
+          return (max(((const Max*)r0)->b, ((const Max*)r0)->a) < ((const Max*)r1)->b);
+        }
+        switch (((const Max*)r1)->b.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb251e60 = 0x55a8cb251eb0.as<Add>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb251e60 = 0x55a8cb251eb0.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Max*)r0)->a.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb24c330 = 0x55a8cb24c380.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb24c330 = 0x55a8cb24c380.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb24c330 = 0x55a8cb24c380.as<Add>();
+          break;
+        }
+        case IRNodeType::Max: {          0x55a8cb24c330 = 0x55a8cb24c380.as<Max>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = b.as<Min>())) {
+      if ((r1 = ((const Min*)r0)->a.as<Add>())) {
+        if (equal(a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((a < ((const Min*)r0)->b) && fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+      }
+      if ((r1 = ((const Min*)r0)->b.as<Add>())) {
+        if (equal(a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((a < ((const Min*)r0)->a) && fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+      }
+      switch (((const Min*)r0)->a.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb2545f0 = 0x55a8cb254640.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb2545f0 = 0x55a8cb254640.as<Add>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = b.as<Max>())) {
+      if ((r1 = ((const Max*)r0)->a.as<Add>())) {
+        if (equal(a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((a < ((const Max*)r0)->b) || fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+      }
+      if ((r1 = ((const Max*)r0)->b.as<Add>())) {
+        if (equal(a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            return ((a < ((const Max*)r0)->a) || fold((0 < ((const Add*)r1)->b)));
+          }
+        }
+      }
+      if (equal(a, ((const Max*)r0)->a)) {
+        return (a < ((const Max*)r0)->b);
+      }
+      if (equal(a, ((const Max*)r0)->b)) {
+        return (a < ((const Max*)r0)->a);
+      }
+      switch (((const Max*)r0)->a.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb255530 = 0x55a8cb255580.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb255530 = 0x55a8cb255580.as<Add>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = b.as<Select>())) {
+      if ((r1 = ((const Select*)r0)->true_value.as<Add>())) {
+        if (equal(a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            if (evaluate_predicate(fold((((const Add*)r1)->b <= 0)))) {
+              return (!(((const Select*)r0)->condition) && (a < ((const Select*)r0)->false_value));
+            }
+            if (evaluate_predicate(fold((((const Add*)r1)->b > 0)))) {
+              return (((const Select*)r0)->condition || (a < ((const Select*)r0)->false_value));
+            }
+          }
+        }
+      }
+      if ((r1 = ((const Select*)r0)->false_value.as<Add>())) {
+        if (equal(a, ((const Add*)r1)->a)) {
+          if (is_const_v(((const Add*)r1)->b)) {
+            if (evaluate_predicate(fold((((const Add*)r1)->b <= 0)))) {
+              return (((const Select*)r0)->condition && (a < ((const Select*)r0)->true_value));
+            }
+            if (evaluate_predicate(fold((((const Add*)r1)->b > 0)))) {
+              return (!(((const Select*)r0)->condition) || (a < ((const Select*)r0)->true_value));
+            }
+          }
+        }
+      }
+      switch (((const Select*)r0)->true_value.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb256980 = 0x55a8cb2569d0.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb256980 = 0x55a8cb2569d0.as<Add>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Select>())) {
+      if ((r1 = ((const Select*)r0)->true_value.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if (equal(((const Add*)r1)->a, b)) {
+            if (evaluate_predicate(fold((((const Add*)r1)->b >= 0)))) {
+              return (!(((const Select*)r0)->condition) && (((const Select*)r0)->false_value < ((const Add*)r1)->a));
+            }
+            if (evaluate_predicate(fold((((const Add*)r1)->b < 0)))) {
+              return (((const Select*)r0)->condition || (((const Select*)r0)->false_value < ((const Add*)r1)->a));
+            }
+          }
+          if ((r2 = b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (evaluate_predicate(fold((((const Add*)r1)->b >= ((const Add*)r2)->b)))) {
+                  return (!(((const Select*)r0)->condition) && (((const Select*)r0)->false_value < (((const Add*)r1)->a + ((const Add*)r2)->b)));
+                }
+                if (evaluate_predicate(fold((((const Add*)r1)->b < ((const Add*)r2)->b)))) {
+                  return (((const Select*)r0)->condition || (((const Select*)r0)->false_value < (((const Add*)r1)->a + ((const Add*)r2)->b)));
+                }
+              }
+            }
+          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb259000 = 0x55a8cb1ca860.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      if ((r1 = ((const Select*)r0)->false_value.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if (equal(((const Add*)r1)->a, b)) {
+            if (evaluate_predicate(fold((((const Add*)r1)->b >= 0)))) {
+              return (((const Select*)r0)->condition && (((const Select*)r0)->true_value < ((const Add*)r1)->a));
+            }
+            if (evaluate_predicate(fold((((const Add*)r1)->b < 0)))) {
+              return (!(((const Select*)r0)->condition) || (((const Select*)r0)->true_value < ((const Add*)r1)->a));
+            }
+          }
+          if ((r2 = b.as<Add>())) {
+            if (equal(((const Add*)r1)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (evaluate_predicate(fold((((const Add*)r1)->b >= ((const Add*)r2)->b)))) {
+                  return (((const Select*)r0)->condition && (((const Select*)r0)->true_value < (((const Add*)r1)->a + ((const Add*)r2)->b)));
+                }
+                if (evaluate_predicate(fold((((const Add*)r1)->b < ((const Add*)r2)->b)))) {
+                  return (!(((const Select*)r0)->condition) || (((const Select*)r0)->true_value < (((const Add*)r1)->a + ((const Add*)r2)->b)));
+                }
+              }
+            }
+          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb25ac70 = 0x55a8cb1cb650.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+      }
+      if (is_const_v(((const Select*)r0)->true_value)) {
+        if (is_const_v(((const Select*)r0)->false_value)) {
+          if (is_const_v(b)) {
+            return select(((const Select*)r0)->condition, fold((((const Select*)r0)->true_value < b)), fold((((const Select*)r0)->false_value < b)));
+          }
+        }
+      }
+      switch (((const Select*)r0)->true_value.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb258330 = 0x55a8cb258380.as<Add>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb258330 = 0x55a8cb258380.as<Add>();
+          break;
+        }
+        default:
+          break;
+        }    }
+  }
+  if ((r0 = a.as<Broadcast>())) {
+    if (is_const_v(((const Broadcast*)r0)->lanes)) {
+      if ((r1 = b.as<Broadcast>())) {
+        if (equal(((const Broadcast*)r0)->lanes, ((const Broadcast*)r1)->lanes)) {
+          return broadcast((((const Broadcast*)r0)->value < ((const Broadcast*)r1)->value), ((const Broadcast*)r0)->lanes);
+        }
+      }
+      switch (b.node_type())
+        {
+        case IRNodeType::Broadcast: {          0x55a8cb25c4d0 = 0x55a8cb1995f0.as<Broadcast>();
+          break;
+        }
+        default:
+          break;
+        }    }
+  }
+  if ((r0 = a.as<Mod>())) {
+    if (is_const_int(b, 1)) {
+      return ((((const Mod*)r0)->a % ((const Mod*)r0)->b) == 0);
+    }
+    if (is_const_v(((const Mod*)r0)->b)) {
+      if (is_const_v(b)) {
+        if (evaluate_predicate(fold((((b + 1) == ((const Mod*)r0)->b) && (((const Mod*)r0)->b > 0))))) {
+          return ((((const Mod*)r0)->a % ((const Mod*)r0)->b) != fold((((const Mod*)r0)->b - 1)));
         }
       }
     }
   }
-  if (const Broadcast *a20 = expr->a.as<Broadcast>()) {
-    if (is_const(a20->lanes)) {
-      if (const Broadcast *a21 = expr->b.as<Broadcast>()) {
-        if (equal(a20->lanes, a21->lanes)) {
-          return broadcast((a20->value < a21->value), a20->lanes);
-        }
-      }
+  if (is_const_int(a, 0)) {
+    if ((r0 = b.as<Mod>())) {
+      return ((((const Mod*)r0)->a % ((const Mod*)r0)->b) != 0);
     }
-  }
-  if (const Mod *a22 = expr->a.as<Mod>()) {
-    if (is_const_int(expr->b, 1)) {
-      return ((a22->a % a22->b) == 0);
-    }
-    if (is_const(a22->b)) {
-      if (is_const(expr->b)) {
-        if (evaluate_predicate(fold((((expr->b + 1) == a22->b) && (a22->b > 0))))) {
-          return ((a22->a % a22->b) != fold((a22->b - 1)));
-        }
+    switch (b.node_type())
+      {
+      case IRNodeType::Mod: {        0x55a8cb25d7e0 = 0x55a8cb199ea0.as<Mod>();
+        break;
       }
-    }
-  }
-  if (is_const_int(expr->a, 0)) {
-    if (const Mod *a25 = expr->b.as<Mod>()) {
-      return ((a25->a % a25->b) != 0);
-    }
-  }
-  if (is_operand_no_overflow_int(expr)) {
-    if (const Mul *a211 = expr->a.as<Mul>()) {
-      if (is_const(a211->b)) {
-        if (is_const(expr->b)) {
-          if (evaluate_predicate(fold((a211->b > 0)))) {
-            return (a211->a < fold((((expr->b + a211->b) - 1) / a211->b)));
+      default:
+        break;
+      }  }
+  if (type.is_operand_no_overflow_int()) {
+    if ((r0 = a.as<Mul>())) {
+      if (is_const_v(((const Mul*)r0)->b)) {
+        if (is_const_v(b)) {
+          if (evaluate_predicate(fold((((const Mul*)r0)->b > 0)))) {
+            return (((const Mul*)r0)->a < fold((((b + ((const Mul*)r0)->b) - 1) / ((const Mul*)r0)->b)));
           }
         }
-        if (const Mul *a472 = expr->b.as<Mul>()) {
-          if (is_const(a472->b)) {
-            if (evaluate_predicate(fold((((a472->b % a211->b) == 0) && (a211->b > 0))))) {
-              return (a211->a < (a472->a * fold((a472->b / a211->b))));
+        if ((r1 = b.as<Mul>())) {
+          if (is_const_v(((const Mul*)r1)->b)) {
+            if (evaluate_predicate(fold((((((const Mul*)r1)->b % ((const Mul*)r0)->b) == 0) && (((const Mul*)r0)->b > 0))))) {
+              return (((const Mul*)r0)->a < (((const Mul*)r1)->a * fold((((const Mul*)r1)->b / ((const Mul*)r0)->b))));
             }
-            if (evaluate_predicate(fold((((a211->b % a472->b) == 0) && (a472->b > 0))))) {
-              return ((a211->a * fold((a211->b / a472->b))) < a472->a);
+            if (evaluate_predicate(fold((((((const Mul*)r0)->b % ((const Mul*)r1)->b) == 0) && (((const Mul*)r1)->b > 0))))) {
+              return ((((const Mul*)r0)->a * fold((((const Mul*)r0)->b / ((const Mul*)r1)->b))) < ((const Mul*)r1)->a);
             }
           }
         }
-        if (const Add *a476 = expr->b.as<Add>()) {
-          if (const Mul *a477 = a476->a.as<Mul>()) {
-            if (equal(a211->b, a477->b)) {
-              if (is_const(a476->b)) {
-                if (evaluate_predicate(fold((a211->b > 0)))) {
-                  return (a211->a < (a477->a + fold((((a476->b + a211->b) - 1) / a211->b))));
+        if ((r1 = b.as<Add>())) {
+          if ((r2 = ((const Add*)r1)->a.as<Mul>())) {
+            if (equal(((const Mul*)r0)->b, ((const Mul*)r2)->b)) {
+              if (is_const_v(((const Add*)r1)->b)) {
+                if (evaluate_predicate(fold((((const Mul*)r0)->b > 0)))) {
+                  return (((const Mul*)r0)->a < (((const Mul*)r2)->a + fold((((((const Add*)r1)->b + ((const Mul*)r0)->b) - 1) / ((const Mul*)r0)->b))));
                 }
               }
             }
           }
-        }
-      }
-      if (const Div *a522 = a211->a.as<Div>()) {
-        if (const Add *a523 = a522->a.as<Add>()) {
-          if (is_const(a523->b)) {
-            if (is_const(a522->b)) {
-              if (equal(a522->b, a211->b)) {
-                if (const Add *a524 = expr->b.as<Add>()) {
-                  if (equal(a523->a, a524->a)) {
-                    if (evaluate_predicate(fold((a522->b > 0)))) {
-                      return (a523->b < (((a523->a + a523->b) % a522->b) + a524->b));
+          switch (((const Add*)r1)->a.node_type())
+            {
+            case IRNodeType::Mul: {              0x55a8cb25f950 = 0x55a8cb25f9a0.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Mul: {            0x55a8cb25e530 = 0x55a8cb1d8620.as<Mul>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb25e530 = 0x55a8cb1d8620.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Mul*)r0)->a.as<Div>())) {
+        if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+          if (is_const_v(((const Add*)r2)->b)) {
+            if (is_const_v(((const Div*)r1)->b)) {
+              if (equal(((const Div*)r1)->b, ((const Mul*)r0)->b)) {
+                if ((r3 = b.as<Add>())) {
+                  if (equal(((const Add*)r2)->a, ((const Add*)r3)->a)) {
+                    if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                      return (((const Add*)r2)->b < (((((const Add*)r2)->a + ((const Add*)r2)->b) % ((const Div*)r1)->b) + ((const Add*)r3)->b));
                     }
                   }
-                  if (equal(a523->a, a524->b)) {
-                    if (evaluate_predicate(fold((a522->b > 0)))) {
-                      return (a523->b < (((a523->a + a523->b) % a522->b) + a524->a));
+                  if (equal(((const Add*)r2)->a, ((const Add*)r3)->b)) {
+                    if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                      return (((const Add*)r2)->b < (((((const Add*)r2)->a + ((const Add*)r2)->b) % ((const Div*)r1)->b) + ((const Add*)r3)->a));
                     }
                   }
                 }
-                if (equal(a523->a, expr->b)) {
-                  if (evaluate_predicate(fold((a522->b > 0)))) {
-                    return (a523->b < ((a523->a + a523->b) % a522->b));
+                if (equal(((const Add*)r2)->a, b)) {
+                  if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                    return (((const Add*)r2)->b < ((((const Add*)r2)->a + ((const Add*)r2)->b) % ((const Div*)r1)->b));
                   }
                 }
-              }
+                switch (b.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb260b30 = 0x55a8cb1e0160.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
             }
           }
         }
-        if (is_const(a522->b)) {
-          if (equal(a522->b, a211->b)) {
-            if (const Add *a593 = expr->b.as<Add>()) {
-              if (equal(a522->a, a593->a)) {
-                if (evaluate_predicate(fold((a522->b > 0)))) {
-                  return (0 < ((a522->a % a522->b) + a593->b));
+        if (is_const_v(((const Div*)r1)->b)) {
+          if (equal(((const Div*)r1)->b, ((const Mul*)r0)->b)) {
+            if ((r2 = b.as<Add>())) {
+              if (equal(((const Div*)r1)->a, ((const Add*)r2)->a)) {
+                if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                  return (0 < ((((const Div*)r1)->a % ((const Div*)r1)->b) + ((const Add*)r2)->b));
                 }
               }
-              if (equal(a522->a, a593->b)) {
-                if (evaluate_predicate(fold((a522->b > 0)))) {
-                  return (0 < ((a522->a % a522->b) + a593->a));
+              if (equal(((const Div*)r1)->a, ((const Add*)r2)->b)) {
+                if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                  return (0 < ((((const Div*)r1)->a % ((const Div*)r1)->b) + ((const Add*)r2)->a));
                 }
               }
             }
-            if (equal(a522->a, expr->b)) {
-              if (evaluate_predicate(fold((a522->b > 0)))) {
-                return ((a522->a % a522->b) != 0);
+            if (equal(((const Div*)r1)->a, b)) {
+              if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                return ((((const Div*)r1)->a % ((const Div*)r1)->b) != 0);
               }
             }
-          }
+            switch (b.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb262460 = 0x55a8cb1e9470.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
         }
-      }
-    }
-    if (const Add *a478 = expr->a.as<Add>()) {
-      if (const Mul *a479 = a478->a.as<Mul>()) {
-        if (is_const(a479->b)) {
-          if (is_const(a478->b)) {
-            if (const Mul *a480 = expr->b.as<Mul>()) {
-              if (equal(a479->b, a480->b)) {
-                if (evaluate_predicate(fold((a479->b > 0)))) {
-                  return ((a479->a + fold((a478->b / a479->b))) < a480->a);
+        switch (((const Div*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb2606d0 = 0x55a8cb260720.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Mul*)r0)->a.node_type())
+        {
+        case IRNodeType::Div: {          0x55a8cb2604f0 = 0x55a8cb260540.as<Div>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Add>())) {
+      if ((r1 = ((const Add*)r0)->a.as<Mul>())) {
+        if (is_const_v(((const Mul*)r1)->b)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            if ((r2 = b.as<Mul>())) {
+              if (equal(((const Mul*)r1)->b, ((const Mul*)r2)->b)) {
+                if (evaluate_predicate(fold((((const Mul*)r1)->b > 0)))) {
+                  return ((((const Mul*)r1)->a + fold((((const Add*)r0)->b / ((const Mul*)r1)->b))) < ((const Mul*)r2)->a);
                 }
               }
             }
-          }
+            switch (b.node_type())
+              {
+              case IRNodeType::Mul: {                0x55a8cb263c70 = 0x55a8cb1d9fd0.as<Mul>();
+                break;
+              }
+              default:
+                break;
+              }          }
         }
-        if (const Div *a483 = a479->a.as<Div>()) {
-          if (const Add *a484 = a483->a.as<Add>()) {
-            if (is_const(a484->b)) {
-              if (is_const(a483->b)) {
-                if (equal(a483->b, a479->b)) {
-                  if (const Add *a485 = expr->b.as<Add>()) {
-                    if (equal(a484->a, a485->a)) {
-                      if (evaluate_predicate(fold((a483->b > 0)))) {
-                        return ((a478->b + a484->b) < (((a484->a + a484->b) % a483->b) + a485->b));
+        if ((r2 = ((const Mul*)r1)->a.as<Div>())) {
+          if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+            if (is_const_v(((const Add*)r3)->b)) {
+              if (is_const_v(((const Div*)r2)->b)) {
+                if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                  if ((r4 = b.as<Add>())) {
+                    if (equal(((const Add*)r3)->a, ((const Add*)r4)->a)) {
+                      if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                        return ((((const Add*)r0)->b + ((const Add*)r3)->b) < (((((const Add*)r3)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b) + ((const Add*)r4)->b));
                       }
                     }
-                    if (equal(a484->a, a485->b)) {
-                      if (evaluate_predicate(fold((a483->b > 0)))) {
-                        return ((a478->b + a484->b) < (((a484->a + a484->b) % a483->b) + a485->a));
-                      }
-                    }
-                  }
-                  if (equal(a484->a, expr->b)) {
-                    if (evaluate_predicate(fold((a483->b > 0)))) {
-                      return ((a478->b + a484->b) < ((a484->a + a484->b) % a483->b));
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if (is_const(a483->b)) {
-            if (equal(a483->b, a479->b)) {
-              if (const Add *a556 = expr->b.as<Add>()) {
-                if (equal(a483->a, a556->a)) {
-                  if (evaluate_predicate(fold((a483->b > 0)))) {
-                    return (a478->b < ((a483->a % a483->b) + a556->b));
-                  }
-                }
-                if (equal(a483->a, a556->b)) {
-                  if (evaluate_predicate(fold((a483->b > 0)))) {
-                    return (a478->b < ((a483->a % a483->b) + a556->a));
-                  }
-                }
-              }
-              if (equal(a483->a, expr->b)) {
-                if (evaluate_predicate(fold((a483->b > 0)))) {
-                  return (a478->b < (a483->a % a483->b));
-                }
-              }
-            }
-          }
-        }
-      }
-      if (const Mul *a487 = a478->b.as<Mul>()) {
-        if (const Div *a488 = a487->a.as<Div>()) {
-          if (const Add *a489 = a488->a.as<Add>()) {
-            if (is_const(a489->b)) {
-              if (is_const(a488->b)) {
-                if (equal(a488->b, a487->b)) {
-                  if (const Add *a490 = expr->b.as<Add>()) {
-                    if (equal(a489->a, a490->a)) {
-                      if (evaluate_predicate(fold((a488->b > 0)))) {
-                        return ((a478->a + a489->b) < (((a489->a + a489->b) % a488->b) + a490->b));
-                      }
-                    }
-                    if (equal(a489->a, a490->b)) {
-                      if (evaluate_predicate(fold((a488->b > 0)))) {
-                        return ((a478->a + a489->b) < (((a489->a + a489->b) % a488->b) + a490->a));
+                    if (equal(((const Add*)r3)->a, ((const Add*)r4)->b)) {
+                      if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                        return ((((const Add*)r0)->b + ((const Add*)r3)->b) < (((((const Add*)r3)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b) + ((const Add*)r4)->a));
                       }
                     }
                   }
-                  if (equal(a489->a, expr->b)) {
-                    if (evaluate_predicate(fold((a488->b > 0)))) {
-                      return ((a478->a + a489->b) < ((a489->a + a489->b) % a488->b));
+                  if (equal(((const Add*)r3)->a, b)) {
+                    if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                      return ((((const Add*)r0)->b + ((const Add*)r3)->b) < ((((const Add*)r3)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b));
                     }
                   }
-                }
+                  switch (b.node_type())
+                    {
+                    case IRNodeType::Add: {                      0x55a8cb264be0 = 0x55a8cb1daa40.as<Add>();
+                      break;
+                    }
+                    default:
+                      break;
+                    }                }
               }
             }
           }
-          if (is_const(a488->b)) {
-            if (equal(a488->b, a487->b)) {
-              if (const Add *a560 = expr->b.as<Add>()) {
-                if (equal(a488->a, a560->a)) {
-                  if (evaluate_predicate(fold((a488->b > 0)))) {
-                    return (a478->a < ((a488->a % a488->b) + a560->b));
+          if (is_const_v(((const Div*)r2)->b)) {
+            if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+              if ((r3 = b.as<Add>())) {
+                if (equal(((const Div*)r2)->a, ((const Add*)r3)->a)) {
+                  if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                    return (((const Add*)r0)->b < ((((const Div*)r2)->a % ((const Div*)r2)->b) + ((const Add*)r3)->b));
                   }
                 }
-                if (equal(a488->a, a560->b)) {
-                  if (evaluate_predicate(fold((a488->b > 0)))) {
-                    return (a478->a < ((a488->a % a488->b) + a560->a));
+                if (equal(((const Div*)r2)->a, ((const Add*)r3)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                    return (((const Add*)r0)->b < ((((const Div*)r2)->a % ((const Div*)r2)->b) + ((const Add*)r3)->a));
                   }
                 }
               }
-              if (equal(a488->a, expr->b)) {
-                if (evaluate_predicate(fold((a488->b > 0)))) {
-                  return (a478->a < (a488->a % a488->b));
+              if (equal(((const Div*)r2)->a, b)) {
+                if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                  return (((const Add*)r0)->b < (((const Div*)r2)->a % ((const Div*)r2)->b));
                 }
+              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Add: {                  0x55a8cb2667e0 = 0x55a8cb1e4b80.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
+          }
+          switch (((const Div*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb264750 = 0x55a8cb2647a0.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Mul*)r1)->a.node_type())
+          {
+          case IRNodeType::Div: {            0x55a8cb264540 = 0x55a8cb264590.as<Div>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Add*)r0)->b.as<Mul>())) {
+        if ((r2 = ((const Mul*)r1)->a.as<Div>())) {
+          if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+            if (is_const_v(((const Add*)r3)->b)) {
+              if (is_const_v(((const Div*)r2)->b)) {
+                if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                  if ((r4 = b.as<Add>())) {
+                    if (equal(((const Add*)r3)->a, ((const Add*)r4)->a)) {
+                      if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                        return ((((const Add*)r0)->a + ((const Add*)r3)->b) < (((((const Add*)r3)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b) + ((const Add*)r4)->b));
+                      }
+                    }
+                    if (equal(((const Add*)r3)->a, ((const Add*)r4)->b)) {
+                      if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                        return ((((const Add*)r0)->a + ((const Add*)r3)->b) < (((((const Add*)r3)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b) + ((const Add*)r4)->a));
+                      }
+                    }
+                  }
+                  if (equal(((const Add*)r3)->a, b)) {
+                    if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                      return ((((const Add*)r0)->a + ((const Add*)r3)->b) < ((((const Add*)r3)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b));
+                    }
+                  }
+                  switch (b.node_type())
+                    {
+                    case IRNodeType::Add: {                      0x55a8cb2684d0 = 0x55a8cb1db740.as<Add>();
+                      break;
+                    }
+                    default:
+                      break;
+                    }                }
               }
             }
           }
-        }
-      }
-      if (const Add *a502 = expr->b.as<Add>()) {
-        if (const Mul *a503 = a502->a.as<Mul>()) {
-          if (const Div *a504 = a503->a.as<Div>()) {
-            if (const Add *a505 = a504->a.as<Add>()) {
-              if (equal(a478->a, a505->a)) {
-                if (is_const(a505->b)) {
-                  if (is_const(a504->b)) {
-                    if (equal(a504->b, a503->b)) {
-                      if (evaluate_predicate(fold((a504->b > 0)))) {
-                        return ((((a478->a + a505->b) % a504->b) + a478->b) < (a502->b + a505->b));
+          if (is_const_v(((const Div*)r2)->b)) {
+            if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+              if ((r3 = b.as<Add>())) {
+                if (equal(((const Div*)r2)->a, ((const Add*)r3)->a)) {
+                  if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                    return (((const Add*)r0)->a < ((((const Div*)r2)->a % ((const Div*)r2)->b) + ((const Add*)r3)->b));
+                  }
+                }
+                if (equal(((const Div*)r2)->a, ((const Add*)r3)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                    return (((const Add*)r0)->a < ((((const Div*)r2)->a % ((const Div*)r2)->b) + ((const Add*)r3)->a));
+                  }
+                }
+              }
+              if (equal(((const Div*)r2)->a, b)) {
+                if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                  return (((const Add*)r0)->a < (((const Div*)r2)->a % ((const Div*)r2)->b));
+                }
+              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Add: {                  0x55a8cb26a0d0 = 0x55a8cb1e53d0.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
+          }
+          switch (((const Div*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb268040 = 0x55a8cb268090.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Mul*)r1)->a.node_type())
+          {
+          case IRNodeType::Div: {            0x55a8cb267e30 = 0x55a8cb267e80.as<Div>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = b.as<Add>())) {
+        if ((r2 = ((const Add*)r1)->a.as<Mul>())) {
+          if ((r3 = ((const Mul*)r2)->a.as<Div>())) {
+            if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+              if (equal(((const Add*)r0)->a, ((const Add*)r4)->a)) {
+                if (is_const_v(((const Add*)r4)->b)) {
+                  if (is_const_v(((const Div*)r3)->b)) {
+                    if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                      if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                        return ((((((const Add*)r0)->a + ((const Add*)r4)->b) % ((const Div*)r3)->b) + ((const Add*)r0)->b) < (((const Add*)r1)->b + ((const Add*)r4)->b));
                       }
                     }
                   }
                 }
               }
-              if (equal(a478->b, a505->a)) {
-                if (is_const(a505->b)) {
-                  if (is_const(a504->b)) {
-                    if (equal(a504->b, a503->b)) {
-                      if (evaluate_predicate(fold((a504->b > 0)))) {
-                        return ((((a478->b + a505->b) % a504->b) + a478->a) < (a502->b + a505->b));
+              if (equal(((const Add*)r0)->b, ((const Add*)r4)->a)) {
+                if (is_const_v(((const Add*)r4)->b)) {
+                  if (is_const_v(((const Div*)r3)->b)) {
+                    if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                      if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                        return ((((((const Add*)r0)->b + ((const Add*)r4)->b) % ((const Div*)r3)->b) + ((const Add*)r0)->a) < (((const Add*)r1)->b + ((const Add*)r4)->b));
                       }
                     }
                   }
                 }
               }
             }
-            if (equal(a478->a, a504->a)) {
-              if (is_const(a504->b)) {
-                if (equal(a504->b, a503->b)) {
-                  if (evaluate_predicate(fold((a504->b > 0)))) {
-                    return (((a478->a % a504->b) + a478->b) < a502->b);
+            if (equal(((const Add*)r0)->a, ((const Div*)r3)->a)) {
+              if (is_const_v(((const Div*)r3)->b)) {
+                if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                    return (((((const Add*)r0)->a % ((const Div*)r3)->b) + ((const Add*)r0)->b) < ((const Add*)r1)->b);
                   }
                 }
               }
             }
-            if (equal(a478->b, a504->a)) {
-              if (is_const(a504->b)) {
-                if (equal(a504->b, a503->b)) {
-                  if (evaluate_predicate(fold((a504->b > 0)))) {
-                    return (((a478->b % a504->b) + a478->a) < a502->b);
+            if (equal(((const Add*)r0)->b, ((const Div*)r3)->a)) {
+              if (is_const_v(((const Div*)r3)->b)) {
+                if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                    return (((((const Add*)r0)->b % ((const Div*)r3)->b) + ((const Add*)r0)->a) < ((const Add*)r1)->b);
                   }
                 }
               }
             }
-          }
-        }
-        if (const Mul *a508 = a502->b.as<Mul>()) {
-          if (const Div *a509 = a508->a.as<Div>()) {
-            if (const Add *a510 = a509->a.as<Add>()) {
-              if (equal(a478->a, a510->a)) {
-                if (is_const(a510->b)) {
-                  if (is_const(a509->b)) {
-                    if (equal(a509->b, a508->b)) {
-                      if (evaluate_predicate(fold((a509->b > 0)))) {
-                        return ((((a478->a + a510->b) % a509->b) + a478->b) < (a502->a + a510->b));
+            switch (((const Div*)r3)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb26bae0 = 0x55a8cb26bb30.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (((const Mul*)r2)->a.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb26b8d0 = 0x55a8cb26b920.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r2 = ((const Add*)r1)->b.as<Mul>())) {
+          if ((r3 = ((const Mul*)r2)->a.as<Div>())) {
+            if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+              if (equal(((const Add*)r0)->a, ((const Add*)r4)->a)) {
+                if (is_const_v(((const Add*)r4)->b)) {
+                  if (is_const_v(((const Div*)r3)->b)) {
+                    if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                      if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                        return ((((((const Add*)r0)->a + ((const Add*)r4)->b) % ((const Div*)r3)->b) + ((const Add*)r0)->b) < (((const Add*)r1)->a + ((const Add*)r4)->b));
                       }
                     }
                   }
                 }
               }
-              if (equal(a478->b, a510->a)) {
-                if (is_const(a510->b)) {
-                  if (is_const(a509->b)) {
-                    if (equal(a509->b, a508->b)) {
-                      if (evaluate_predicate(fold((a509->b > 0)))) {
-                        return ((((a478->b + a510->b) % a509->b) + a478->a) < (a502->a + a510->b));
+              if (equal(((const Add*)r0)->b, ((const Add*)r4)->a)) {
+                if (is_const_v(((const Add*)r4)->b)) {
+                  if (is_const_v(((const Div*)r3)->b)) {
+                    if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                      if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                        return ((((((const Add*)r0)->b + ((const Add*)r4)->b) % ((const Div*)r3)->b) + ((const Add*)r0)->a) < (((const Add*)r1)->a + ((const Add*)r4)->b));
                       }
                     }
                   }
                 }
               }
             }
-            if (equal(a478->a, a509->a)) {
-              if (is_const(a509->b)) {
-                if (equal(a509->b, a508->b)) {
-                  if (evaluate_predicate(fold((a509->b > 0)))) {
-                    return (((a478->a % a509->b) + a478->b) < a502->a);
+            if (equal(((const Add*)r0)->a, ((const Div*)r3)->a)) {
+              if (is_const_v(((const Div*)r3)->b)) {
+                if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                    return (((((const Add*)r0)->a % ((const Div*)r3)->b) + ((const Add*)r0)->b) < ((const Add*)r1)->a);
                   }
                 }
               }
             }
-            if (equal(a478->b, a509->a)) {
-              if (is_const(a509->b)) {
-                if (equal(a509->b, a508->b)) {
-                  if (evaluate_predicate(fold((a509->b > 0)))) {
-                    return (((a478->b % a509->b) + a478->a) < a502->a);
+            if (equal(((const Add*)r0)->b, ((const Div*)r3)->a)) {
+              if (is_const_v(((const Div*)r3)->b)) {
+                if (equal(((const Div*)r3)->b, ((const Mul*)r2)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r3)->b > 0)))) {
+                    return (((((const Add*)r0)->b % ((const Div*)r3)->b) + ((const Add*)r0)->a) < ((const Add*)r1)->a);
                   }
                 }
               }
             }
+            switch (((const Div*)r3)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb26e920 = 0x55a8cb26e970.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (((const Mul*)r2)->a.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb26e740 = 0x55a8cb26e790.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Mul: {            0x55a8cb26b6c0 = 0x55a8cb26b710.as<Mul>();
+            break;
           }
-        }
-      }
-      if (const Mul *a530 = expr->b.as<Mul>()) {
-        if (const Div *a531 = a530->a.as<Div>()) {
-          if (const Add *a532 = a531->a.as<Add>()) {
-            if (equal(a478->a, a532->a)) {
-              if (is_const(a532->b)) {
-                if (is_const(a531->b)) {
-                  if (equal(a531->b, a530->b)) {
-                    if (evaluate_predicate(fold((a531->b > 0)))) {
-                      return ((((a478->a + a532->b) % a531->b) + a478->b) < a532->b);
+          case IRNodeType::Mul: {            0x55a8cb26b6c0 = 0x55a8cb26b710.as<Mul>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = b.as<Mul>())) {
+        if ((r2 = ((const Mul*)r1)->a.as<Div>())) {
+          if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+            if (equal(((const Add*)r0)->a, ((const Add*)r3)->a)) {
+              if (is_const_v(((const Add*)r3)->b)) {
+                if (is_const_v(((const Div*)r2)->b)) {
+                  if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                    if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                      return ((((((const Add*)r0)->a + ((const Add*)r3)->b) % ((const Div*)r2)->b) + ((const Add*)r0)->b) < ((const Add*)r3)->b);
                     }
                   }
                 }
               }
             }
-            if (equal(a478->b, a532->a)) {
-              if (is_const(a532->b)) {
-                if (is_const(a531->b)) {
-                  if (equal(a531->b, a530->b)) {
-                    if (evaluate_predicate(fold((a531->b > 0)))) {
-                      return ((((a478->b + a532->b) % a531->b) + a478->a) < a532->b);
-                    }
-                  }
-                }
-              }
-            }
-          }
-          if (equal(a478->a, a531->a)) {
-            if (is_const(a531->b)) {
-              if (equal(a531->b, a530->b)) {
-                if (evaluate_predicate(fold((a531->b > 0)))) {
-                  return (((a478->a % a531->b) + a478->b) < 0);
-                }
-              }
-            }
-          }
-          if (equal(a478->b, a531->a)) {
-            if (is_const(a531->b)) {
-              if (equal(a531->b, a530->b)) {
-                if (evaluate_predicate(fold((a531->b > 0)))) {
-                  return (((a478->b % a531->b) + a478->a) < 0);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    if (const Add *a545 = expr->b.as<Add>()) {
-      if (const Mul *a546 = a545->a.as<Mul>()) {
-        if (const Div *a547 = a546->a.as<Div>()) {
-          if (const Add *a548 = a547->a.as<Add>()) {
-            if (equal(expr->a, a548->a)) {
-              if (is_const(a548->b)) {
-                if (is_const(a547->b)) {
-                  if (equal(a547->b, a546->b)) {
-                    if (evaluate_predicate(fold((a547->b > 0)))) {
-                      return (((expr->a + a548->b) % a547->b) < (a545->b + a548->b));
+            if (equal(((const Add*)r0)->b, ((const Add*)r3)->a)) {
+              if (is_const_v(((const Add*)r3)->b)) {
+                if (is_const_v(((const Div*)r2)->b)) {
+                  if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                    if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                      return ((((((const Add*)r0)->b + ((const Add*)r3)->b) % ((const Div*)r2)->b) + ((const Add*)r0)->a) < ((const Add*)r3)->b);
                     }
                   }
                 }
               }
             }
           }
-          if (equal(expr->a, a547->a)) {
-            if (is_const(a547->b)) {
-              if (equal(a547->b, a546->b)) {
-                if (evaluate_predicate(fold((a547->b > 0)))) {
-                  return ((expr->a % a547->b) < a545->b);
+          if (equal(((const Add*)r0)->a, ((const Div*)r2)->a)) {
+            if (is_const_v(((const Div*)r2)->b)) {
+              if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                  return (((((const Add*)r0)->a % ((const Div*)r2)->b) + ((const Add*)r0)->b) < 0);
                 }
               }
             }
           }
+          if (equal(((const Add*)r0)->b, ((const Div*)r2)->a)) {
+            if (is_const_v(((const Div*)r2)->b)) {
+              if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                  return (((((const Add*)r0)->b % ((const Div*)r2)->b) + ((const Add*)r0)->a) < 0);
+                }
+              }
+            }
+          }
+          switch (((const Div*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb271710 = 0x55a8cb271760.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Mul*)r1)->a.node_type())
+          {
+          case IRNodeType::Div: {            0x55a8cb271530 = 0x55a8cb271580.as<Div>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Add*)r0)->a.node_type())
+        {
+        case IRNodeType::Mul: {          0x55a8cb263900 = 0x55a8cb263950.as<Mul>();
+          break;
         }
-      }
-      if (const Mul *a550 = a545->b.as<Mul>()) {
-        if (const Div *a551 = a550->a.as<Div>()) {
-          if (const Add *a552 = a551->a.as<Add>()) {
-            if (equal(expr->a, a552->a)) {
-              if (is_const(a552->b)) {
-                if (is_const(a551->b)) {
-                  if (equal(a551->b, a550->b)) {
-                    if (evaluate_predicate(fold((a551->b > 0)))) {
-                      return (((expr->a + a552->b) % a551->b) < (a545->a + a552->b));
+        case IRNodeType::Mul: {          0x55a8cb263900 = 0x55a8cb263950.as<Mul>();
+          break;
+        }
+        case IRNodeType::Add: {          0x55a8cb263900 = 0x55a8cb263950.as<Add>();
+          break;
+        }
+        case IRNodeType::Mul: {          0x55a8cb263900 = 0x55a8cb263950.as<Mul>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = b.as<Add>())) {
+      if ((r1 = ((const Add*)r0)->a.as<Mul>())) {
+        if ((r2 = ((const Mul*)r1)->a.as<Div>())) {
+          if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+            if (equal(a, ((const Add*)r3)->a)) {
+              if (is_const_v(((const Add*)r3)->b)) {
+                if (is_const_v(((const Div*)r2)->b)) {
+                  if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                    if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                      return (((a + ((const Add*)r3)->b) % ((const Div*)r2)->b) < (((const Add*)r0)->b + ((const Add*)r3)->b));
                     }
                   }
                 }
               }
             }
           }
-          if (equal(expr->a, a551->a)) {
-            if (is_const(a551->b)) {
-              if (equal(a551->b, a550->b)) {
-                if (evaluate_predicate(fold((a551->b > 0)))) {
-                  return ((expr->a % a551->b) < a545->a);
+          if (equal(a, ((const Div*)r2)->a)) {
+            if (is_const_v(((const Div*)r2)->b)) {
+              if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                  return ((a % ((const Div*)r2)->b) < ((const Add*)r0)->b);
                 }
               }
             }
           }
+          switch (((const Div*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb2743d0 = 0x55a8cb274420.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Mul*)r1)->a.node_type())
+          {
+          case IRNodeType::Div: {            0x55a8cb2741c0 = 0x55a8cb274210.as<Div>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Add*)r0)->b.as<Mul>())) {
+        if ((r2 = ((const Mul*)r1)->a.as<Div>())) {
+          if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+            if (equal(a, ((const Add*)r3)->a)) {
+              if (is_const_v(((const Add*)r3)->b)) {
+                if (is_const_v(((const Div*)r2)->b)) {
+                  if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                    if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                      return (((a + ((const Add*)r3)->b) % ((const Div*)r2)->b) < (((const Add*)r0)->a + ((const Add*)r3)->b));
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (equal(a, ((const Div*)r2)->a)) {
+            if (is_const_v(((const Div*)r2)->b)) {
+              if (equal(((const Div*)r2)->b, ((const Mul*)r1)->b)) {
+                if (evaluate_predicate(fold((((const Div*)r2)->b > 0)))) {
+                  return ((a % ((const Div*)r2)->b) < ((const Add*)r0)->a);
+                }
+              }
+            }
+          }
+          switch (((const Div*)r2)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb275a90 = 0x55a8cb275ae0.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Mul*)r1)->a.node_type())
+          {
+          case IRNodeType::Div: {            0x55a8cb275880 = 0x55a8cb2758d0.as<Div>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Add*)r0)->a.node_type())
+        {
+        case IRNodeType::Mul: {          0x55a8cb273fe0 = 0x55a8cb274030.as<Mul>();
+          break;
         }
-      }
-    }
-    if (const Mul *a588 = expr->b.as<Mul>()) {
-      if (const Div *a589 = a588->a.as<Div>()) {
-        if (const Add *a590 = a589->a.as<Add>()) {
-          if (equal(expr->a, a590->a)) {
-            if (is_const(a590->b)) {
-              if (is_const(a589->b)) {
-                if (equal(a589->b, a588->b)) {
-                  if (evaluate_predicate(fold((a589->b > 0)))) {
-                    return (((expr->a + a590->b) % a589->b) < a590->b);
+        case IRNodeType::Mul: {          0x55a8cb273fe0 = 0x55a8cb274030.as<Mul>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = b.as<Mul>())) {
+      if ((r1 = ((const Mul*)r0)->a.as<Div>())) {
+        if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+          if (equal(a, ((const Add*)r2)->a)) {
+            if (is_const_v(((const Add*)r2)->b)) {
+              if (is_const_v(((const Div*)r1)->b)) {
+                if (equal(((const Div*)r1)->b, ((const Mul*)r0)->b)) {
+                  if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
+                    return (((a + ((const Add*)r2)->b) % ((const Div*)r1)->b) < ((const Add*)r2)->b);
                   }
                 }
               }
             }
           }
         }
-        if (equal(expr->a, a589->a)) {
-          if (is_const(a589->b)) {
-            if (equal(a589->b, a588->b)) {
-              if (evaluate_predicate(fold((a589->b > 0)))) {
+        if (equal(a, ((const Div*)r1)->a)) {
+          if (is_const_v(((const Div*)r1)->b)) {
+            if (equal(((const Div*)r1)->b, ((const Mul*)r0)->b)) {
+              if (evaluate_predicate(fold((((const Div*)r1)->b > 0)))) {
                 return false;
               }
             }
           }
         }
-      }
-    }
-    if (const Div *a619 = expr->a.as<Div>()) {
-      if (const Add *a620 = a619->a.as<Add>()) {
-        if (is_const(a620->b)) {
-          if (is_const(a619->b)) {
-            if (const Div *a621 = expr->b.as<Div>()) {
-              if (const Add *a622 = a621->a.as<Add>()) {
-                if (equal(a620->a, a622->a)) {
-                  if (is_const(a622->b)) {
-                    if (equal(a619->b, a621->b)) {
-                      if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= a622->b))))) {
+        switch (((const Div*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb2770d0 = 0x55a8cb277120.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Mul*)r0)->a.node_type())
+        {
+        case IRNodeType::Div: {          0x55a8cb276ef0 = 0x55a8cb276f40.as<Div>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Div>())) {
+      if ((r1 = ((const Div*)r0)->a.as<Add>())) {
+        if (is_const_v(((const Add*)r1)->b)) {
+          if (is_const_v(((const Div*)r0)->b)) {
+            if ((r2 = b.as<Div>())) {
+              if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+                if (equal(((const Add*)r1)->a, ((const Add*)r3)->a)) {
+                  if (is_const_v(((const Add*)r3)->b)) {
+                    if (equal(((const Div*)r0)->b, ((const Div*)r2)->b)) {
+                      if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= ((const Add*)r3)->b))))) {
                         return false;
                       }
-                      if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= (a622->b - a619->b)))))) {
+                      if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= (((const Add*)r3)->b - ((const Div*)r0)->b)))))) {
                         return true;
                       }
                     }
                   }
                 }
               }
-              if (equal(a620->a, a621->a)) {
-                if (equal(a619->b, a621->b)) {
-                  if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= 0))))) {
+              if (equal(((const Add*)r1)->a, ((const Div*)r2)->a)) {
+                if (equal(((const Div*)r0)->b, ((const Div*)r2)->b)) {
+                  if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= 0))))) {
                     return false;
                   }
-                  if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= (0 - a619->b)))))) {
+                  if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= (0 - ((const Div*)r0)->b)))))) {
                     return true;
                   }
                 }
               }
-            }
-            if (const Add *a641 = expr->b.as<Add>()) {
-              if (const Div *a642 = a641->a.as<Div>()) {
-                if (equal(a620->a, a642->a)) {
-                  if (equal(a619->b, a642->b)) {
-                    if (is_const(a641->b)) {
-                      if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= (a641->b * a619->b)))))) {
+              switch (((const Div*)r2)->a.node_type())
+                {
+                case IRNodeType::Add: {                  0x55a8cb278760 = 0x55a8cb2787b0.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
+            if ((r2 = b.as<Add>())) {
+              if ((r3 = ((const Add*)r2)->a.as<Div>())) {
+                if (equal(((const Add*)r1)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                    if (is_const_v(((const Add*)r2)->b)) {
+                      if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= (((const Add*)r2)->b * ((const Div*)r0)->b)))))) {
                         return false;
                       }
-                      if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= ((a641->b * a619->b) - a619->b)))))) {
+                      if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= ((((const Add*)r2)->b * ((const Div*)r0)->b) - ((const Div*)r0)->b)))))) {
                         return true;
                       }
                     }
                   }
                 }
               }
-              if (const Min *a650 = a641->a.as<Min>()) {
-                if (const Div *a651 = a650->a.as<Div>()) {
-                  if (equal(a620->a, a651->a)) {
-                    if (equal(a619->b, a651->b)) {
-                      if (is_const(a641->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= (a641->b * a619->b)))))) {
+              if ((r3 = ((const Add*)r2)->a.as<Min>())) {
+                if ((r4 = ((const Min*)r3)->a.as<Div>())) {
+                  if (equal(((const Add*)r1)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r0)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r2)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= (((const Add*)r2)->b * ((const Div*)r0)->b)))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-                if (const Div *a679 = a650->b.as<Div>()) {
-                  if (equal(a620->a, a679->a)) {
-                    if (equal(a619->b, a679->b)) {
-                      if (is_const(a641->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= (a641->b * a619->b)))))) {
+                if ((r4 = ((const Min*)r3)->b.as<Div>())) {
+                  if (equal(((const Add*)r1)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r0)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r2)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= (((const Add*)r2)->b * ((const Div*)r0)->b)))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-              }
-              if (const Max *a655 = a641->a.as<Max>()) {
-                if (const Div *a656 = a655->a.as<Div>()) {
-                  if (equal(a620->a, a656->a)) {
-                    if (equal(a619->b, a656->b)) {
-                      if (is_const(a641->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= ((a641->b * a619->b) - a619->b)))))) {
+                switch (((const Min*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Div: {                    0x55a8cb27b4e0 = 0x55a8cb27b530.as<Div>();
+                    break;
+                  }
+                  case IRNodeType::Div: {                    0x55a8cb27b4e0 = 0x55a8cb27b530.as<Div>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = ((const Add*)r2)->a.as<Max>())) {
+                if ((r4 = ((const Max*)r3)->a.as<Div>())) {
+                  if (equal(((const Add*)r1)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r0)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r2)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= ((((const Add*)r2)->b * ((const Div*)r0)->b) - ((const Div*)r0)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-                if (const Div *a684 = a655->b.as<Div>()) {
-                  if (equal(a620->a, a684->a)) {
-                    if (equal(a619->b, a684->b)) {
-                      if (is_const(a641->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= ((a641->b * a619->b) - a619->b)))))) {
+                if ((r4 = ((const Max*)r3)->b.as<Div>())) {
+                  if (equal(((const Add*)r1)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r0)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r2)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= ((((const Add*)r2)->b * ((const Div*)r0)->b) - ((const Div*)r0)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-              }
-            }
-            if (const Min *a659 = expr->b.as<Min>()) {
-              if (const Div *a660 = a659->a.as<Div>()) {
-                if (const Add *a661 = a660->a.as<Add>()) {
-                  if (equal(a620->a, a661->a)) {
-                    if (is_const(a661->b)) {
-                      if (equal(a619->b, a660->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= a661->b))))) {
+                switch (((const Max*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Div: {                    0x55a8cb27cba0 = 0x55a8cb27cbf0.as<Div>();
+                    break;
+                  }
+                  case IRNodeType::Div: {                    0x55a8cb27cba0 = 0x55a8cb27cbf0.as<Div>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (((const Add*)r2)->a.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb27a260 = 0x55a8cb27a2b0.as<Div>();
+                  break;
+                }
+                case IRNodeType::Min: {                  0x55a8cb27a260 = 0x55a8cb27a2b0.as<Min>();
+                  break;
+                }
+                case IRNodeType::Max: {                  0x55a8cb27a260 = 0x55a8cb27a2b0.as<Max>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
+            if ((r2 = b.as<Min>())) {
+              if ((r3 = ((const Min*)r2)->a.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r1)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= ((const Add*)r4)->b))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a620->a, a660->a)) {
-                  if (equal(a619->b, a660->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= 0))))) {
+                if (equal(((const Add*)r1)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= 0))))) {
                       return false;
                     }
                   }
                 }
-              }
-              if (const Div *a688 = a659->b.as<Div>()) {
-                if (const Add *a689 = a688->a.as<Add>()) {
-                  if (equal(a620->a, a689->a)) {
-                    if (is_const(a689->b)) {
-                      if (equal(a619->b, a688->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= a689->b))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb27e5e0 = 0x55a8cb27e630.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = ((const Min*)r2)->b.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r1)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= ((const Add*)r4)->b))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a620->a, a688->a)) {
-                  if (equal(a619->b, a688->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a620->b >= 0))))) {
+                if (equal(((const Add*)r1)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b >= 0))))) {
                       return false;
                     }
                   }
                 }
-              }
-            }
-            if (const Max *a664 = expr->b.as<Max>()) {
-              if (const Div *a665 = a664->a.as<Div>()) {
-                if (const Add *a666 = a665->a.as<Add>()) {
-                  if (equal(a620->a, a666->a)) {
-                    if (is_const(a666->b)) {
-                      if (equal(a619->b, a665->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= (a666->b - a619->b)))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb27f790 = 0x55a8cb27f7e0.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (((const Min*)r2)->a.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb27e3d0 = 0x55a8cb27e420.as<Div>();
+                  break;
+                }
+                case IRNodeType::Div: {                  0x55a8cb27e3d0 = 0x55a8cb27e420.as<Div>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
+            if ((r2 = b.as<Max>())) {
+              if ((r3 = ((const Max*)r2)->a.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r1)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= (((const Add*)r4)->b - ((const Div*)r0)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a620->a, a665->a)) {
-                  if (equal(a619->b, a665->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= (0 - a619->b)))))) {
+                if (equal(((const Add*)r1)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= (0 - ((const Div*)r0)->b)))))) {
                       return true;
                     }
                   }
                 }
-              }
-              if (const Div *a693 = a664->b.as<Div>()) {
-                if (const Add *a694 = a693->a.as<Add>()) {
-                  if (equal(a620->a, a694->a)) {
-                    if (is_const(a694->b)) {
-                      if (equal(a619->b, a693->b)) {
-                        if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= (a694->b - a619->b)))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb280ad0 = 0x55a8cb280b20.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = ((const Max*)r2)->b.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r1)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= (((const Add*)r4)->b - ((const Div*)r0)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a620->a, a693->a)) {
-                  if (equal(a619->b, a693->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a620->b <= (0 - a619->b)))))) {
+                if (equal(((const Add*)r1)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r1)->b <= (0 - ((const Div*)r0)->b)))))) {
                       return true;
                     }
                   }
                 }
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb281e60 = 0x55a8cb281eb0.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (((const Max*)r2)->a.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb2808c0 = 0x55a8cb280910.as<Div>();
+                  break;
+                }
+                case IRNodeType::Div: {                  0x55a8cb2808c0 = 0x55a8cb280910.as<Div>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
+            switch (b.node_type())
+              {
+              case IRNodeType::Div: {                0x55a8cb2785b0 = 0x55a8cb1ecea0.as<Div>();
+                break;
               }
-            }
-          }
+              case IRNodeType::Add: {                0x55a8cb2785b0 = 0x55a8cb1ecea0.as<Add>();
+                break;
+              }
+              case IRNodeType::Min: {                0x55a8cb2785b0 = 0x55a8cb1ecea0.as<Min>();
+                break;
+              }
+              case IRNodeType::Max: {                0x55a8cb2785b0 = 0x55a8cb1ecea0.as<Max>();
+                break;
+              }
+              default:
+                break;
+              }          }
         }
-        if (const Max *a793 = a620->a.as<Max>()) {
-          if (const Add *a794 = a793->b.as<Add>()) {
-            if (const Mul *a795 = a794->a.as<Mul>()) {
-              if (is_const(a795->b)) {
-                if (is_const(a794->b)) {
-                  if (is_const(a620->b)) {
-                    if (equal(a795->b, a619->b)) {
-                      if (equal(a795->a, expr->b)) {
-                        if (evaluate_predicate(fold(((a795->b > 0) && ((a794->b + a620->b) < 0))))) {
-                          return (((a793->a + a620->b) / a795->b) < a795->a);
+        if ((r2 = ((const Add*)r1)->a.as<Max>())) {
+          if ((r3 = ((const Max*)r2)->b.as<Add>())) {
+            if ((r4 = ((const Add*)r3)->a.as<Mul>())) {
+              if (is_const_v(((const Mul*)r4)->b)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (is_const_v(((const Add*)r1)->b)) {
+                    if (equal(((const Mul*)r4)->b, ((const Div*)r0)->b)) {
+                      if (equal(((const Mul*)r4)->a, b)) {
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) < 0))))) {
+                          return (((((const Max*)r2)->a + ((const Add*)r1)->b) / ((const Mul*)r4)->b) < ((const Mul*)r4)->a);
                         }
-                        if (evaluate_predicate(fold(((a795->b > 0) && ((a794->b + a620->b) >= 0))))) {
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) >= 0))))) {
                           return false;
                         }
                       }
@@ -1630,16 +2441,23 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
                 }
               }
             }
-          }
-          if (const Mul *a804 = a793->b.as<Mul>()) {
-            if (is_const(a804->b)) {
-              if (is_const(a620->b)) {
-                if (equal(a804->b, a619->b)) {
-                  if (equal(a804->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a804->b > 0) && (a620->b < 0))))) {
-                      return (((a793->a + a620->b) / a804->b) < a804->a);
+            switch (((const Add*)r3)->a.node_type())
+              {
+              case IRNodeType::Mul: {                0x55a8cb283400 = 0x55a8cb283450.as<Mul>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          if ((r3 = ((const Max*)r2)->b.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r1)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b < 0))))) {
+                      return (((((const Max*)r2)->a + ((const Add*)r1)->b) / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
-                    if (evaluate_predicate(fold(((a804->b > 0) && (a620->b >= 0))))) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b >= 0))))) {
                       return false;
                     }
                   }
@@ -1647,17 +2465,17 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
               }
             }
           }
-          if (const Add *a812 = a793->a.as<Add>()) {
-            if (const Mul *a813 = a812->a.as<Mul>()) {
-              if (is_const(a813->b)) {
-                if (is_const(a812->b)) {
-                  if (is_const(a620->b)) {
-                    if (equal(a813->b, a619->b)) {
-                      if (equal(a813->a, expr->b)) {
-                        if (evaluate_predicate(fold(((a813->b > 0) && ((a812->b + a620->b) < 0))))) {
-                          return (((a793->b + a620->b) / a813->b) < a813->a);
+          if ((r3 = ((const Max*)r2)->a.as<Add>())) {
+            if ((r4 = ((const Add*)r3)->a.as<Mul>())) {
+              if (is_const_v(((const Mul*)r4)->b)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (is_const_v(((const Add*)r1)->b)) {
+                    if (equal(((const Mul*)r4)->b, ((const Div*)r0)->b)) {
+                      if (equal(((const Mul*)r4)->a, b)) {
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) < 0))))) {
+                          return (((((const Max*)r2)->b + ((const Add*)r1)->b) / ((const Mul*)r4)->b) < ((const Mul*)r4)->a);
                         }
-                        if (evaluate_predicate(fold(((a813->b > 0) && ((a812->b + a620->b) >= 0))))) {
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) >= 0))))) {
                           return false;
                         }
                       }
@@ -1666,16 +2484,23 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
                 }
               }
             }
-          }
-          if (const Mul *a822 = a793->a.as<Mul>()) {
-            if (is_const(a822->b)) {
-              if (is_const(a620->b)) {
-                if (equal(a822->b, a619->b)) {
-                  if (equal(a822->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a822->b > 0) && (a620->b < 0))))) {
-                      return (((a793->b + a620->b) / a822->b) < a822->a);
+            switch (((const Add*)r3)->a.node_type())
+              {
+              case IRNodeType::Mul: {                0x55a8cb285940 = 0x55a8cb285990.as<Mul>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          if ((r3 = ((const Max*)r2)->a.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r1)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b < 0))))) {
+                      return (((((const Max*)r2)->b + ((const Add*)r1)->b) / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
-                    if (evaluate_predicate(fold(((a822->b > 0) && (a620->b >= 0))))) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b >= 0))))) {
                       return false;
                     }
                   }
@@ -1683,20 +2508,36 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
               }
             }
           }
-        }
-        if (const Min *a851 = a620->a.as<Min>()) {
-          if (const Add *a852 = a851->b.as<Add>()) {
-            if (const Mul *a853 = a852->a.as<Mul>()) {
-              if (is_const(a853->b)) {
-                if (is_const(a852->b)) {
-                  if (is_const(a620->b)) {
-                    if (equal(a853->b, a619->b)) {
-                      if (equal(a853->a, expr->b)) {
-                        if (evaluate_predicate(fold(((a853->b > 0) && ((a852->b + a620->b) < 0))))) {
+          switch (((const Max*)r2)->b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb2831f0 = 0x55a8cb283240.as<Add>();
+              break;
+            }
+            case IRNodeType::Mul: {              0x55a8cb2831f0 = 0x55a8cb283240.as<Mul>();
+              break;
+            }
+            case IRNodeType::Add: {              0x55a8cb2831f0 = 0x55a8cb283240.as<Add>();
+              break;
+            }
+            case IRNodeType::Mul: {              0x55a8cb2831f0 = 0x55a8cb283240.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r2 = ((const Add*)r1)->a.as<Min>())) {
+          if ((r3 = ((const Min*)r2)->b.as<Add>())) {
+            if ((r4 = ((const Add*)r3)->a.as<Mul>())) {
+              if (is_const_v(((const Mul*)r4)->b)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (is_const_v(((const Add*)r1)->b)) {
+                    if (equal(((const Mul*)r4)->b, ((const Div*)r0)->b)) {
+                      if (equal(((const Mul*)r4)->a, b)) {
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) < 0))))) {
                           return true;
                         }
-                        if (evaluate_predicate(fold(((a853->b > 0) && ((a852->b + a620->b) >= 0))))) {
-                          return (((a851->a + a620->b) / a853->b) < a853->a);
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) >= 0))))) {
+                          return (((((const Min*)r2)->a + ((const Add*)r1)->b) / ((const Mul*)r4)->b) < ((const Mul*)r4)->a);
                         }
                       }
                     }
@@ -1704,35 +2545,42 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
                 }
               }
             }
-          }
-          if (const Mul *a862 = a851->b.as<Mul>()) {
-            if (is_const(a862->b)) {
-              if (is_const(a620->b)) {
-                if (equal(a862->b, a619->b)) {
-                  if (equal(a862->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a862->b > 0) && (a620->b < 0))))) {
+            switch (((const Add*)r3)->a.node_type())
+              {
+              case IRNodeType::Mul: {                0x55a8cb288060 = 0x55a8cb2880b0.as<Mul>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          if ((r3 = ((const Min*)r2)->b.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r1)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b < 0))))) {
                       return true;
                     }
-                    if (evaluate_predicate(fold(((a862->b > 0) && (a620->b >= 0))))) {
-                      return (((a851->a + a620->b) / a862->b) < a862->a);
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b >= 0))))) {
+                      return (((((const Min*)r2)->a + ((const Add*)r1)->b) / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
                   }
                 }
               }
             }
           }
-          if (const Add *a870 = a851->a.as<Add>()) {
-            if (const Mul *a871 = a870->a.as<Mul>()) {
-              if (is_const(a871->b)) {
-                if (is_const(a870->b)) {
-                  if (is_const(a620->b)) {
-                    if (equal(a871->b, a619->b)) {
-                      if (equal(a871->a, expr->b)) {
-                        if (evaluate_predicate(fold(((a871->b > 0) && ((a870->b + a620->b) < 0))))) {
+          if ((r3 = ((const Min*)r2)->a.as<Add>())) {
+            if ((r4 = ((const Add*)r3)->a.as<Mul>())) {
+              if (is_const_v(((const Mul*)r4)->b)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (is_const_v(((const Add*)r1)->b)) {
+                    if (equal(((const Mul*)r4)->b, ((const Div*)r0)->b)) {
+                      if (equal(((const Mul*)r4)->a, b)) {
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) < 0))))) {
                           return true;
                         }
-                        if (evaluate_predicate(fold(((a871->b > 0) && ((a870->b + a620->b) >= 0))))) {
-                          return (((a851->b + a620->b) / a871->b) < a871->a);
+                        if (evaluate_predicate(fold(((((const Mul*)r4)->b > 0) && ((((const Add*)r3)->b + ((const Add*)r1)->b) >= 0))))) {
+                          return (((((const Min*)r2)->b + ((const Add*)r1)->b) / ((const Mul*)r4)->b) < ((const Mul*)r4)->a);
                         }
                       }
                     }
@@ -1740,110 +2588,211 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
                 }
               }
             }
-          }
-          if (const Mul *a880 = a851->a.as<Mul>()) {
-            if (is_const(a880->b)) {
-              if (is_const(a620->b)) {
-                if (equal(a880->b, a619->b)) {
-                  if (equal(a880->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a880->b > 0) && (a620->b < 0))))) {
+            switch (((const Add*)r3)->a.node_type())
+              {
+              case IRNodeType::Mul: {                0x55a8cb28a5a0 = 0x55a8cb28a5f0.as<Mul>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          if ((r3 = ((const Min*)r2)->a.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r1)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b < 0))))) {
                       return true;
                     }
-                    if (evaluate_predicate(fold(((a880->b > 0) && (a620->b >= 0))))) {
-                      return (((a851->b + a620->b) / a880->b) < a880->a);
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r1)->b >= 0))))) {
+                      return (((((const Min*)r2)->b + ((const Add*)r1)->b) / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
                   }
                 }
               }
             }
           }
-        }
-      }
-      if (is_const(a619->b)) {
-        if (const Div *a628 = expr->b.as<Div>()) {
-          if (const Add *a629 = a628->a.as<Add>()) {
-            if (equal(a619->a, a629->a)) {
-              if (is_const(a629->b)) {
-                if (equal(a619->b, a628->b)) {
-                  if (evaluate_predicate(fold(((a619->b > 0) && (0 >= a629->b))))) {
+          switch (((const Min*)r2)->b.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb287e50 = 0x55a8cb287ea0.as<Add>();
+              break;
+            }
+            case IRNodeType::Mul: {              0x55a8cb287e50 = 0x55a8cb287ea0.as<Mul>();
+              break;
+            }
+            case IRNodeType::Add: {              0x55a8cb287e50 = 0x55a8cb287ea0.as<Add>();
+              break;
+            }
+            case IRNodeType::Mul: {              0x55a8cb287e50 = 0x55a8cb287ea0.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Max: {            0x55a8cb282fe0 = 0x55a8cb283030.as<Max>();
+            break;
+          }
+          case IRNodeType::Min: {            0x55a8cb282fe0 = 0x55a8cb283030.as<Min>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if (is_const_v(((const Div*)r0)->b)) {
+        if ((r1 = b.as<Div>())) {
+          if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+            if (equal(((const Div*)r0)->a, ((const Add*)r2)->a)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (equal(((const Div*)r0)->b, ((const Div*)r1)->b)) {
+                  if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (0 >= ((const Add*)r2)->b))))) {
                     return false;
                   }
-                  if (evaluate_predicate(fold(((a619->b > 0) && (0 <= (a629->b - a619->b)))))) {
+                  if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (0 <= (((const Add*)r2)->b - ((const Div*)r0)->b)))))) {
                     return true;
                   }
                 }
               }
             }
           }
-        }
-        if (const Min *a760 = expr->b.as<Min>()) {
-          if (const Div *a761 = a760->a.as<Div>()) {
-            if (const Add *a762 = a761->a.as<Add>()) {
-              if (equal(a619->a, a762->a)) {
-                if (is_const(a762->b)) {
-                  if (equal(a619->b, a761->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a762->b < 0))))) {
+          switch (((const Div*)r1)->a.node_type())
+            {
+            case IRNodeType::Add: {              0x55a8cb28cb60 = 0x55a8cb28cbb0.as<Add>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r1 = b.as<Min>())) {
+          if ((r2 = ((const Min*)r1)->a.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r0)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r3)->b < 0))))) {
                       return false;
                     }
                   }
                 }
               }
             }
-          }
-          if (const Div *a769 = a760->b.as<Div>()) {
-            if (const Add *a770 = a769->a.as<Add>()) {
-              if (equal(a619->a, a770->a)) {
-                if (is_const(a770->b)) {
-                  if (equal(a619->b, a769->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a770->b < 0))))) {
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb28dc60 = 0x55a8cb28dcb0.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          if ((r2 = ((const Min*)r1)->b.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r0)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Add*)r3)->b < 0))))) {
                       return false;
                     }
                   }
                 }
               }
             }
-          }
-        }
-        if (const Max *a764 = expr->b.as<Max>()) {
-          if (const Div *a765 = a764->a.as<Div>()) {
-            if (const Add *a766 = a765->a.as<Add>()) {
-              if (equal(a619->a, a766->a)) {
-                if (is_const(a766->b)) {
-                  if (equal(a619->b, a765->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a619->b <= a766->b))))) {
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb28e770 = 0x55a8cb28e7c0.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (((const Min*)r1)->a.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb28da50 = 0x55a8cb28daa0.as<Div>();
+              break;
+            }
+            case IRNodeType::Div: {              0x55a8cb28da50 = 0x55a8cb28daa0.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r1 = b.as<Max>())) {
+          if ((r2 = ((const Max*)r1)->a.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r0)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Div*)r0)->b <= ((const Add*)r3)->b))))) {
                       return true;
                     }
                   }
                 }
               }
             }
-          }
-          if (const Div *a773 = a764->b.as<Div>()) {
-            if (const Add *a774 = a773->a.as<Add>()) {
-              if (equal(a619->a, a774->a)) {
-                if (is_const(a774->b)) {
-                  if (equal(a619->b, a773->b)) {
-                    if (evaluate_predicate(fold(((a619->b > 0) && (a619->b <= a774->b))))) {
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb28f400 = 0x55a8cb28f450.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          if ((r2 = ((const Max*)r1)->b.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r0)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r0)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r0)->b > 0) && (((const Div*)r0)->b <= ((const Add*)r3)->b))))) {
                       return true;
                     }
                   }
                 }
               }
             }
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb28ff80 = 0x55a8cb28ffd0.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (((const Max*)r1)->a.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb28f1f0 = 0x55a8cb28f240.as<Div>();
+              break;
+            }
+            case IRNodeType::Div: {              0x55a8cb28f1f0 = 0x55a8cb28f240.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Div: {            0x55a8cb28c9e0 = 0x55a8cb1ee190.as<Div>();
+            break;
           }
-        }
-      }
-      if (const Max *a828 = a619->a.as<Max>()) {
-        if (const Add *a829 = a828->b.as<Add>()) {
-          if (const Mul *a830 = a829->a.as<Mul>()) {
-            if (is_const(a830->b)) {
-              if (is_const(a829->b)) {
-                if (equal(a830->b, a619->b)) {
-                  if (equal(a830->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a830->b > 0) && (a829->b < 0))))) {
-                      return ((a828->a / a830->b) < a830->a);
+          case IRNodeType::Min: {            0x55a8cb28c9e0 = 0x55a8cb1ee190.as<Min>();
+            break;
+          }
+          case IRNodeType::Max: {            0x55a8cb28c9e0 = 0x55a8cb1ee190.as<Max>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Div*)r0)->a.as<Max>())) {
+        if ((r2 = ((const Max*)r1)->b.as<Add>())) {
+          if ((r3 = ((const Add*)r2)->a.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b < 0))))) {
+                      return ((((const Max*)r1)->a / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
-                    if (evaluate_predicate(fold(((a830->b > 0) && (a829->b >= 0))))) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b >= 0))))) {
                       return false;
                     }
                   }
@@ -1851,28 +2800,35 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
               }
             }
           }
-        }
-        if (const Mul *a837 = a828->b.as<Mul>()) {
-          if (is_const(a837->b)) {
-            if (equal(a837->b, a619->b)) {
-              if (equal(a837->a, expr->b)) {
-                if (evaluate_predicate(fold((a837->b > 0)))) {
+          switch (((const Add*)r2)->a.node_type())
+            {
+            case IRNodeType::Mul: {              0x55a8cb290d00 = 0x55a8cb290d50.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r2 = ((const Max*)r1)->b.as<Mul>())) {
+          if (is_const_v(((const Mul*)r2)->b)) {
+            if (equal(((const Mul*)r2)->b, ((const Div*)r0)->b)) {
+              if (equal(((const Mul*)r2)->a, b)) {
+                if (evaluate_predicate(fold((((const Mul*)r2)->b > 0)))) {
                   return false;
                 }
               }
             }
           }
         }
-        if (const Add *a840 = a828->a.as<Add>()) {
-          if (const Mul *a841 = a840->a.as<Mul>()) {
-            if (is_const(a841->b)) {
-              if (is_const(a840->b)) {
-                if (equal(a841->b, a619->b)) {
-                  if (equal(a841->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a841->b > 0) && (a840->b < 0))))) {
-                      return ((a828->b / a841->b) < a841->a);
+        if ((r2 = ((const Max*)r1)->a.as<Add>())) {
+          if ((r3 = ((const Add*)r2)->a.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b < 0))))) {
+                      return ((((const Max*)r1)->b / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
-                    if (evaluate_predicate(fold(((a841->b > 0) && (a840->b >= 0))))) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b >= 0))))) {
                       return false;
                     }
                   }
@@ -1880,420 +2836,772 @@ Expr Simplify_LT(const LT *expr, Simplify *simplifier) {
               }
             }
           }
-        }
-        if (const Mul *a848 = a828->a.as<Mul>()) {
-          if (is_const(a848->b)) {
-            if (equal(a848->b, a619->b)) {
-              if (equal(a848->a, expr->b)) {
-                if (evaluate_predicate(fold((a848->b > 0)))) {
+          switch (((const Add*)r2)->a.node_type())
+            {
+            case IRNodeType::Mul: {              0x55a8cb292590 = 0x55a8cb2925e0.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r2 = ((const Max*)r1)->a.as<Mul>())) {
+          if (is_const_v(((const Mul*)r2)->b)) {
+            if (equal(((const Mul*)r2)->b, ((const Div*)r0)->b)) {
+              if (equal(((const Mul*)r2)->a, b)) {
+                if (evaluate_predicate(fold((((const Mul*)r2)->b > 0)))) {
                   return false;
                 }
               }
             }
           }
         }
-      }
-      if (const Min *a886 = a619->a.as<Min>()) {
-        if (const Add *a887 = a886->b.as<Add>()) {
-          if (const Mul *a888 = a887->a.as<Mul>()) {
-            if (is_const(a888->b)) {
-              if (is_const(a887->b)) {
-                if (equal(a888->b, a619->b)) {
-                  if (equal(a888->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a888->b > 0) && (a887->b < 0))))) {
+        switch (((const Max*)r1)->b.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb290af0 = 0x55a8cb290b40.as<Add>();
+            break;
+          }
+          case IRNodeType::Mul: {            0x55a8cb290af0 = 0x55a8cb290b40.as<Mul>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb290af0 = 0x55a8cb290b40.as<Add>();
+            break;
+          }
+          case IRNodeType::Mul: {            0x55a8cb290af0 = 0x55a8cb290b40.as<Mul>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Div*)r0)->a.as<Min>())) {
+        if ((r2 = ((const Min*)r1)->b.as<Add>())) {
+          if ((r3 = ((const Add*)r2)->a.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b < 0))))) {
                       return true;
                     }
-                    if (evaluate_predicate(fold(((a888->b > 0) && (a887->b >= 0))))) {
-                      return ((a886->a / a888->b) < a888->a);
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b >= 0))))) {
+                      return ((((const Min*)r1)->a / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
                   }
                 }
               }
             }
           }
-        }
-        if (const Mul *a895 = a886->b.as<Mul>()) {
-          if (is_const(a895->b)) {
-            if (equal(a895->b, a619->b)) {
-              if (equal(a895->a, expr->b)) {
-                if (evaluate_predicate(fold((a895->b > 0)))) {
-                  return ((a886->a / a895->b) < a895->a);
+          switch (((const Add*)r2)->a.node_type())
+            {
+            case IRNodeType::Mul: {              0x55a8cb294040 = 0x55a8cb294090.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r2 = ((const Min*)r1)->b.as<Mul>())) {
+          if (is_const_v(((const Mul*)r2)->b)) {
+            if (equal(((const Mul*)r2)->b, ((const Div*)r0)->b)) {
+              if (equal(((const Mul*)r2)->a, b)) {
+                if (evaluate_predicate(fold((((const Mul*)r2)->b > 0)))) {
+                  return ((((const Min*)r1)->a / ((const Mul*)r2)->b) < ((const Mul*)r2)->a);
                 }
               }
             }
           }
         }
-        if (const Add *a898 = a886->a.as<Add>()) {
-          if (const Mul *a899 = a898->a.as<Mul>()) {
-            if (is_const(a899->b)) {
-              if (is_const(a898->b)) {
-                if (equal(a899->b, a619->b)) {
-                  if (equal(a899->a, expr->b)) {
-                    if (evaluate_predicate(fold(((a899->b > 0) && (a898->b < 0))))) {
+        if ((r2 = ((const Min*)r1)->a.as<Add>())) {
+          if ((r3 = ((const Add*)r2)->a.as<Mul>())) {
+            if (is_const_v(((const Mul*)r3)->b)) {
+              if (is_const_v(((const Add*)r2)->b)) {
+                if (equal(((const Mul*)r3)->b, ((const Div*)r0)->b)) {
+                  if (equal(((const Mul*)r3)->a, b)) {
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b < 0))))) {
                       return true;
                     }
-                    if (evaluate_predicate(fold(((a899->b > 0) && (a898->b >= 0))))) {
-                      return ((a886->b / a899->b) < a899->a);
+                    if (evaluate_predicate(fold(((((const Mul*)r3)->b > 0) && (((const Add*)r2)->b >= 0))))) {
+                      return ((((const Min*)r1)->b / ((const Mul*)r3)->b) < ((const Mul*)r3)->a);
                     }
                   }
                 }
               }
             }
           }
-        }
-        if (const Mul *a906 = a886->a.as<Mul>()) {
-          if (is_const(a906->b)) {
-            if (equal(a906->b, a619->b)) {
-              if (equal(a906->a, expr->b)) {
-                if (evaluate_predicate(fold((a906->b > 0)))) {
-                  return ((a886->b / a906->b) < a906->a);
+          switch (((const Add*)r2)->a.node_type())
+            {
+            case IRNodeType::Mul: {              0x55a8cb295ad0 = 0x55a8cb295b20.as<Mul>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        if ((r2 = ((const Min*)r1)->a.as<Mul>())) {
+          if (is_const_v(((const Mul*)r2)->b)) {
+            if (equal(((const Mul*)r2)->b, ((const Div*)r0)->b)) {
+              if (equal(((const Mul*)r2)->a, b)) {
+                if (evaluate_predicate(fold((((const Mul*)r2)->b > 0)))) {
+                  return ((((const Min*)r1)->b / ((const Mul*)r2)->b) < ((const Mul*)r2)->a);
                 }
               }
             }
           }
         }
-      }
-    }
-    if (const Max *a703 = expr->a.as<Max>()) {
-      if (const Div *a704 = a703->a.as<Div>()) {
-        if (const Add *a705 = a704->a.as<Add>()) {
-          if (is_const(a705->b)) {
-            if (is_const(a704->b)) {
-              if (const Div *a706 = expr->b.as<Div>()) {
-                if (const Add *a707 = a706->a.as<Add>()) {
-                  if (equal(a705->a, a707->a)) {
-                    if (is_const(a707->b)) {
-                      if (equal(a704->b, a706->b)) {
-                        if (evaluate_predicate(fold(((a704->b > 0) && (a705->b >= a707->b))))) {
+        switch (((const Min*)r1)->b.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb293e60 = 0x55a8cb293eb0.as<Add>();
+            break;
+          }
+          case IRNodeType::Mul: {            0x55a8cb293e60 = 0x55a8cb293eb0.as<Mul>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb293e60 = 0x55a8cb293eb0.as<Add>();
+            break;
+          }
+          case IRNodeType::Mul: {            0x55a8cb293e60 = 0x55a8cb293eb0.as<Mul>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Div*)r0)->a.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb278240 = 0x55a8cb278290.as<Add>();
+          break;
+        }
+        case IRNodeType::Max: {          0x55a8cb278240 = 0x55a8cb278290.as<Max>();
+          break;
+        }
+        case IRNodeType::Min: {          0x55a8cb278240 = 0x55a8cb278290.as<Min>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Max>())) {
+      if ((r1 = ((const Max*)r0)->a.as<Div>())) {
+        if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+          if (is_const_v(((const Add*)r2)->b)) {
+            if (is_const_v(((const Div*)r1)->b)) {
+              if ((r3 = b.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r2)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b >= ((const Add*)r4)->b))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a705->a, a706->a)) {
-                  if (equal(a704->b, a706->b)) {
-                    if (evaluate_predicate(fold(((a704->b > 0) && (a705->b >= 0))))) {
+                if (equal(((const Add*)r2)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b >= 0))))) {
                       return false;
                     }
                   }
                 }
-              }
-              if (const Add *a742 = expr->b.as<Add>()) {
-                if (const Div *a743 = a742->a.as<Div>()) {
-                  if (equal(a705->a, a743->a)) {
-                    if (equal(a704->b, a743->b)) {
-                      if (is_const(a742->b)) {
-                        if (evaluate_predicate(fold(((a704->b > 0) && (a705->b >= (a742->b * a704->b)))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb297c30 = 0x55a8cb297c80.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = b.as<Add>())) {
+                if ((r4 = ((const Add*)r3)->a.as<Div>())) {
+                  if (equal(((const Add*)r2)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r1)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b >= (((const Add*)r3)->b * ((const Div*)r1)->b)))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-              }
-            }
+                switch (((const Add*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Div: {                    0x55a8cb298d80 = 0x55a8cb298dd0.as<Div>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb297a80 = 0x55a8cb1f6c40.as<Div>();
+                  break;
+                }
+                case IRNodeType::Add: {                  0x55a8cb297a80 = 0x55a8cb1f6c40.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
           }
         }
-        if (is_const(a704->b)) {
-          if (const Div *a715 = expr->b.as<Div>()) {
-            if (const Add *a716 = a715->a.as<Add>()) {
-              if (equal(a704->a, a716->a)) {
-                if (is_const(a716->b)) {
-                  if (equal(a704->b, a715->b)) {
-                    if (evaluate_predicate(fold(((a704->b > 0) && (0 >= a716->b))))) {
+        if (is_const_v(((const Div*)r1)->b)) {
+          if ((r2 = b.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r1)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (0 >= ((const Add*)r3)->b))))) {
                       return false;
                     }
                   }
                 }
               }
             }
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb299a60 = 0x55a8cb299ab0.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb2998e0 = 0x55a8cb1f8770.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Div*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb297740 = 0x55a8cb297790.as<Add>();
+            break;
           }
-        }
-      }
-      if (const Div *a722 = a703->b.as<Div>()) {
-        if (const Add *a723 = a722->a.as<Add>()) {
-          if (is_const(a723->b)) {
-            if (is_const(a722->b)) {
-              if (const Div *a724 = expr->b.as<Div>()) {
-                if (const Add *a725 = a724->a.as<Add>()) {
-                  if (equal(a723->a, a725->a)) {
-                    if (is_const(a725->b)) {
-                      if (equal(a722->b, a724->b)) {
-                        if (evaluate_predicate(fold(((a722->b > 0) && (a723->b >= a725->b))))) {
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Max*)r0)->b.as<Div>())) {
+        if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+          if (is_const_v(((const Add*)r2)->b)) {
+            if (is_const_v(((const Div*)r1)->b)) {
+              if ((r3 = b.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r2)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b >= ((const Add*)r4)->b))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a723->a, a724->a)) {
-                  if (equal(a722->b, a724->b)) {
-                    if (evaluate_predicate(fold(((a722->b > 0) && (a723->b >= 0))))) {
+                if (equal(((const Add*)r2)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b >= 0))))) {
                       return false;
                     }
                   }
                 }
-              }
-              if (const Add *a752 = expr->b.as<Add>()) {
-                if (const Div *a753 = a752->a.as<Div>()) {
-                  if (equal(a723->a, a753->a)) {
-                    if (equal(a722->b, a753->b)) {
-                      if (is_const(a752->b)) {
-                        if (evaluate_predicate(fold(((a722->b > 0) && (a723->b >= (a752->b * a722->b)))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb29aa90 = 0x55a8cb29aae0.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = b.as<Add>())) {
+                if ((r4 = ((const Add*)r3)->a.as<Div>())) {
+                  if (equal(((const Add*)r2)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r1)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b >= (((const Add*)r3)->b * ((const Div*)r1)->b)))))) {
                           return false;
                         }
                       }
                     }
                   }
                 }
-              }
-            }
+                switch (((const Add*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Div: {                    0x55a8cb29bbe0 = 0x55a8cb29bc30.as<Div>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb29a8e0 = 0x55a8cb1f99a0.as<Div>();
+                  break;
+                }
+                case IRNodeType::Add: {                  0x55a8cb29a8e0 = 0x55a8cb1f99a0.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
           }
         }
-        if (is_const(a722->b)) {
-          if (const Div *a733 = expr->b.as<Div>()) {
-            if (const Add *a734 = a733->a.as<Add>()) {
-              if (equal(a722->a, a734->a)) {
-                if (is_const(a734->b)) {
-                  if (equal(a722->b, a733->b)) {
-                    if (evaluate_predicate(fold(((a722->b > 0) && (0 >= a734->b))))) {
+        if (is_const_v(((const Div*)r1)->b)) {
+          if ((r2 = b.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r1)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (0 >= ((const Add*)r3)->b))))) {
                       return false;
                     }
                   }
                 }
               }
             }
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb29c8c0 = 0x55a8cb29c910.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb29c740 = 0x55a8cb1fb310.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Div*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb29a570 = 0x55a8cb29a5c0.as<Add>();
+            break;
           }
-        }
-      }
-      if (is_const(a703->b)) {
-        if (const Max *a913 = expr->b.as<Max>()) {
-          if (equal(a703->a, a913->a)) {
-            if (is_const(a913->b)) {
-              if (evaluate_predicate(fold((a703->b >= a913->b)))) {
+          default:
+            break;
+          }      }
+      if (is_const_v(((const Max*)r0)->b)) {
+        if ((r1 = b.as<Max>())) {
+          if (equal(((const Max*)r0)->a, ((const Max*)r1)->a)) {
+            if (is_const_v(((const Max*)r1)->b)) {
+              if (evaluate_predicate(fold((((const Max*)r0)->b >= ((const Max*)r1)->b)))) {
                 return false;
               }
             }
           }
         }
-        if (const Add *a915 = expr->b.as<Add>()) {
-          if (const Max *a916 = a915->a.as<Max>()) {
-            if (equal(a703->a, a916->a)) {
-              if (is_const(a916->b)) {
-                if (is_const(a915->b)) {
-                  if (evaluate_predicate(fold(((a703->b >= (a916->b + a915->b)) && (a915->b <= 0))))) {
+        if ((r1 = b.as<Add>())) {
+          if ((r2 = ((const Add*)r1)->a.as<Max>())) {
+            if (equal(((const Max*)r0)->a, ((const Max*)r2)->a)) {
+              if (is_const_v(((const Max*)r2)->b)) {
+                if (is_const_v(((const Add*)r1)->b)) {
+                  if (evaluate_predicate(fold(((((const Max*)r0)->b >= (((const Max*)r2)->b + ((const Add*)r1)->b)) && (((const Add*)r1)->b <= 0))))) {
                     return false;
                   }
                 }
               }
             }
           }
+          switch (((const Add*)r1)->a.node_type())
+            {
+            case IRNodeType::Max: {              0x55a8cb29da80 = 0x55a8cb29dad0.as<Max>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Max: {            0x55a8cb29d280 = 0x55a8cb210ce0.as<Max>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb29d280 = 0x55a8cb210ce0.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Max*)r0)->a.node_type())
+        {
+        case IRNodeType::Div: {          0x55a8cb297560 = 0x55a8cb2975b0.as<Div>();
+          break;
         }
-      }
-    }
-    if (const Min *a708 = expr->a.as<Min>()) {
-      if (const Div *a709 = a708->a.as<Div>()) {
-        if (const Add *a710 = a709->a.as<Add>()) {
-          if (is_const(a710->b)) {
-            if (is_const(a709->b)) {
-              if (const Div *a711 = expr->b.as<Div>()) {
-                if (const Add *a712 = a711->a.as<Add>()) {
-                  if (equal(a710->a, a712->a)) {
-                    if (is_const(a712->b)) {
-                      if (equal(a709->b, a711->b)) {
-                        if (evaluate_predicate(fold(((a709->b > 0) && (a710->b <= (a712->b - a709->b)))))) {
+        case IRNodeType::Div: {          0x55a8cb297560 = 0x55a8cb2975b0.as<Div>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Min>())) {
+      if ((r1 = ((const Min*)r0)->a.as<Div>())) {
+        if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+          if (is_const_v(((const Add*)r2)->b)) {
+            if (is_const_v(((const Div*)r1)->b)) {
+              if ((r3 = b.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r2)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b <= (((const Add*)r4)->b - ((const Div*)r1)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a710->a, a711->a)) {
-                  if (equal(a709->b, a711->b)) {
-                    if (evaluate_predicate(fold(((a709->b > 0) && ((a710->b + a709->b) <= 0))))) {
+                if (equal(((const Add*)r2)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && ((((const Add*)r2)->b + ((const Div*)r1)->b) <= 0))))) {
                       return true;
                     }
                   }
                 }
-              }
-              if (const Add *a747 = expr->b.as<Add>()) {
-                if (const Div *a748 = a747->a.as<Div>()) {
-                  if (equal(a710->a, a748->a)) {
-                    if (equal(a709->b, a748->b)) {
-                      if (is_const(a747->b)) {
-                        if (evaluate_predicate(fold(((a709->b > 0) && (a710->b <= ((a747->b * a709->b) - a709->b)))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb29ed30 = 0x55a8cb29ed80.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = b.as<Add>())) {
+                if ((r4 = ((const Add*)r3)->a.as<Div>())) {
+                  if (equal(((const Add*)r2)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r1)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b <= ((((const Add*)r3)->b * ((const Div*)r1)->b) - ((const Div*)r1)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-              }
-            }
+                switch (((const Add*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Div: {                    0x55a8cb2a0060 = 0x55a8cb2a00b0.as<Div>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb29eb80 = 0x55a8cb1f7990.as<Div>();
+                  break;
+                }
+                case IRNodeType::Add: {                  0x55a8cb29eb80 = 0x55a8cb1f7990.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
           }
         }
-        if (is_const(a709->b)) {
-          if (const Div *a719 = expr->b.as<Div>()) {
-            if (const Add *a720 = a719->a.as<Add>()) {
-              if (equal(a709->a, a720->a)) {
-                if (is_const(a720->b)) {
-                  if (equal(a709->b, a719->b)) {
-                    if (evaluate_predicate(fold(((a709->b > 0) && (0 <= (a720->b - a709->b)))))) {
+        if (is_const_v(((const Div*)r1)->b)) {
+          if ((r2 = b.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r1)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (0 <= (((const Add*)r3)->b - ((const Div*)r1)->b)))))) {
                       return true;
                     }
                   }
                 }
               }
             }
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb2a0e30 = 0x55a8cb2a0e80.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb2a0cb0 = 0x55a8cb1f9010.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Div*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb29e810 = 0x55a8cb29e860.as<Add>();
+            break;
           }
-        }
-      }
-      if (const Div *a727 = a708->b.as<Div>()) {
-        if (const Add *a728 = a727->a.as<Add>()) {
-          if (is_const(a728->b)) {
-            if (is_const(a727->b)) {
-              if (const Div *a729 = expr->b.as<Div>()) {
-                if (const Add *a730 = a729->a.as<Add>()) {
-                  if (equal(a728->a, a730->a)) {
-                    if (is_const(a730->b)) {
-                      if (equal(a727->b, a729->b)) {
-                        if (evaluate_predicate(fold(((a727->b > 0) && (a728->b <= (a730->b - a727->b)))))) {
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Min*)r0)->b.as<Div>())) {
+        if ((r2 = ((const Div*)r1)->a.as<Add>())) {
+          if (is_const_v(((const Add*)r2)->b)) {
+            if (is_const_v(((const Div*)r1)->b)) {
+              if ((r3 = b.as<Div>())) {
+                if ((r4 = ((const Div*)r3)->a.as<Add>())) {
+                  if (equal(((const Add*)r2)->a, ((const Add*)r4)->a)) {
+                    if (is_const_v(((const Add*)r4)->b)) {
+                      if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b <= (((const Add*)r4)->b - ((const Div*)r1)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-                if (equal(a728->a, a729->a)) {
-                  if (equal(a727->b, a729->b)) {
-                    if (evaluate_predicate(fold(((a727->b > 0) && ((a728->b + a727->b) <= 0))))) {
+                if (equal(((const Add*)r2)->a, ((const Div*)r3)->a)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r3)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && ((((const Add*)r2)->b + ((const Div*)r1)->b) <= 0))))) {
                       return true;
                     }
                   }
                 }
-              }
-              if (const Add *a757 = expr->b.as<Add>()) {
-                if (const Div *a758 = a757->a.as<Div>()) {
-                  if (equal(a728->a, a758->a)) {
-                    if (equal(a727->b, a758->b)) {
-                      if (is_const(a757->b)) {
-                        if (evaluate_predicate(fold(((a727->b > 0) && (a728->b <= ((a757->b * a727->b) - a727->b)))))) {
+                switch (((const Div*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Add: {                    0x55a8cb2a1f50 = 0x55a8cb2a1fa0.as<Add>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              if ((r3 = b.as<Add>())) {
+                if ((r4 = ((const Add*)r3)->a.as<Div>())) {
+                  if (equal(((const Add*)r2)->a, ((const Div*)r4)->a)) {
+                    if (equal(((const Div*)r1)->b, ((const Div*)r4)->b)) {
+                      if (is_const_v(((const Add*)r3)->b)) {
+                        if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (((const Add*)r2)->b <= ((((const Add*)r3)->b * ((const Div*)r1)->b) - ((const Div*)r1)->b)))))) {
                           return true;
                         }
                       }
                     }
                   }
                 }
-              }
-            }
+                switch (((const Add*)r3)->a.node_type())
+                  {
+                  case IRNodeType::Div: {                    0x55a8cb2a3280 = 0x55a8cb2a32d0.as<Div>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Div: {                  0x55a8cb2a1da0 = 0x55a8cb1fa640.as<Div>();
+                  break;
+                }
+                case IRNodeType::Add: {                  0x55a8cb2a1da0 = 0x55a8cb1fa640.as<Add>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
           }
         }
-        if (is_const(a727->b)) {
-          if (const Div *a737 = expr->b.as<Div>()) {
-            if (const Add *a738 = a737->a.as<Add>()) {
-              if (equal(a727->a, a738->a)) {
-                if (is_const(a738->b)) {
-                  if (equal(a727->b, a737->b)) {
-                    if (evaluate_predicate(fold(((a727->b > 0) && (0 <= (a738->b - a727->b)))))) {
+        if (is_const_v(((const Div*)r1)->b)) {
+          if ((r2 = b.as<Div>())) {
+            if ((r3 = ((const Div*)r2)->a.as<Add>())) {
+              if (equal(((const Div*)r1)->a, ((const Add*)r3)->a)) {
+                if (is_const_v(((const Add*)r3)->b)) {
+                  if (equal(((const Div*)r1)->b, ((const Div*)r2)->b)) {
+                    if (evaluate_predicate(fold(((((const Div*)r1)->b > 0) && (0 <= (((const Add*)r3)->b - ((const Div*)r1)->b)))))) {
                       return true;
                     }
                   }
                 }
               }
             }
+            switch (((const Div*)r2)->a.node_type())
+              {
+              case IRNodeType::Add: {                0x55a8cb2a4050 = 0x55a8cb2a40a0.as<Add>();
+                break;
+              }
+              default:
+                break;
+              }          }
+          switch (b.node_type())
+            {
+            case IRNodeType::Div: {              0x55a8cb2a3ed0 = 0x55a8cb1fbbb0.as<Div>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (((const Div*)r1)->a.node_type())
+          {
+          case IRNodeType::Add: {            0x55a8cb2a1a30 = 0x55a8cb2a1a80.as<Add>();
+            break;
           }
-        }
-      }
-      if (is_const(a708->b)) {
-        if (const Min *a908 = expr->b.as<Min>()) {
-          if (equal(a708->a, a908->a)) {
-            if (is_const(a908->b)) {
-              if (evaluate_predicate(fold((a708->b >= a908->b)))) {
+          default:
+            break;
+          }      }
+      if (is_const_v(((const Min*)r0)->b)) {
+        if ((r1 = b.as<Min>())) {
+          if (equal(((const Min*)r0)->a, ((const Min*)r1)->a)) {
+            if (is_const_v(((const Min*)r1)->b)) {
+              if (evaluate_predicate(fold((((const Min*)r0)->b >= ((const Min*)r1)->b)))) {
                 return false;
               }
             }
           }
         }
-        if (const Add *a910 = expr->b.as<Add>()) {
-          if (const Min *a911 = a910->a.as<Min>()) {
-            if (equal(a708->a, a911->a)) {
-              if (is_const(a911->b)) {
-                if (is_const(a910->b)) {
-                  if (evaluate_predicate(fold(((a708->b >= (a911->b + a910->b)) && (a910->b <= 0))))) {
+        if ((r1 = b.as<Add>())) {
+          if ((r2 = ((const Add*)r1)->a.as<Min>())) {
+            if (equal(((const Min*)r0)->a, ((const Min*)r2)->a)) {
+              if (is_const_v(((const Min*)r2)->b)) {
+                if (is_const_v(((const Add*)r1)->b)) {
+                  if (evaluate_predicate(fold(((((const Min*)r0)->b >= (((const Min*)r2)->b + ((const Add*)r1)->b)) && (((const Add*)r1)->b <= 0))))) {
                     return false;
                   }
                 }
               }
             }
           }
+          switch (((const Add*)r1)->a.node_type())
+            {
+            case IRNodeType::Min: {              0x55a8cb2a5300 = 0x55a8cb2a5350.as<Min>();
+              break;
+            }
+            default:
+              break;
+            }        }
+        switch (b.node_type())
+          {
+          case IRNodeType::Min: {            0x55a8cb2a4b00 = 0x55a8cb20fd60.as<Min>();
+            break;
+          }
+          case IRNodeType::Add: {            0x55a8cb2a4b00 = 0x55a8cb20fd60.as<Add>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      switch (((const Min*)r0)->a.node_type())
+        {
+        case IRNodeType::Div: {          0x55a8cb29e630 = 0x55a8cb29e680.as<Div>();
+          break;
         }
-      }
-    }
-    if (const Ramp *a917 = expr->a.as<Ramp>()) {
-      if (const Add *a918 = a917->base.as<Add>()) {
-        if (const Mul *a919 = a918->a.as<Mul>()) {
-          if (is_const(a919->b)) {
-            if (is_const(a918->b)) {
-              if (is_const(a917->stride)) {
-                if (is_const(a917->lanes)) {
-                  if (const Broadcast *a920 = expr->b.as<Broadcast>()) {
-                    if (const Mul *a921 = a920->value.as<Mul>()) {
-                      if (is_const(a921->b)) {
-                        if (equal(a917->lanes, a920->lanes)) {
-                          if (evaluate_predicate(fold(((((a921->b > 0) && ((a919->b % a921->b) == 0)) && (((a918->b % a921->b) + (a917->stride * (a917->lanes - 1))) < a921->b)) && (((a918->b % a921->b) + (a917->stride * (a917->lanes - 1))) >= 0))))) {
-                            return broadcast((((a919->a * fold((a919->b / a921->b))) + fold((a918->b / a921->b))) < a921->a), a917->lanes);
+        case IRNodeType::Div: {          0x55a8cb29e630 = 0x55a8cb29e680.as<Div>();
+          break;
+        }
+        default:
+          break;
+        }    }
+    if ((r0 = a.as<Ramp>())) {
+      if ((r1 = ((const Ramp*)r0)->base.as<Add>())) {
+        if ((r2 = ((const Add*)r1)->a.as<Mul>())) {
+          if (is_const_v(((const Mul*)r2)->b)) {
+            if (is_const_v(((const Add*)r1)->b)) {
+              if (is_const_v(((const Ramp*)r0)->stride)) {
+                if (is_const_v(((const Ramp*)r0)->lanes)) {
+                  if ((r3 = b.as<Broadcast>())) {
+                    if ((r4 = ((const Broadcast*)r3)->value.as<Mul>())) {
+                      if (is_const_v(((const Mul*)r4)->b)) {
+                        if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r3)->lanes)) {
+                          if (evaluate_predicate(fold(((((((const Mul*)r4)->b > 0) && ((((const Mul*)r2)->b % ((const Mul*)r4)->b) == 0)) && (((((const Add*)r1)->b % ((const Mul*)r4)->b) + (((const Ramp*)r0)->stride * (((const Ramp*)r0)->lanes - 1))) < ((const Mul*)r4)->b)) && (((((const Add*)r1)->b % ((const Mul*)r4)->b) + (((const Ramp*)r0)->stride * (((const Ramp*)r0)->lanes - 1))) >= 0))))) {
+                            return broadcast((((((const Mul*)r2)->a * fold((((const Mul*)r2)->b / ((const Mul*)r4)->b))) + fold((((const Add*)r1)->b / ((const Mul*)r4)->b))) < ((const Mul*)r4)->a), ((const Ramp*)r0)->lanes);
                           }
                         }
                       }
                     }
-                  }
-                }
+                    switch (((const Broadcast*)r3)->value.node_type())
+                      {
+                      case IRNodeType::Mul: {                        0x55a8cb2a6710 = 0x55a8cb2a6760.as<Mul>();
+                        break;
+                      }
+                      default:
+                        break;
+                      }                  }
+                  switch (b.node_type())
+                    {
+                    case IRNodeType::Broadcast: {                      0x55a8cb2a6560 = 0x55a8cb211c00.as<Broadcast>();
+                      break;
+                    }
+                    default:
+                      break;
+                    }                }
               }
             }
           }
         }
-      }
-      if (const Mul *a923 = a917->base.as<Mul>()) {
-        if (is_const(a923->b)) {
-          if (is_const(a917->stride)) {
-            if (is_const(a917->lanes)) {
-              if (const Broadcast *a924 = expr->b.as<Broadcast>()) {
-                if (const Mul *a925 = a924->value.as<Mul>()) {
-                  if (is_const(a925->b)) {
-                    if (equal(a917->lanes, a924->lanes)) {
-                      if (evaluate_predicate(fold(((((a925->b > 0) && ((a923->b % a925->b) == 0)) && ((a917->stride * (a917->lanes - 1)) < a925->b)) && ((a917->stride * (a917->lanes - 1)) >= 0))))) {
-                        return broadcast(((a923->a * fold((a923->b / a925->b))) < a925->a), a917->lanes);
+        switch (((const Add*)r1)->a.node_type())
+          {
+          case IRNodeType::Mul: {            0x55a8cb2a6090 = 0x55a8cb2a60e0.as<Mul>();
+            break;
+          }
+          default:
+            break;
+          }      }
+      if ((r1 = ((const Ramp*)r0)->base.as<Mul>())) {
+        if (is_const_v(((const Mul*)r1)->b)) {
+          if (is_const_v(((const Ramp*)r0)->stride)) {
+            if (is_const_v(((const Ramp*)r0)->lanes)) {
+              if ((r2 = b.as<Broadcast>())) {
+                if ((r3 = ((const Broadcast*)r2)->value.as<Mul>())) {
+                  if (is_const_v(((const Mul*)r3)->b)) {
+                    if (equal(((const Ramp*)r0)->lanes, ((const Broadcast*)r2)->lanes)) {
+                      if (evaluate_predicate(fold(((((((const Mul*)r3)->b > 0) && ((((const Mul*)r1)->b % ((const Mul*)r3)->b) == 0)) && ((((const Ramp*)r0)->stride * (((const Ramp*)r0)->lanes - 1)) < ((const Mul*)r3)->b)) && ((((const Ramp*)r0)->stride * (((const Ramp*)r0)->lanes - 1)) >= 0))))) {
+                        return broadcast(((((const Mul*)r1)->a * fold((((const Mul*)r1)->b / ((const Mul*)r3)->b))) < ((const Mul*)r3)->a), ((const Ramp*)r0)->lanes);
                       }
                     }
                   }
                 }
-              }
-            }
+                switch (((const Broadcast*)r2)->value.node_type())
+                  {
+                  case IRNodeType::Mul: {                    0x55a8cb2a8680 = 0x55a8cb2a86d0.as<Mul>();
+                    break;
+                  }
+                  default:
+                    break;
+                  }              }
+              switch (b.node_type())
+                {
+                case IRNodeType::Broadcast: {                  0x55a8cb2a8500 = 0x55a8cb213670.as<Broadcast>();
+                  break;
+                }
+                default:
+                  break;
+                }            }
           }
         }
       }
-    }
+      switch (((const Ramp*)r0)->base.node_type())
+        {
+        case IRNodeType::Add: {          0x55a8cb2a5eb0 = 0x55a8cb2a5f00.as<Add>();
+          break;
+        }
+        case IRNodeType::Mul: {          0x55a8cb2a5eb0 = 0x55a8cb2a5f00.as<Mul>();
+          break;
+        }
+        default:
+          break;
+        }    }
   }
-  if (is_operand_float(expr)) {
-    if (const Mul *a212 = expr->a.as<Mul>()) {
-      if (is_const(a212->b)) {
-        if (is_const(expr->b)) {
-          if (evaluate_predicate(fold((a212->b > 0)))) {
-            return (a212->a < fold((expr->b / a212->b)));
+  if (type.is_operand_float()) {
+    if ((r0 = a.as<Mul>())) {
+      if (is_const_v(((const Mul*)r0)->b)) {
+        if (is_const_v(b)) {
+          if (evaluate_predicate(fold((((const Mul*)r0)->b > 0)))) {
+            return (((const Mul*)r0)->a < fold((b / ((const Mul*)r0)->b)));
           }
         }
       }
     }
-    if (is_const(expr->a)) {
-      if (const Div *a213 = expr->b.as<Div>()) {
-        if (is_const(a213->b)) {
-          if (evaluate_predicate(fold((a213->b < 0)))) {
-            return (a213->a < fold((expr->a * a213->b)));
+    if (is_const_v(a)) {
+      if ((r0 = b.as<Div>())) {
+        if (is_const_v(((const Div*)r0)->b)) {
+          if (evaluate_predicate(fold((((const Div*)r0)->b < 0)))) {
+            return (((const Div*)r0)->a < fold((a * ((const Div*)r0)->b)));
           }
         }
       }
-    }
+      switch (b.node_type())
+        {
+        case IRNodeType::Div: {          0x55a8cb2aa2e0 = 0x55a8cb1b0510.as<Div>();
+          break;
+        }
+        default:
+          break;
+        }    }
   }
   return Expr();
 }

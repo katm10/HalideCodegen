@@ -1,214 +1,254 @@
+((const Add*)r0)->a((const Add*)r0)->a((const Sub*)r0)->a((const Sub*)r0)->b((const Sub*)r0)->b#include "Simplify_Internal.h"
+#include "SimplifyGeneratedInternal.h"
 #include "Expr.h"
 #include "Type.h"
-#include "Simplify_Internal.h"
-#include "SimplifyGeneratedInternal.h"
 
 namespace Halide {
 namespace Internal {
 namespace CodeGen {
-Expr Simplify_EQ(const EQ *expr, Simplify *simplifier) {
-  if (const Broadcast *a0 = expr->a.as<Broadcast>()) {
-    if (is_const(a0->lanes)) {
-      if (is_const_int(expr->b, 0)) {
-        return broadcast((a0->value == 0), a0->lanes);
+
+Expr Simplify_EQ(const Expr &a, const Expr &b, const Type &type, Simplify *simplifier) {
+  const BaseExprNode *r0 = nullptr;
+  const BaseExprNode *r1 = nullptr;
+  const BaseExprNode *r2 = nullptr;
+  if ((r0 = a.as<Broadcast>())) {
+    if (is_const_v(((const Broadcast*)r0)->lanes)) {
+      if (is_const_int(b, 0)) {
+        return broadcast((((const Broadcast*)r0)->value == 0), ((const Broadcast*)r0)->lanes);
       }
     }
   }
-  if (is_operand_no_overflow(expr)) {
-    if (const Mul *a2 = expr->a.as<Mul>()) {
-      if (is_const_int(expr->b, 0)) {
-        return ((a2->a == 0) || (a2->b == 0));
+  if (type.is_operand_no_overflow()) {
+    if ((r0 = a.as<Mul>())) {
+      if (is_const_int(b, 0)) {
+        return ((((const Mul*)r0)->a == 0) || (((const Mul*)r0)->b == 0));
       }
     }
-    if (const Add *a4 = expr->a.as<Add>()) {
-      if (const Mul *a5 = a4->a.as<Mul>()) {
-        if (is_const(a5->b)) {
-          if (is_const(a4->b)) {
-            if (is_const_int(expr->b, 0)) {
-              if (evaluate_predicate(fold(((a4->b % a5->b) == 0)))) {
-                return (a5->a == fold(((0 - a4->b) / a5->b)));
+    if ((r0 = a.as<Add>())) {
+      if ((r1 = ((const Add*)r0)->a.as<Mul>())) {
+        if (is_const_v(((const Mul*)r1)->b)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            if (is_const_int(b, 0)) {
+              if (evaluate_predicate(fold(((((const Add*)r0)->b % ((const Mul*)r1)->b) == 0)))) {
+                return (((const Mul*)r1)->a == fold(((0 - ((const Add*)r0)->b) / ((const Mul*)r1)->b)));
               }
             }
           }
         }
       }
-      if (const Max *a54 = a4->a.as<Max>()) {
-        if (is_const(a54->b)) {
-          if (is_const(a4->b)) {
-            if (is_const_int(expr->b, 0)) {
-              if (evaluate_predicate(fold(((a54->b + a4->b) < 0)))) {
-                return (a54->a == fold((0 - a4->b)));
+      if ((r1 = ((const Add*)r0)->a.as<Max>())) {
+        if (is_const_v(((const Max*)r1)->b)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            if (is_const_int(b, 0)) {
+              if (evaluate_predicate(fold(((((const Max*)r1)->b + ((const Add*)r0)->b) < 0)))) {
+                return (((const Max*)r1)->a == fold((0 - ((const Add*)r0)->b)));
               }
-              if (evaluate_predicate(fold(((a54->b + a4->b) > 0)))) {
+              if (evaluate_predicate(fold(((((const Max*)r1)->b + ((const Add*)r0)->b) > 0)))) {
                 return false;
               }
-              if (evaluate_predicate(fold(((a54->b + a4->b) == 0)))) {
-                return (a54->a <= a54->b);
+              if (evaluate_predicate(fold(((((const Max*)r1)->b + ((const Add*)r0)->b) == 0)))) {
+                return (((const Max*)r1)->a <= ((const Max*)r1)->b);
               }
             }
           }
         }
       }
-      if (const Min *a57 = a4->a.as<Min>()) {
-        if (is_const(a57->b)) {
-          if (is_const(a4->b)) {
-            if (is_const_int(expr->b, 0)) {
-              if (evaluate_predicate(fold(((a57->b + a4->b) > 0)))) {
-                return (a57->a == fold((0 - a4->b)));
+      if ((r1 = ((const Add*)r0)->a.as<Min>())) {
+        if (is_const_v(((const Min*)r1)->b)) {
+          if (is_const_v(((const Add*)r0)->b)) {
+            if (is_const_int(b, 0)) {
+              if (evaluate_predicate(fold(((((const Min*)r1)->b + ((const Add*)r0)->b) > 0)))) {
+                return (((const Min*)r1)->a == fold((0 - ((const Add*)r0)->b)));
               }
-              if (evaluate_predicate(fold(((a57->b + a4->b) < 0)))) {
+              if (evaluate_predicate(fold(((((const Min*)r1)->b + ((const Add*)r0)->b) < 0)))) {
                 return false;
               }
-              if (evaluate_predicate(fold(((a57->b + a4->b) == 0)))) {
-                return (a57->b <= a57->a);
+              if (evaluate_predicate(fold(((((const Min*)r1)->b + ((const Add*)r0)->b) == 0)))) {
+                return (((const Min*)r1)->b <= ((const Min*)r1)->a);
               }
             }
           }
         }
       }
-    }
+      switch (((const Add*)r0)->a.node_type())
+        {
+        case IRNodeType::Mul: {          0x559686b081f0 = 0x559686b08240.as<Mul>();
+          break;
+        }
+        case IRNodeType::Max: {          0x559686b081f0 = 0x559686b08240.as<Max>();
+          break;
+        }
+        case IRNodeType::Min: {          0x559686b081f0 = 0x559686b08240.as<Min>();
+          break;
+        }
+        default:
+          break;
+        }    }
   }
-  if (const Select *a7 = expr->a.as<Select>()) {
-    if (is_const_int(a7->true_value, 0)) {
-      if (is_const_int(expr->b, 0)) {
-        return (a7->condition || (a7->false_value == 0));
+  if ((r0 = a.as<Select>())) {
+    if (is_const_int(((const Select*)r0)->true_value, 0)) {
+      if (is_const_int(b, 0)) {
+        return (((const Select*)r0)->condition || (((const Select*)r0)->false_value == 0));
       }
     }
-    if (is_const(a7->true_value)) {
-      if (is_const_int(expr->b, 0)) {
-        if (evaluate_predicate(fold((a7->true_value != 0)))) {
-          return (!(a7->condition) && (a7->false_value == 0));
+    if (is_const_v(((const Select*)r0)->true_value)) {
+      if (is_const_int(b, 0)) {
+        if (evaluate_predicate(fold((((const Select*)r0)->true_value != 0)))) {
+          return (!(((const Select*)r0)->condition) && (((const Select*)r0)->false_value == 0));
         }
       }
     }
-    if (is_const_int(a7->false_value, 0)) {
-      if (is_const_int(expr->b, 0)) {
-        return (!(a7->condition) || (a7->true_value == 0));
+    if (is_const_int(((const Select*)r0)->false_value, 0)) {
+      if (is_const_int(b, 0)) {
+        return (!(((const Select*)r0)->condition) || (((const Select*)r0)->true_value == 0));
       }
     }
-    if (is_const(a7->false_value)) {
-      if (is_const_int(expr->b, 0)) {
-        if (evaluate_predicate(fold((a7->false_value != 0)))) {
-          return (a7->condition && (a7->true_value == 0));
+    if (is_const_v(((const Select*)r0)->false_value)) {
+      if (is_const_int(b, 0)) {
+        if (evaluate_predicate(fold((((const Select*)r0)->false_value != 0)))) {
+          return (((const Select*)r0)->condition && (((const Select*)r0)->true_value == 0));
         }
       }
     }
   }
-  if (const Add *a17 = expr->a.as<Add>()) {
-    if (const Select *a18 = a17->a.as<Select>()) {
-      if (is_const(a18->true_value)) {
-        if (is_const(a17->b)) {
-          if (is_const_int(expr->b, 0)) {
-            if (evaluate_predicate(fold(((a18->true_value + a17->b) == 0)))) {
-              return (a18->condition || (a18->false_value == fold((0 - a17->b))));
+  if ((r0 = a.as<Add>())) {
+    if ((r1 = ((const Add*)r0)->a.as<Select>())) {
+      if (is_const_v(((const Select*)r1)->true_value)) {
+        if (is_const_v(((const Add*)r0)->b)) {
+          if (is_const_int(b, 0)) {
+            if (evaluate_predicate(fold(((((const Select*)r1)->true_value + ((const Add*)r0)->b) == 0)))) {
+              return (((const Select*)r1)->condition || (((const Select*)r1)->false_value == fold((0 - ((const Add*)r0)->b))));
             }
-            if (evaluate_predicate(fold(((a18->true_value + a17->b) != 0)))) {
-              return (!(a18->condition) && (a18->false_value == fold((0 - a17->b))));
+            if (evaluate_predicate(fold(((((const Select*)r1)->true_value + ((const Add*)r0)->b) != 0)))) {
+              return (!(((const Select*)r1)->condition) && (((const Select*)r1)->false_value == fold((0 - ((const Add*)r0)->b))));
             }
           }
         }
       }
-      if (is_const(a18->false_value)) {
-        if (is_const(a17->b)) {
-          if (is_const_int(expr->b, 0)) {
-            if (evaluate_predicate(fold(((a18->false_value + a17->b) == 0)))) {
-              return (!(a18->condition) || (a18->true_value == fold((0 - a17->b))));
+      if (is_const_v(((const Select*)r1)->false_value)) {
+        if (is_const_v(((const Add*)r0)->b)) {
+          if (is_const_int(b, 0)) {
+            if (evaluate_predicate(fold(((((const Select*)r1)->false_value + ((const Add*)r0)->b) == 0)))) {
+              return (!(((const Select*)r1)->condition) || (((const Select*)r1)->true_value == fold((0 - ((const Add*)r0)->b))));
             }
-            if (evaluate_predicate(fold(((a18->false_value + a17->b) != 0)))) {
-              return (a18->condition && (a18->true_value == fold((0 - a17->b))));
+            if (evaluate_predicate(fold(((((const Select*)r1)->false_value + ((const Add*)r0)->b) != 0)))) {
+              return (((const Select*)r1)->condition && (((const Select*)r1)->true_value == fold((0 - ((const Add*)r0)->b))));
             }
           }
         }
       }
     }
-  }
-  if (const Sub *a29 = expr->a.as<Sub>()) {
-    if (const Max *a30 = a29->a.as<Max>()) {
-      if (equal(a30->b, a29->b)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a30->a <= a30->b);
+    switch (((const Add*)r0)->a.node_type())
+      {
+      case IRNodeType::Select: {        0x559686b0c460 = 0x559686b0c4b0.as<Select>();
+        break;
+      }
+      default:
+        break;
+      }  }
+  if ((r0 = a.as<Sub>())) {
+    if ((r1 = ((const Sub*)r0)->a.as<Max>())) {
+      if (equal(((const Max*)r1)->b, ((const Sub*)r0)->b)) {
+        if (is_const_int(b, 0)) {
+          return (((const Max*)r1)->a <= ((const Max*)r1)->b);
         }
       }
-      if (equal(a30->a, a29->b)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a30->b <= a30->a);
-        }
-      }
-    }
-    if (const Min *a33 = a29->a.as<Min>()) {
-      if (equal(a33->b, a29->b)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a33->b <= a33->a);
-        }
-      }
-      if (equal(a33->a, a29->b)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a33->a <= a33->b);
+      if (equal(((const Max*)r1)->a, ((const Sub*)r0)->b)) {
+        if (is_const_int(b, 0)) {
+          return (((const Max*)r1)->b <= ((const Max*)r1)->a);
         }
       }
     }
-    if (const Max *a42 = a29->b.as<Max>()) {
-      if (equal(a29->a, a42->b)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a42->a <= a29->a);
+    if ((r1 = ((const Sub*)r0)->a.as<Min>())) {
+      if (equal(((const Min*)r1)->b, ((const Sub*)r0)->b)) {
+        if (is_const_int(b, 0)) {
+          return (((const Min*)r1)->b <= ((const Min*)r1)->a);
         }
       }
-      if (equal(a29->a, a42->a)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a42->b <= a29->a);
-        }
-      }
-    }
-    if (const Min *a45 = a29->b.as<Min>()) {
-      if (equal(a29->a, a45->b)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a29->a <= a45->a);
-        }
-      }
-      if (equal(a29->a, a45->a)) {
-        if (is_const_int(expr->b, 0)) {
-          return (a29->a <= a45->b);
+      if (equal(((const Min*)r1)->a, ((const Sub*)r0)->b)) {
+        if (is_const_int(b, 0)) {
+          return (((const Min*)r1)->a <= ((const Min*)r1)->b);
         }
       }
     }
-  }
-  if (const Max *a71 = expr->a.as<Max>()) {
-    if (is_const(a71->b)) {
-      if (is_const_int(expr->b, 0)) {
-        if (evaluate_predicate(fold((a71->b < 0)))) {
-          return (a71->a == 0);
+    if ((r1 = ((const Sub*)r0)->b.as<Max>())) {
+      if (equal(((const Sub*)r0)->a, ((const Max*)r1)->b)) {
+        if (is_const_int(b, 0)) {
+          return (((const Max*)r1)->a <= ((const Sub*)r0)->a);
         }
-        if (evaluate_predicate(fold((a71->b > 0)))) {
+      }
+      if (equal(((const Sub*)r0)->a, ((const Max*)r1)->a)) {
+        if (is_const_int(b, 0)) {
+          return (((const Max*)r1)->b <= ((const Sub*)r0)->a);
+        }
+      }
+    }
+    if ((r1 = ((const Sub*)r0)->b.as<Min>())) {
+      if (equal(((const Sub*)r0)->a, ((const Min*)r1)->b)) {
+        if (is_const_int(b, 0)) {
+          return (((const Sub*)r0)->a <= ((const Min*)r1)->a);
+        }
+      }
+      if (equal(((const Sub*)r0)->a, ((const Min*)r1)->a)) {
+        if (is_const_int(b, 0)) {
+          return (((const Sub*)r0)->a <= ((const Min*)r1)->b);
+        }
+      }
+    }
+    switch (((const Sub*)r0)->a.node_type())
+      {
+      case IRNodeType::Max: {        0x559686b0e530 = 0x559686b0e580.as<Max>();
+        break;
+      }
+      case IRNodeType::Min: {        0x559686b0e530 = 0x559686b0e580.as<Min>();
+        break;
+      }
+      case IRNodeType::Max: {        0x559686b0e530 = 0x559686b0e580.as<Max>();
+        break;
+      }
+      case IRNodeType::Min: {        0x559686b0e530 = 0x559686b0e580.as<Min>();
+        break;
+      }
+      default:
+        break;
+      }  }
+  if ((r0 = a.as<Max>())) {
+    if (is_const_v(((const Max*)r0)->b)) {
+      if (is_const_int(b, 0)) {
+        if (evaluate_predicate(fold((((const Max*)r0)->b < 0)))) {
+          return (((const Max*)r0)->a == 0);
+        }
+        if (evaluate_predicate(fold((((const Max*)r0)->b > 0)))) {
           return false;
         }
       }
     }
-    if (is_const_int(a71->b, 0)) {
-      if (is_const_int(expr->b, 0)) {
-        return (a71->a <= 0);
+    if (is_const_int(((const Max*)r0)->b, 0)) {
+      if (is_const_int(b, 0)) {
+        return (((const Max*)r0)->a <= 0);
       }
     }
   }
-  if (const Min *a73 = expr->a.as<Min>()) {
-    if (is_const(a73->b)) {
-      if (is_const_int(expr->b, 0)) {
-        if (evaluate_predicate(fold((a73->b > 0)))) {
-          return (a73->a == 0);
+  if ((r0 = a.as<Min>())) {
+    if (is_const_v(((const Min*)r0)->b)) {
+      if (is_const_int(b, 0)) {
+        if (evaluate_predicate(fold((((const Min*)r0)->b > 0)))) {
+          return (((const Min*)r0)->a == 0);
         }
-        if (evaluate_predicate(fold((a73->b < 0)))) {
+        if (evaluate_predicate(fold((((const Min*)r0)->b < 0)))) {
           return false;
         }
       }
     }
-    if (is_const_int(a73->b, 0)) {
-      if (is_const_int(expr->b, 0)) {
-        return (0 <= a73->a);
+    if (is_const_int(((const Min*)r0)->b, 0)) {
+      if (is_const_int(b, 0)) {
+        return (0 <= ((const Min*)r0)->a);
       }
     }
   }
-  if (is_const(expr->a)) {
-    if (is_const_int(expr->b, 0)) {
-      return fold((expr->a == 0));
+  if (is_const_v(a)) {
+    if (is_const_int(b, 0)) {
+      return fold((a == 0));
     }
   }
   return Expr();

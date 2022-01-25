@@ -1,6 +1,7 @@
 #include "Identifier.h"
 
 #include <memory>
+#include <cassert>
 
 void Name::print(std::ostream &stream) const {
     stream << name;

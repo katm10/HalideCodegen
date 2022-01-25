@@ -139,6 +139,56 @@ void Declaration::print(std::ostream &stream, const std::string &indent) const {
     }
 }
 
+bool TypeSwitch::equal(const shared_ptr<Node> &other) const {
+    assert(false); // Will never be compared to other nodes
+}
+
+void TypeSwitch::print(std::ostream &stream, const std::string &indent) const {
+    /*
+     switch (a.node_type())
+        {
+        case IRNodeType::Ramp: {
+            r0 = a.as<Ramp>();
+            ...
+            break; 
+        }
+        case IRNodeType::Broadcast: {
+            r0 = a.as<Broadcast>();
+            ...
+            break;
+        }
+        default:
+            break;
+        }
+    */
+    
+    stream << indent << "switch (";
+    current_id->print(stream);
+    stream << ".node_type())\n";
+
+    const std::string case_indent = indent + "  ";
+    stream << case_indent << "{\n";
+
+    for (size_t i = 0; i < children.size(); ++i){
+        // TODO: Might want to check before this that types.size() == children.size()
+        stream << case_indent << "case IRNodeType::" << types[i] << ": {\n" << case_indent << "  ";
+        print_type_checker_condition(stream, current_id, types[i], typed_id);
+        stream << ";\n";
+        // We want to skip over the type-checking condition
+        // ie. if (r0 = a.as<Ramp>()) will not be printed
+        for (const auto typed_child : children[i]->children){
+            typed_child->print(stream, case_indent + "  ");
+        }
+        
+        stream << case_indent << "  break;\n";
+        stream << case_indent << "}\n"  ;
+    }
+
+    stream << case_indent << "default: \n";
+    stream << case_indent << "  " << "break;\n";
+    stream << indent << "}\n";
+}
+
 void ConstantInt::accept(Visitor *v) const {
     v->visit(this);
 }
@@ -171,6 +221,10 @@ void Declaration::accept(Visitor *v) const {
     v->visit(this);
 }
 
+void TypeSwitch::accept(Visitor *v) const {
+    v->visit(this);
+}
+
 NodePtr ConstantInt::mutate(Mutator *m) const {
     return m->visit(this);
 }
@@ -200,6 +254,10 @@ NodePtr Sequence::mutate(Mutator *m) const {
 }
 
 NodePtr Declaration::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+NodePtr TypeSwitch::mutate(Mutator *m) const {
     return m->visit(this);
 }
 
