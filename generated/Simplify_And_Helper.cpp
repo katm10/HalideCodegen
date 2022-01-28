@@ -1,377 +1,381 @@
-#include "Expr.h"
-#include "Type.h"
 #include "Simplify_Internal.h"
 #include "SimplifyGeneratedInternal.h"
+#include "Expr.h"
+#include "Type.h"
 
 namespace Halide {
 namespace Internal {
 namespace CodeGen {
-Expr Simplify_And(const And *expr, Simplify *simplifier) {
-  return expr->a;
-  return expr->b;
-  if (equal(expr->a, expr->b)) {
-    return expr->a;
+
+Expr Simplify_And(const Expr &a, const Expr &b, const Type &type, Simplify *simplifier) {
+  const BaseExprNode *r0 = nullptr;
+  const BaseExprNode *r1 = nullptr;
+  const BaseExprNode *r2 = nullptr;
+  return a;
+  return b;
+  if (equal(a, b)) {
+    return a;
   }
-  if (const And *a0 = expr->a.as<And>()) {
-    if (equal(a0->a, expr->b)) {
-      return (a0->a && a0->b);
+  if ((r0 = a.as<And>())) {
+    if (equal(((const And*)r0)->a, b)) {
+      return (((const And*)r0)->a && ((const And*)r0)->b);
     }
-    if (equal(a0->b, expr->b)) {
-      return (a0->a && a0->b);
+    if (equal(((const And*)r0)->b, b)) {
+      return (((const And*)r0)->a && ((const And*)r0)->b);
     }
-    if (const And *a5 = a0->a.as<And>()) {
-      if (equal(a5->a, expr->b)) {
-        return ((a5->a && a5->b) && a0->b);
+    if ((r1 = ((const And*)r0)->a.as<And>())) {
+      if (equal(((const And*)r1)->a, b)) {
+        return ((((const And*)r1)->a && ((const And*)r1)->b) && ((const And*)r0)->b);
       }
-      if (equal(a5->b, expr->b)) {
-        return ((a5->a && a5->b) && a0->b);
-      }
-    }
-    if (const And *a9 = a0->b.as<And>()) {
-      if (equal(a9->a, expr->b)) {
-        return (a0->a && (a9->a && a9->b));
-      }
-      if (equal(a9->b, expr->b)) {
-        return (a0->a && (a9->a && a9->b));
+      if (equal(((const And*)r1)->b, b)) {
+        return ((((const And*)r1)->a && ((const And*)r1)->b) && ((const And*)r0)->b);
       }
     }
-    if (const NE *a29 = a0->b.as<NE>()) {
-      if (const EQ *a30 = expr->b.as<EQ>()) {
-        if (equal(a29->a, a30->a)) {
-          if (equal(a29->b, a30->b)) {
+    if ((r1 = ((const And*)r0)->b.as<And>())) {
+      if (equal(((const And*)r1)->a, b)) {
+        return (((const And*)r0)->a && (((const And*)r1)->a && ((const And*)r1)->b));
+      }
+      if (equal(((const And*)r1)->b, b)) {
+        return (((const And*)r0)->a && (((const And*)r1)->a && ((const And*)r1)->b));
+      }
+    }
+    if ((r1 = ((const And*)r0)->b.as<NE>())) {
+      if ((r2 = b.as<EQ>())) {
+        if (equal(((const NE*)r1)->a, ((const EQ*)r2)->a)) {
+          if (equal(((const NE*)r1)->b, ((const EQ*)r2)->b)) {
             return false;
           }
         }
-        if (equal(a29->b, a30->a)) {
-          if (equal(a29->a, a30->b)) {
-            return false;
-          }
-        }
-      }
-    }
-    if (const NE *a35 = a0->a.as<NE>()) {
-      if (const EQ *a36 = expr->b.as<EQ>()) {
-        if (equal(a35->a, a36->a)) {
-          if (equal(a35->b, a36->b)) {
-            return false;
-          }
-        }
-        if (equal(a35->b, a36->a)) {
-          if (equal(a35->a, a36->b)) {
+        if (equal(((const NE*)r1)->b, ((const EQ*)r2)->a)) {
+          if (equal(((const NE*)r1)->a, ((const EQ*)r2)->b)) {
             return false;
           }
         }
       }
     }
-    if (const EQ *a41 = a0->b.as<EQ>()) {
-      if (const NE *a42 = expr->b.as<NE>()) {
-        if (equal(a41->a, a42->a)) {
-          if (equal(a41->b, a42->b)) {
+    if ((r1 = ((const And*)r0)->a.as<NE>())) {
+      if ((r2 = b.as<EQ>())) {
+        if (equal(((const NE*)r1)->a, ((const EQ*)r2)->a)) {
+          if (equal(((const NE*)r1)->b, ((const EQ*)r2)->b)) {
             return false;
           }
         }
-        if (equal(a41->b, a42->a)) {
-          if (equal(a41->a, a42->b)) {
-            return false;
-          }
-        }
-      }
-    }
-    if (const EQ *a47 = a0->a.as<EQ>()) {
-      if (const NE *a48 = expr->b.as<NE>()) {
-        if (equal(a47->a, a48->a)) {
-          if (equal(a47->b, a48->b)) {
-            return false;
-          }
-        }
-        if (equal(a47->b, a48->a)) {
-          if (equal(a47->a, a48->b)) {
+        if (equal(((const NE*)r1)->b, ((const EQ*)r2)->a)) {
+          if (equal(((const NE*)r1)->a, ((const EQ*)r2)->b)) {
             return false;
           }
         }
       }
     }
-    if (const Or *a99 = a0->b.as<Or>()) {
-      if (equal(a99->a, expr->b)) {
-        return (a0->a && a99->a);
-      }
-      if (equal(a99->b, expr->b)) {
-        return (a0->a && a99->b);
-      }
-    }
-    if (const Or *a107 = a0->a.as<Or>()) {
-      if (equal(a107->a, expr->b)) {
-        return (a0->b && a107->a);
-      }
-      if (equal(a107->b, expr->b)) {
-        return (a0->b && a107->b);
+    if ((r1 = ((const And*)r0)->b.as<EQ>())) {
+      if ((r2 = b.as<NE>())) {
+        if (equal(((const EQ*)r1)->a, ((const NE*)r2)->a)) {
+          if (equal(((const EQ*)r1)->b, ((const NE*)r2)->b)) {
+            return false;
+          }
+        }
+        if (equal(((const EQ*)r1)->b, ((const NE*)r2)->a)) {
+          if (equal(((const EQ*)r1)->a, ((const NE*)r2)->b)) {
+            return false;
+          }
+        }
       }
     }
-  }
-  if (const And *a1 = expr->b.as<And>()) {
-    if (equal(expr->a, a1->a)) {
-      return (expr->a && a1->b);
-    }
-    if (equal(expr->a, a1->b)) {
-      return (a1->a && expr->a);
-    }
-    if (const And *a7 = a1->a.as<And>()) {
-      if (equal(expr->a, a7->a)) {
-        return ((expr->a && a7->b) && a1->b);
-      }
-      if (equal(expr->a, a7->b)) {
-        return ((a7->a && expr->a) && a1->b);
+    if ((r1 = ((const And*)r0)->a.as<EQ>())) {
+      if ((r2 = b.as<NE>())) {
+        if (equal(((const EQ*)r1)->a, ((const NE*)r2)->a)) {
+          if (equal(((const EQ*)r1)->b, ((const NE*)r2)->b)) {
+            return false;
+          }
+        }
+        if (equal(((const EQ*)r1)->b, ((const NE*)r2)->a)) {
+          if (equal(((const EQ*)r1)->a, ((const NE*)r2)->b)) {
+            return false;
+          }
+        }
       }
     }
-    if (const And *a11 = a1->b.as<And>()) {
-      if (equal(expr->a, a11->a)) {
-        return (a1->a && (expr->a && a11->b));
+    if ((r1 = ((const And*)r0)->b.as<Or>())) {
+      if (equal(((const Or*)r1)->a, b)) {
+        return (((const And*)r0)->a && ((const Or*)r1)->a);
       }
-      if (equal(expr->a, a11->b)) {
-        return (a1->a && (a11->a && expr->a));
-      }
-    }
-    if (const Or *a103 = a1->b.as<Or>()) {
-      if (equal(expr->a, a103->a)) {
-        return (expr->a && a1->a);
-      }
-      if (equal(expr->a, a103->b)) {
-        return (expr->a && a1->a);
+      if (equal(((const Or*)r1)->b, b)) {
+        return (((const And*)r0)->a && ((const Or*)r1)->b);
       }
     }
-    if (const Or *a111 = a1->a.as<Or>()) {
-      if (equal(expr->a, a111->a)) {
-        return (expr->a && a1->b);
+    if ((r1 = ((const And*)r0)->a.as<Or>())) {
+      if (equal(((const Or*)r1)->a, b)) {
+        return (((const And*)r0)->b && ((const Or*)r1)->a);
       }
-      if (equal(expr->a, a111->b)) {
-        return (expr->a && a1->b);
+      if (equal(((const Or*)r1)->b, b)) {
+        return (((const And*)r0)->b && ((const Or*)r1)->b);
       }
     }
   }
-  if (const Or *a20 = expr->a.as<Or>()) {
-    if (equal(a20->a, expr->b)) {
-      return a20->a;
+  if ((r0 = b.as<And>())) {
+    if (equal(a, ((const And*)r0)->a)) {
+      return (a && ((const And*)r0)->b);
     }
-    if (equal(a20->b, expr->b)) {
-      return a20->b;
+    if (equal(a, ((const And*)r0)->b)) {
+      return (((const And*)r0)->a && a);
     }
-    if (const And *a83 = a20->b.as<And>()) {
-      if (equal(a83->a, expr->b)) {
-        return ((a20->a || a83->b) && a83->a);
+    if ((r1 = ((const And*)r0)->a.as<And>())) {
+      if (equal(a, ((const And*)r1)->a)) {
+        return ((a && ((const And*)r1)->b) && ((const And*)r0)->b);
       }
-      if (equal(a83->b, expr->b)) {
-        return ((a20->a || a83->a) && a83->b);
-      }
-    }
-    if (const And *a91 = a20->a.as<And>()) {
-      if (equal(a91->a, expr->b)) {
-        return ((a91->b || a20->b) && a91->a);
-      }
-      if (equal(a91->b, expr->b)) {
-        return ((a91->a || a20->b) && a91->b);
+      if (equal(a, ((const And*)r1)->b)) {
+        return ((((const And*)r1)->a && a) && ((const And*)r0)->b);
       }
     }
-    if (const Or *a115 = expr->b.as<Or>()) {
-      if (equal(a20->a, a115->a)) {
-        return (a20->a || (a20->b && a115->b));
+    if ((r1 = ((const And*)r0)->b.as<And>())) {
+      if (equal(a, ((const And*)r1)->a)) {
+        return (((const And*)r0)->a && (a && ((const And*)r1)->b));
       }
-      if (equal(a20->a, a115->b)) {
-        return (a20->a || (a20->b && a115->a));
-      }
-      if (equal(a20->b, a115->a)) {
-        return (a20->b || (a20->a && a115->b));
-      }
-      if (equal(a20->b, a115->b)) {
-        return (a20->b || (a20->a && a115->a));
+      if (equal(a, ((const And*)r1)->b)) {
+        return (((const And*)r0)->a && (((const And*)r1)->a && a));
       }
     }
-  }
-  if (const Or *a21 = expr->b.as<Or>()) {
-    if (equal(expr->a, a21->a)) {
-      return expr->a;
-    }
-    if (equal(expr->a, a21->b)) {
-      return expr->a;
-    }
-    if (const And *a87 = a21->b.as<And>()) {
-      if (equal(expr->a, a87->a)) {
-        return (expr->a && (a21->a || a87->b));
+    if ((r1 = ((const And*)r0)->b.as<Or>())) {
+      if (equal(a, ((const Or*)r1)->a)) {
+        return (a && ((const And*)r0)->a);
       }
-      if (equal(expr->a, a87->b)) {
-        return (expr->a && (a21->a || a87->a));
+      if (equal(a, ((const Or*)r1)->b)) {
+        return (a && ((const And*)r0)->a);
       }
     }
-    if (const And *a95 = a21->a.as<And>()) {
-      if (equal(expr->a, a95->a)) {
-        return (expr->a && (a95->b || a21->b));
+    if ((r1 = ((const And*)r0)->a.as<Or>())) {
+      if (equal(a, ((const Or*)r1)->a)) {
+        return (a && ((const And*)r0)->b);
       }
-      if (equal(expr->a, a95->b)) {
-        return (expr->a && (a95->a || a21->b));
+      if (equal(a, ((const Or*)r1)->b)) {
+        return (a && ((const And*)r0)->b);
       }
     }
   }
-  if (const NE *a24 = expr->a.as<NE>()) {
-    if (const EQ *a25 = expr->b.as<EQ>()) {
-      if (equal(a24->a, a25->a)) {
-        if (equal(a24->b, a25->b)) {
+  if ((r0 = a.as<Or>())) {
+    if (equal(((const Or*)r0)->a, b)) {
+      return ((const Or*)r0)->a;
+    }
+    if (equal(((const Or*)r0)->b, b)) {
+      return ((const Or*)r0)->b;
+    }
+    if ((r1 = ((const Or*)r0)->b.as<And>())) {
+      if (equal(((const And*)r1)->a, b)) {
+        return ((((const Or*)r0)->a || ((const And*)r1)->b) && ((const And*)r1)->a);
+      }
+      if (equal(((const And*)r1)->b, b)) {
+        return ((((const Or*)r0)->a || ((const And*)r1)->a) && ((const And*)r1)->b);
+      }
+    }
+    if ((r1 = ((const Or*)r0)->a.as<And>())) {
+      if (equal(((const And*)r1)->a, b)) {
+        return ((((const And*)r1)->b || ((const Or*)r0)->b) && ((const And*)r1)->a);
+      }
+      if (equal(((const And*)r1)->b, b)) {
+        return ((((const And*)r1)->a || ((const Or*)r0)->b) && ((const And*)r1)->b);
+      }
+    }
+    if ((r1 = b.as<Or>())) {
+      if (equal(((const Or*)r0)->a, ((const Or*)r1)->a)) {
+        return (((const Or*)r0)->a || (((const Or*)r0)->b && ((const Or*)r1)->b));
+      }
+      if (equal(((const Or*)r0)->a, ((const Or*)r1)->b)) {
+        return (((const Or*)r0)->a || (((const Or*)r0)->b && ((const Or*)r1)->a));
+      }
+      if (equal(((const Or*)r0)->b, ((const Or*)r1)->a)) {
+        return (((const Or*)r0)->b || (((const Or*)r0)->a && ((const Or*)r1)->b));
+      }
+      if (equal(((const Or*)r0)->b, ((const Or*)r1)->b)) {
+        return (((const Or*)r0)->b || (((const Or*)r0)->a && ((const Or*)r1)->a));
+      }
+    }
+  }
+  if ((r0 = b.as<Or>())) {
+    if (equal(a, ((const Or*)r0)->a)) {
+      return a;
+    }
+    if (equal(a, ((const Or*)r0)->b)) {
+      return a;
+    }
+    if ((r1 = ((const Or*)r0)->b.as<And>())) {
+      if (equal(a, ((const And*)r1)->a)) {
+        return (a && (((const Or*)r0)->a || ((const And*)r1)->b));
+      }
+      if (equal(a, ((const And*)r1)->b)) {
+        return (a && (((const Or*)r0)->a || ((const And*)r1)->a));
+      }
+    }
+    if ((r1 = ((const Or*)r0)->a.as<And>())) {
+      if (equal(a, ((const And*)r1)->a)) {
+        return (a && (((const And*)r1)->b || ((const Or*)r0)->b));
+      }
+      if (equal(a, ((const And*)r1)->b)) {
+        return (a && (((const And*)r1)->a || ((const Or*)r0)->b));
+      }
+    }
+  }
+  if ((r0 = a.as<NE>())) {
+    if ((r1 = b.as<EQ>())) {
+      if (equal(((const NE*)r0)->a, ((const EQ*)r1)->a)) {
+        if (equal(((const NE*)r0)->b, ((const EQ*)r1)->b)) {
           return false;
         }
       }
-      if (equal(a24->b, a25->a)) {
-        if (equal(a24->a, a25->b)) {
+      if (equal(((const NE*)r0)->b, ((const EQ*)r1)->a)) {
+        if (equal(((const NE*)r0)->a, ((const EQ*)r1)->b)) {
           return false;
         }
       }
     }
-    if (is_const(a24->b)) {
-      if (const EQ *a57 = expr->b.as<EQ>()) {
-        if (equal(a24->a, a57->a)) {
-          if (is_const(a57->b)) {
-            if (evaluate_predicate(fold((a24->b != a57->b)))) {
-              return (a24->a == a57->b);
+    if (is_const_v(((const NE*)r0)->b)) {
+      if ((r1 = b.as<EQ>())) {
+        if (equal(((const NE*)r0)->a, ((const EQ*)r1)->a)) {
+          if (is_const_v(((const EQ*)r1)->b)) {
+            if (evaluate_predicate(fold((((const NE*)r0)->b != ((const EQ*)r1)->b)))) {
+              return (((const NE*)r0)->a == ((const EQ*)r1)->b);
             }
           }
         }
       }
     }
   }
-  if (const Not *a52 = expr->b.as<Not>()) {
-    if (equal(expr->a, a52->a)) {
+  if ((r0 = b.as<Not>())) {
+    if (equal(a, ((const Not*)r0)->a)) {
       return false;
     }
   }
-  if (const Not *a53 = expr->a.as<Not>()) {
-    if (equal(a53->a, expr->b)) {
+  if ((r0 = a.as<Not>())) {
+    if (equal(((const Not*)r0)->a, b)) {
       return false;
     }
   }
-  if (const LE *a54 = expr->a.as<LE>()) {
-    if (const LT *a55 = expr->b.as<LT>()) {
-      if (equal(a54->b, a55->a)) {
-        if (equal(a54->a, a55->b)) {
+  if ((r0 = a.as<LE>())) {
+    if ((r1 = b.as<LT>())) {
+      if (equal(((const LE*)r0)->b, ((const LT*)r1)->a)) {
+        if (equal(((const LE*)r0)->a, ((const LT*)r1)->b)) {
           return false;
         }
       }
     }
-    if (is_const(a54->b)) {
-      if (const LT *a65 = expr->b.as<LT>()) {
-        if (is_const(a65->a)) {
-          if (equal(a54->a, a65->b)) {
-            if (evaluate_predicate(fold((a54->b <= a65->a)))) {
+    if (is_const_v(((const LE*)r0)->b)) {
+      if ((r1 = b.as<LT>())) {
+        if (is_const_v(((const LT*)r1)->a)) {
+          if (equal(((const LE*)r0)->a, ((const LT*)r1)->b)) {
+            if (evaluate_predicate(fold((((const LE*)r0)->b <= ((const LT*)r1)->a)))) {
               return false;
             }
           }
         }
       }
-      if (const LE *a71 = expr->b.as<LE>()) {
-        if (is_const(a71->a)) {
-          if (equal(a54->a, a71->b)) {
-            if (evaluate_predicate(fold((a54->b < a71->a)))) {
+      if ((r1 = b.as<LE>())) {
+        if (is_const_v(((const LE*)r1)->a)) {
+          if (equal(((const LE*)r0)->a, ((const LE*)r1)->b)) {
+            if (evaluate_predicate(fold((((const LE*)r0)->b < ((const LE*)r1)->a)))) {
               return false;
             }
           }
         }
-        if (equal(a54->a, a71->a)) {
-          if (is_const(a71->b)) {
-            return (a54->a <= fold(min(a54->b, a71->b)));
+        if (equal(((const LE*)r0)->a, ((const LE*)r1)->a)) {
+          if (is_const_v(((const LE*)r1)->b)) {
+            return (((const LE*)r0)->a <= fold(min(((const LE*)r0)->b, ((const LE*)r1)->b)));
           }
         }
       }
     }
-    if (is_const(a54->a)) {
-      if (const LT *a67 = expr->b.as<LT>()) {
-        if (equal(a54->b, a67->a)) {
-          if (is_const(a67->b)) {
-            if (evaluate_predicate(fold((a67->b <= a54->a)))) {
+    if (is_const_v(((const LE*)r0)->a)) {
+      if ((r1 = b.as<LT>())) {
+        if (equal(((const LE*)r0)->b, ((const LT*)r1)->a)) {
+          if (is_const_v(((const LT*)r1)->b)) {
+            if (evaluate_predicate(fold((((const LT*)r1)->b <= ((const LE*)r0)->a)))) {
               return false;
             }
           }
         }
       }
-      if (const LE *a69 = expr->b.as<LE>()) {
-        if (equal(a54->b, a69->a)) {
-          if (is_const(a69->b)) {
-            if (evaluate_predicate(fold((a69->b < a54->a)))) {
+      if ((r1 = b.as<LE>())) {
+        if (equal(((const LE*)r0)->b, ((const LE*)r1)->a)) {
+          if (is_const_v(((const LE*)r1)->b)) {
+            if (evaluate_predicate(fold((((const LE*)r1)->b < ((const LE*)r0)->a)))) {
               return false;
             }
           }
         }
-        if (is_const(a69->a)) {
-          if (equal(a54->b, a69->b)) {
-            return (fold(max(a54->a, a69->a)) <= a54->b);
+        if (is_const_v(((const LE*)r1)->a)) {
+          if (equal(((const LE*)r0)->b, ((const LE*)r1)->b)) {
+            return (fold(max(((const LE*)r0)->a, ((const LE*)r1)->a)) <= ((const LE*)r0)->b);
           }
         }
       }
     }
-    if (const LE *a127 = expr->b.as<LE>()) {
-      if (equal(a54->a, a127->a)) {
-        return (a54->a <= min(a54->b, a127->b));
+    if ((r1 = b.as<LE>())) {
+      if (equal(((const LE*)r0)->a, ((const LE*)r1)->a)) {
+        return (((const LE*)r0)->a <= min(((const LE*)r0)->b, ((const LE*)r1)->b));
       }
-      if (equal(a54->b, a127->b)) {
-        return (max(a54->a, a127->a) <= a54->b);
-      }
-    }
-  }
-  if (const EQ *a58 = expr->a.as<EQ>()) {
-    if (is_const(a58->b)) {
-      if (const EQ *a59 = expr->b.as<EQ>()) {
-        if (equal(a58->a, a59->a)) {
-          if (is_const(a59->b)) {
-            if (evaluate_predicate(fold((a58->b != a59->b)))) {
-              return false;
-            }
-          }
-        }
+      if (equal(((const LE*)r0)->b, ((const LE*)r1)->b)) {
+        return (max(((const LE*)r0)->a, ((const LE*)r1)->a) <= ((const LE*)r0)->b);
       }
     }
   }
-  if (const LT *a60 = expr->a.as<LT>()) {
-    if (is_const(a60->a)) {
-      if (const LT *a61 = expr->b.as<LT>()) {
-        if (equal(a60->b, a61->a)) {
-          if (is_const(a61->b)) {
-            if (evaluate_predicate(fold((!(is_float(a60->b)) && (a61->b <= (a60->a + 1)))))) {
+  if ((r0 = a.as<EQ>())) {
+    if (is_const_v(((const EQ*)r0)->b)) {
+      if ((r1 = b.as<EQ>())) {
+        if (equal(((const EQ*)r0)->a, ((const EQ*)r1)->a)) {
+          if (is_const_v(((const EQ*)r1)->b)) {
+            if (evaluate_predicate(fold((((const EQ*)r0)->b != ((const EQ*)r1)->b)))) {
               return false;
             }
           }
         }
-        if (is_const(a61->a)) {
-          if (equal(a60->b, a61->b)) {
-            return (fold(max(a60->a, a61->a)) < a60->b);
-          }
-        }
-      }
-    }
-    if (is_const(a60->b)) {
-      if (const LT *a63 = expr->b.as<LT>()) {
-        if (is_const(a63->a)) {
-          if (equal(a60->a, a63->b)) {
-            if (evaluate_predicate(fold((!(is_float(a60->a)) && (a60->b <= (a63->a + 1)))))) {
-              return false;
-            }
-          }
-        }
-        if (equal(a60->a, a63->a)) {
-          if (is_const(a63->b)) {
-            return (a60->a < fold(min(a60->b, a63->b)));
-          }
-        }
-      }
-    }
-    if (const LT *a123 = expr->b.as<LT>()) {
-      if (equal(a60->a, a123->a)) {
-        return (a60->a < min(a60->b, a123->b));
-      }
-      if (equal(a60->b, a123->b)) {
-        return (max(a60->a, a123->a) < a60->b);
       }
     }
   }
-  if (const Broadcast *a80 = expr->a.as<Broadcast>()) {
-    if (is_const(a80->lanes)) {
-      if (const Broadcast *a81 = expr->b.as<Broadcast>()) {
-        if (equal(a80->lanes, a81->lanes)) {
-          return broadcast((a80->value && a81->value), a80->lanes);
+  if ((r0 = a.as<LT>())) {
+    if (is_const_v(((const LT*)r0)->a)) {
+      if ((r1 = b.as<LT>())) {
+        if (equal(((const LT*)r0)->b, ((const LT*)r1)->a)) {
+          if (is_const_v(((const LT*)r1)->b)) {
+            if (evaluate_predicate(fold((!(is_float(((const LT*)r0)->b)) && (((const LT*)r1)->b <= (((const LT*)r0)->a + 1)))))) {
+              return false;
+            }
+          }
+        }
+        if (is_const_v(((const LT*)r1)->a)) {
+          if (equal(((const LT*)r0)->b, ((const LT*)r1)->b)) {
+            return (fold(max(((const LT*)r0)->a, ((const LT*)r1)->a)) < ((const LT*)r0)->b);
+          }
+        }
+      }
+    }
+    if (is_const_v(((const LT*)r0)->b)) {
+      if ((r1 = b.as<LT>())) {
+        if (is_const_v(((const LT*)r1)->a)) {
+          if (equal(((const LT*)r0)->a, ((const LT*)r1)->b)) {
+            if (evaluate_predicate(fold((!(is_float(((const LT*)r0)->a)) && (((const LT*)r0)->b <= (((const LT*)r1)->a + 1)))))) {
+              return false;
+            }
+          }
+        }
+        if (equal(((const LT*)r0)->a, ((const LT*)r1)->a)) {
+          if (is_const_v(((const LT*)r1)->b)) {
+            return (((const LT*)r0)->a < fold(min(((const LT*)r0)->b, ((const LT*)r1)->b)));
+          }
+        }
+      }
+    }
+    if ((r1 = b.as<LT>())) {
+      if (equal(((const LT*)r0)->a, ((const LT*)r1)->a)) {
+        return (((const LT*)r0)->a < min(((const LT*)r0)->b, ((const LT*)r1)->b));
+      }
+      if (equal(((const LT*)r0)->b, ((const LT*)r1)->b)) {
+        return (max(((const LT*)r0)->a, ((const LT*)r1)->a) < ((const LT*)r0)->b);
+      }
+    }
+  }
+  if ((r0 = a.as<Broadcast>())) {
+    if (is_const_v(((const Broadcast*)r0)->lanes)) {
+      if ((r1 = b.as<Broadcast>())) {
+        if (equal(((const Broadcast*)r0)->lanes, ((const Broadcast*)r1)->lanes)) {
+          return broadcast((((const Broadcast*)r0)->value && ((const Broadcast*)r1)->value), ((const Broadcast*)r0)->lanes);
         }
       }
     }

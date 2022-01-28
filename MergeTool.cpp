@@ -510,7 +510,7 @@ void print_function_typed(const vector<Rule *> &rules, const std::string &func_n
     shared_ptr<Node> root = create_graph_typed<T>(rules, type_name);
     root = do_reuse_analysis(root);
 
-    std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
+    std::cout << "#include \"Simplify_Internal.h\"\n#include \"SimplifyGeneratedInternal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
     std::cout << "namespace Halide {\n"
               << "namespace Internal {\n"
               << "namespace CodeGen {\n\n";
