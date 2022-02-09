@@ -142,8 +142,7 @@ inline shared_ptr<Node> handle_broadcast_helper(shared_ptr<Node> &typed_root, co
     const ExprPtr value = expr->value;
     const ExprPtr lanes = expr->lanes;
 
-    shared_ptr<Node> value_node = tree_constructor(typed_root, value, value_id, scope);
-    return tree_constructor(value_node, lanes, lanes_id, scope);
+    return tree_constructor(typed_root, value, value_id, scope);
 }
 
 inline shared_ptr<Node> handle_broadcast_starter(shared_ptr<Node> &typed_root, const Broadcast *expr, VarScope &scope)
@@ -155,8 +154,10 @@ inline shared_ptr<Node> handle_broadcast_starter(shared_ptr<Node> &typed_root, c
     const ExprPtr value = expr->value;
     const ExprPtr lanes = expr->lanes;
 
-    shared_ptr<Node> value_node = tree_constructor(typed_root, value, value_id, scope);
-    return tree_constructor(value_node, lanes, lanes_id, scope);
+    scope.insert(std::make_pair(lanes->as<ConstantVar>()->name, lanes_id));
+
+    return tree_constructor(typed_root, value, value_id, scope);
+    // return tree_constructor(value_node, lanes, lanes_id, scope);
 }
 
 inline shared_ptr<Node> handle_broadcast(shared_ptr<Node> &root, const ExprPtr &expr, const IdPtr &id, VarScope &scope)
@@ -184,9 +185,12 @@ inline shared_ptr<Node> handle_ramp_helper(shared_ptr<Node> &typed_root, const R
     const ExprPtr base = expr->base;
     const ExprPtr stride = expr->stride;
     const ExprPtr lanes = expr->lanes;
+
+    scope.insert(std::make_pair(lanes->as<ConstantVar>()->name, lanes_id));
+
     shared_ptr<Node> base_node = tree_constructor(typed_root, base, base_id, scope);
-    shared_ptr<Node> stride_node = tree_constructor(base_node, stride, stride_id, scope);
-    return tree_constructor(stride_node, lanes, lanes_id, scope);
+    return tree_constructor(base_node, stride, stride_id, scope);
+    // return tree_constructor(stride_node, lanes, lanes_id, scope);
 }
 
 inline shared_ptr<Node> handle_ramp_starter(shared_ptr<Node> &typed_root, const Ramp *expr, VarScope &scope)
@@ -199,9 +203,12 @@ inline shared_ptr<Node> handle_ramp_starter(shared_ptr<Node> &typed_root, const 
     const ExprPtr base = expr->base;
     const ExprPtr stride = expr->stride;
     const ExprPtr lanes = expr->lanes;
+
+    scope.insert(std::make_pair(lanes->as<ConstantVar>()->name, lanes_id));
+
     shared_ptr<Node> base_node = tree_constructor(typed_root, base, base_id, scope);
-    shared_ptr<Node> stride_node = tree_constructor(base_node, stride, stride_id, scope);
-    return tree_constructor(stride_node, lanes, lanes_id, scope);
+    return tree_constructor(base_node, stride, stride_id, scope);
+    // return tree_constructor(stride_node, lanes, lanes_id, scope);
 }
 
 inline shared_ptr<Node> handle_ramp(shared_ptr<Node> &root, const ExprPtr &expr, const IdPtr &id, VarScope &scope)
