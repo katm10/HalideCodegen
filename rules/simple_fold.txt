@@ -1,0 +1,1 @@
+rewrite(c0 + c1, fold(c0 + c1))
