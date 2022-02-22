@@ -7,7 +7,6 @@ namespace CFIR {
 
 template<typename T>
 NodePtr make_new_node(Mutator *m, const T *node) {
-    const size_t n = node->children.size();
     std::shared_ptr<T> new_T = std::make_shared<T>(node);
 
     for (const auto &child : node->children) {

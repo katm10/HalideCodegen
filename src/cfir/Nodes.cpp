@@ -91,8 +91,26 @@ bool IsConstant::equal(const shared_ptr<Node> &other) const {
 
 void IsConstant::print(std::ostream &stream, const std::string &indent) const {
     // TODO: change this to is_const, I am using is_const_v for testing purposes
+    /*
+        is_const_v(string id, string ret_val, string ret_type)
+        in generated code, will save evaluate Expr id and save its type to ret_type and its value to ret_val
+    */
+
+    // Declare the return value and type
+    stream << indent << "halide_scalar_value_t ";
+    value_id->print(stream);
+    stream << ";\n";
+    stream << indent << "halide_type_t ";
+    type_id->print(stream);
+    stream << ";\n";
+
     stream << indent << "if (is_const_v(";
     id->print(stream);
+    stream << ", ";
+    value_id->print(stream);
+    stream << ", ";
+    type_id->print(stream); // Should these be IdPtrs instead of strings?
+
     stream << ")) {\n";
     for (const auto &child : children) {
         child->print(stream, indent + "  ");

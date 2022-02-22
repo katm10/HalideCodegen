@@ -1,5 +1,5 @@
 CXX ?= g++
-CXXFLAGS ?= -g -std=c++17 -Wno-attributes -O2
+CXXFLAGS ?= -g -std=c++17 -Wall -Wextra -Wconversion -pedantic -O2
 INCLUDES := -Iinclude
 
 SRC_DIR := src

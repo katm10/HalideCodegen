@@ -490,7 +490,7 @@ class Parser
 
     NumericType parse_type()
     {
-        for (const auto typePair : typeStrings)
+        for (const auto &typePair : typeStrings)
         {
             if (consume(typePair.first.c_str()))
             {

@@ -44,6 +44,7 @@ enum class IRType {
     Condition,
     IsConstant,
     Predicate,
+    Fold,
 
     Sequence,
     Declaration,
@@ -354,12 +355,30 @@ struct Condition final : public Node {
 
 struct IsConstant final : public Node {
     const IdPtr id;
-    IsConstant(const IdPtr &_id)
-        : Node(IRType::IsConstant), id(_id) {
+    const IdPtr value_id;
+    const IdPtr type_id;
+
+    IsConstant(const IdPtr &_id, const IdPtr &_value_id, const IdPtr &_type_id)
+        : Node(IRType::IsConstant), id(_id), value_id(_value_id), type_id(_type_id){
     }
     IsConstant(const IsConstant *ic)
-        : Node(IRType::IsConstant), id(ic->id) {
+        : Node(IRType::IsConstant), id(ic->id), value_id(ic->value_id), type_id(ic->type_id) {
     }
+
+    // TODO: these counts are wrong
+    static IdPtr make_val_id() {
+        static const std::string value_prefix = "c";
+        static int counter = 0;
+
+        return make_name(value_prefix + std::to_string(counter++));
+    }
+    static IdPtr make_type_id() {
+        static const std::string type_prefix = "t";
+        static int counter = 0;
+
+        return make_name(type_prefix + std::to_string(counter++));
+    }
+
     bool equal(const shared_ptr<Node> &other) const override;
     void print(std::ostream &stream, const std::string &indent) const override;
     void accept(Visitor *v) const override;
@@ -379,7 +398,6 @@ struct Predicate final : public Node {
     void accept(Visitor *v) const override;
     NodePtr mutate(Mutator *m) const override;
 };
-
 
 // Used as the top level node *ONLY*
 struct Sequence final : public Node {

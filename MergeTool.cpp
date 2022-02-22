@@ -82,9 +82,12 @@ shared_ptr<Node> handle_const_variable(shared_ptr<Node> root, const ConstantVar 
 {
     auto iter = scope.find(var->name);
     if (iter == scope.end()) {
-        scope.insert(std::make_pair(var->name, id));
+        IdPtr val_id = CFIR::IsConstant::make_val_id();
+        IdPtr type_id = CFIR::IsConstant::make_type_id();
 
-        shared_ptr<CFIR::IsConstant> cond_node = make_shared<CFIR::IsConstant>(id);
+        scope.insert(std::make_pair(var->name, val_id));
+
+        shared_ptr<CFIR::IsConstant> cond_node = make_shared<CFIR::IsConstant>(id, val_id, type_id);
         return root->get_child(cond_node);
     }
     else {
@@ -515,7 +518,7 @@ void print_function_typed(const vector<Rule *> &rules, const std::string &func_n
     const std::string arg_string = get_input_string(rules.front()->before);
 
     shared_ptr<Node> root = create_graph_typed<T>(rules, type_name);
-    root = do_reuse_analysis(root);
+    // root = do_reuse_analysis(root);
 
     std::cout << "#include \"Simplify_Internal.h\"\n#include \"Expr.h\"\n#include \"Type.h\"\n\n";
     std::cout << "namespace Halide {\n"
