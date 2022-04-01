@@ -23,7 +23,11 @@ bool PtrAccess::equals(const IdPtr &other_id) const {
 }
 
 IdPtr make_name(const std::string &name, bool declared) {
-    return std::make_shared<Name>(name, declared);
+    IdPtr id = std::make_shared<Name>(name, declared);
+    if (id == nullptr) {
+        std::cerr << "failed\n";
+    }
+    return std::move(id);
 }
 
 IdPtr make_id_ptr(const IdPtr &id, const std::string &member) {

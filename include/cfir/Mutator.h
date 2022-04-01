@@ -34,6 +34,7 @@ struct IsConstant;
 struct Predicate;
 struct Sequence;
 struct Declaration;
+struct FoldBlock;
 
 struct Mutator {
     virtual std::shared_ptr<Node> visit(const Add *);

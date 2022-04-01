@@ -4,6 +4,7 @@
 #include "cfir/Nodes.h"
 #include "cfir/Printer.h"
 #include "cfir/ReuseAnalysis.h"
+#include "ast/LinearizeNodes.h"
 #include "Identifier.h"
 #include "Rule.h"
 #include "Parser.h"
@@ -263,6 +264,20 @@ inline shared_ptr<Node> handle_constant_int(shared_ptr<Node> &root, const Consta
     return imm_node;
 }
 
+// inline shared_ptr<Node> handle_fold(shared_ptr<Node> &root, const ExprPtr &expr, const IdPtr &id, VarScope &scope)
+// {
+//     const Fold *op = expr->as<Fold>();
+//     assert(op);
+//     IdPtr typed_id = make_new_unique_name();
+
+//     std::shared_ptr<AST::FoldBlock> block = linearize_fold(expr);
+    
+//     // block = root->get_child(block); <- might uncomment this if we do anything fancy to check for duplicate blocks
+    
+//     return block;
+// }
+
+
 /*
 TODOs:
     // ConstantInt,
@@ -481,8 +496,17 @@ void add_rule_typed(shared_ptr<Node> root, const Rule *rule, const std::string &
         deepest = deepest->get_child(cond_node);
     }
 
-    const AST::ExprPtr retval = AST::substitute(rule->after, scope);
-    shared_ptr<CFIR::Return> ret_node = make_shared<CFIR::Return>(retval);
+    shared_ptr<CFIR::Return> ret_node;
+    // TODO: should this just be a mutator?
+    if (const AST::Fold* after_fold = rule->after->as<Fold>()){
+        const AST::ExprPtr after = linearize_fold(after_fold, scope);
+        const AST::ExprPtr retval = AST::substitute(after, scope);
+        ret_node = make_shared<CFIR::Return>(retval);
+    } else {
+        const AST::ExprPtr retval = AST::substitute(rule->after, scope);
+        ret_node = make_shared<CFIR::Return>(retval);
+    }
+    
     deepest = deepest->get_child(ret_node);
 }
 

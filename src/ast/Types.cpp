@@ -97,6 +97,14 @@ void Fold::accept(Visitor *v) const {
     v->visit(this);
 }
 
+void FoldCall::accept(Visitor *v) const {
+    v->visit(this);
+}
+
+void FoldBlock::accept(Visitor *v) const {
+    v->visit(this);
+}
+
 void CanProve::accept(Visitor *v) const {
     v->visit(this);
 }
@@ -201,6 +209,14 @@ ExprPtr Fold::mutate(Mutator *m) const {
     return m->visit(this);
 }
 
+ExprPtr FoldCall::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
+ExprPtr FoldBlock::mutate(Mutator *m) const {
+    return m->visit(this);
+}
+
 ExprPtr CanProve::mutate(Mutator *m) const {
     return m->visit(this);
 }
@@ -252,6 +268,16 @@ bool Fold::equals(const ExprPtr expr) const {
     } else {
         return false;
     }
+}
+
+bool FoldCall::equals(const ExprPtr expr) const {
+    // TODO if this is actually needed
+    return false;
+}
+
+bool FoldBlock::equals(const ExprPtr expr) const {
+    // TODO if this is actually needed
+    return false;
 }
 
 bool CanProve::equals(const ExprPtr expr) const {

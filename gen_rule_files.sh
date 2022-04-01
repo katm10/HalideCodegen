@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 RULE_FILES="rules/Simplify*.rewrites"
-GEN_FOLDER="generated/"
+GEN_FOLDER="generated/fold_change/"
 
 make MergeTool.o
 

@@ -112,6 +112,14 @@ ExprPtr Mutator::visit(const Fold *expr) {
     return std::make_shared<Fold>(std::move(value));
 }
 
+ExprPtr Mutator::visit(const FoldCall *expr) {
+    return std::make_shared<FoldCall>(expr);
+}
+
+ExprPtr Mutator::visit(const FoldBlock *expr) {
+    return std::make_shared<FoldBlock>(expr);
+}
+
 ExprPtr Mutator::visit(const CanProve *expr) {
     auto value = expr->value->mutate(this);
     return std::make_shared<CanProve>(std::move(value));

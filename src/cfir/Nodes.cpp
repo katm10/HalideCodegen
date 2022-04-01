@@ -62,7 +62,12 @@ bool Return::equal(const shared_ptr<Node> &other) const {
 
 void Return::print(std::ostream &stream, const std::string &indent) const {
     assert(children.empty());  // Return nodes should never have children.
-    stream << indent << "return " << pretty_print(ret_expr) << ";\n";
+    if (ret_expr->node_type == AST::NodeType::FoldBlock){
+        stream << pretty_print(ret_expr, indent);
+    } else {
+        stream << indent << "return " << pretty_print(ret_expr) << ";\n";
+    }
+    
 }
 
 bool Condition::equal(const shared_ptr<Node> &other) const {

@@ -44,7 +44,6 @@ enum class IRType {
     Condition,
     IsConstant,
     Predicate,
-    Fold,
 
     Sequence,
     Declaration,

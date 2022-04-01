@@ -139,6 +139,42 @@ void Printer::visit(const Fold *expr) {
     stream << ")";
 }
 
+void Printer::visit(const FoldBlock *expr) {
+    for (const auto &call : expr->intermediates){
+        call.accept(this);
+    }
+
+    stream << indent << "return make_const(";
+    expr->out_name->print(stream);
+    stream << ", ";
+    expr->out_type->print(stream);
+    stream << ");\n";
+}
+
+void Printer::visit(const FoldCall *expr) {
+    // TODO this is pretty bad
+    stream << indent << "halide_scalar_value_t ";
+    expr->out_name->print(stream);
+    stream << ";\n" << indent << "halide_type_t ";
+    expr->out_type->print(stream);
+    stream << ";\n";
+
+    stream << indent << "fold_" << expr->fold_type << "( ";
+    expr->out_name->print(stream);
+    stream << ", ";
+    expr->out_type->print(stream);
+    stream << ", ";
+
+    for (size_t i = 0; i < expr->args.size(); i++){
+        expr->args[i]->print(stream);
+        if ( i < expr->args.size() - 1 ){
+            stream << ", ";
+        }
+    } 
+
+    stream << ");\n";
+}
+
 void Printer::visit(const CanProve *expr) {
     stream << "can_prove(";
     expr->value->accept(this);
@@ -163,14 +199,14 @@ void Printer::visit(const IdWrapper *expr) {
     expr->id->print(stream);
 }
 
-void print(std::ostream &os, ExprPtr expr) {
-    Printer printer(os);
+void print(std::ostream &os, ExprPtr expr, std::string indent) {
+    Printer printer(os, indent);
     expr->accept(&printer);
 }
 
-std::string pretty_print(const ExprPtr &expr) {
+std::string pretty_print(const ExprPtr &expr, std::string indent) {
     std::ostringstream os;
-    Printer printer(os);
+    Printer printer(os, indent);
     expr->accept(&printer);
     return os.str();
 }

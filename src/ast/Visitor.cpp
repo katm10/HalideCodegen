@@ -115,6 +115,12 @@ void Visitor::visit(const Fold *expr) {
     expr->value->accept(this);
 }
 
+void Visitor::visit(const FoldCall *expr) {
+}
+
+void Visitor::visit(const FoldBlock *expr) {
+}
+
 void Visitor::visit(const CanProve *expr) {
     expr->value->accept(this);
 }

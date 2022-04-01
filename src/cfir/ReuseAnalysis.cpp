@@ -268,7 +268,9 @@ struct VariableReplacer : public Mutator {
     NodePtr visit(const IsConstant *node) override {
         const size_t current = variable_count;
         const IdPtr id = substitute(node->id, map);
-        std::shared_ptr<IsConstant> ptr = std::make_shared<IsConstant>(id);
+        const IdPtr value_id = substitute(node->value_id, map);
+        const IdPtr type_id = substitute(node->type_id, map);
+        std::shared_ptr<IsConstant> ptr = std::make_shared<IsConstant>(id, value_id, type_id);
         recurse_on_children<IsConstant>(node, ptr, current);
         variable_count = current;
         return ptr;

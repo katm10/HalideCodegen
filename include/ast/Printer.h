@@ -10,8 +10,9 @@ namespace AST
 {
     struct Printer final : public Visitor
     {
-        Printer(std::ostream &_stream) : stream(_stream) {}
+        Printer(std::ostream &_stream, std::string _indent) : stream(_stream), indent(_indent) {}
         std::ostream &stream;
+        std::string indent;
 
         void visit(const ConstantInt *) override;
         void visit(const ConstantVar *) override;
@@ -46,14 +47,16 @@ namespace AST
         void visit(const Broadcast *) override;
 
         void visit(const Fold *) override;
+        void visit(const FoldBlock *) override;
+        void visit(const FoldCall *) override;
         void visit(const CanProve *) override;
         void visit(const Call *) override;
 
         void visit(const IdWrapper *) override;
     };
 
-    void print(std::ostream &os, ExprPtr expr);
+    void print(std::ostream &os, ExprPtr expr, std::string indent = "");
 
-    std::string pretty_print(const ExprPtr &expr);
+    std::string pretty_print(const ExprPtr &expr, std::string indent = "");
 
 } // namsepace AST

@@ -47,6 +47,8 @@ namespace AST
 
         // These are useful only for pattern matching
         Fold,
+        FoldCall,
+        FoldBlock,
         CanProve,
         Call,
 
@@ -396,6 +398,56 @@ namespace AST
         ExprPtr mutate(Mutator *m) const override;
         static const NodeType _node_type = NodeType::Fold;
         bool equals(const ExprPtr expr) const override;
+    };
+
+
+    struct FoldCall : public Expr {
+        IdPtr out_name; 
+        IdPtr out_type;
+
+        // TODO make this an enum
+        std::string fold_type;
+        
+        std::vector<IdPtr> args;
+
+        FoldCall(const IdPtr &_out_name, const IdPtr &_out_type, std::string _fold_type, std::vector<IdPtr> _args) : 
+            Expr(AST::NodeType::FoldCall), out_name(_out_name), out_type(_out_type), fold_type(_fold_type), args(_args) {}
+
+        FoldCall(const FoldCall *p)
+            : Expr(AST::NodeType::FoldCall), 
+            out_name(p->out_name), 
+            out_type(p->out_type), 
+            fold_type(p->fold_type),
+            args(p->args) {}
+
+        bool equals(const ExprPtr expr) const override;
+        void accept(Visitor *v) const override;
+        ExprPtr mutate(Mutator *m) const override;
+        static const NodeType _node_type = NodeType::FoldCall;
+    };
+
+    struct FoldBlock final : public Expr {
+        IdPtr out_name; 
+        IdPtr out_type;
+
+        std::vector<FoldCall> intermediates; // TODO why not just call these children?
+
+        IdPtr out_expr; 
+
+        FoldBlock(const IdPtr &_out_name, const IdPtr &_out_type, std::vector<FoldCall> _intermediates, const IdPtr &_out_expr) : 
+            Expr(AST::NodeType::FoldBlock), out_name(_out_name), out_type(_out_type), intermediates(_intermediates), out_expr(_out_expr) {}
+
+        FoldBlock(const FoldBlock *p)
+            : Expr(AST::NodeType::FoldBlock), 
+            out_name(p->out_name), 
+            out_type(p->out_type), 
+            intermediates(p->intermediates),
+            out_expr(p->out_expr) {}
+
+        bool equals(const ExprPtr expr) const override;
+        void accept(Visitor *v) const override;
+        ExprPtr mutate(Mutator *m) const override;
+        static const NodeType _node_type = NodeType::FoldBlock;
     };
 
     struct CanProve final : public Expr
